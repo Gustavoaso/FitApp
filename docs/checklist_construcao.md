@@ -54,9 +54,8 @@
 - [x] Dashboard (`apps/mobile/app/(tabs)/inicio.tsx`) com anel de calorias, macros, tracker de água e atalho de treino
 - [x] Módulo de Treino (`apps/mobile/app/(tabs)/treino.tsx`) com divisão semanal ABC
 - [x] Modo Treino ao Vivo (`apps/mobile/app/treino-ao-vivo/index.tsx`) com timer de descanso circular e controle de séries
-- [x] Módulo de Dieta (`apps/mobile/app/(tabs)/dieta.tsx`) com modal de busca de alimentos TACO
-- [x] Tela de Perfil (`apps/mobile/app/(tabs)/perfil.tsx`) com dados editáveis e logout
-- [x] Tab Bar customizada estilo dark glass (`apps/mobile/app/(tabs)/_layout.tsx`)
+- [x] Módulo de Dieta (`apps/mobile/app/(tabs)/dieta.tsx`) redesenhado em Apple HIG Liquid Glass (iOS 26) com carrossel semanal, 4 anéis de progresso circulares (AnelProgresso SVG), cards de refeição e FAB de vidro
+- [x] Bottom Navigation flutuante em Liquid Glass (`apps/mobile/app/(tabs)/_layout.tsx`) com ícones minimalistas SVG e blur sutil
 
 ### Frontend Web (Next.js 15)
 - [x] Configurar App Router e layout base (`apps/web/src/app/layout.tsx`)
