@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitApp — Planejamento do Produto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0A0E17;
+      --bg-card: #141A2A;
+      --bg-card-hover: #1C2438;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --primary: #6C5CE7;
+      --primary-light: rgba(108, 92, 231, 0.2);
+      --primary-gradient: linear-gradient(135deg, #6C5CE7 0%, #A855F7 100%);
+      --secondary: #00D2FF;
+      --success: #00E676;
+      --warning: #FFD600;
+      --text: #F0F0F5;
+      --text-muted: #8B92A8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: 280px;
+      background: rgba(20, 26, 42, 0.8);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid var(--glass-border);
+      padding: 2rem 1.25rem;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+      padding-left: 0.5rem;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item a:hover, .nav-item a.active {
+      color: var(--text);
+      background: var(--primary-light);
+      border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+
+    /* Main Content */
+    main {
+      margin-left: 280px;
+      flex: 1;
+      padding: 3rem 4rem;
+      max-width: 1200px;
+    }
+
+    header {
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .section-card {
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-card h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text);
+    }
+
+    .section-card h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.25rem;
+      background: var(--primary-gradient);
+      border-radius: 4px;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      color: var(--text-muted);
+    }
+
+    li strong {
+      color: var(--text);
+    }
+
+    /* Mockup Carousel / Gallery */
+    .mockup-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .mockup-card {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    .mockup-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 30px rgba(108, 92, 231, 0.25);
+    }
+
+    .mockup-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .mockup-info {
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .mockup-info h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .mockup-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Modal for enlarged mockup */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(10, 14, 23, 0.9);
+      backdrop-filter: blur(20px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      max-height: 90vh;
+      max-width: 90vw;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Architecture diagram styling */
+    pre {
+      background: #060911;
+      border: 1px solid var(--glass-border);
+      padding: 1.25rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-family: 'SF Mono', Consolas, Monaco, monospace;
+      font-size: 0.85rem;
+      color: var(--secondary);
+      line-height: 1.4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    th {
+      color: var(--text);
+      background: var(--bg-card);
+      font-weight: 600;
+    }
+
+    td {
+      color: var(--text-muted);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+
+    /* Color dots for design system */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .color-swatch {
+      background: var(--bg-card);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .color-box {
+      height: 48px;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <aside>
+    <div class="brand">⚡ FitApp</div>
+    <ul class="nav-list">
+      <li class="nav-item"><a href="#resumo" class="active">1. Resumo FitFolio</a></li>
+      <li class="nav-item"><a href="#especificacao">2. Especificação Funcional</a></li>
+      <li class="nav-item"><a href="#arquitetura">3. Arquitetura do Sistema</a></li>
+      <li class="nav-item"><a href="#stack">4. Stack Técnica</a></li>
+      <li class="nav-item"><a href="#design">5. Design System</a></li>
+      <li class="nav-item"><a href="#mockups">6. Mockups Interativos</a></li>
+      <li class="nav-item"><a href="#pastas">7. Estrutura de Pastas</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Document -->
+  <main>
+    <header>
+      <h1>Planejamento Completo — FitApp</h1>
+      <p>Consultoria Técnica de Produto, Arquitetura &amp; Design System Multiplataforma</p>
+    </header>
+
+    <!-- Seção 1 -->
+    <section id="resumo" class="section-card">
+      <h2>1. Resumo do FitFolio</h2>
+      <p><strong>Onboarding/Questionário:</strong> Fluxo step-by-step com telas modulares (idade, peso, altura, nível de atividade, objetivo, restrições). Barra de progresso no topo e navegação direta com coleta mínima inicial.</p>
+      <br>
+      <p><strong>Telas principais:</strong> Dashboard centralizado com estatísticas diárias (macros, calorias, streaks). Tela de treino categorizada por grupos musculares com guias. Tela de dieta com registro por refeição em tempo real.</p>
+      <br>
+      <p><strong>Destaques visuais:</strong> Cards arredondados estilo glass, anéis de progresso circulares estilo Apple Watch, iconografia limpa e acentos coloridos sobre tema escuro.</p>
+    </section>
+
+    <!-- Seção 2 -->
+    <section id="especificacao" class="section-card">
+      <h2>2. Especificação Funcional</h2>
+      <ul>
+        <li><strong>Onboarding &amp; Questionário:</strong> 8-10 etapas para mapear corpo, meta (hipertrofia/definição/emagrecimento/força), restrições alimentares e equipamentos.</li>
+        <li><strong>Dashboard:</strong> Resumo diário de consumo calórico, progresso dos macros, registro de água e atalho para o próximo treino.</li>
+        <li><strong>Módulo de Treino &amp; Treino ao Vivo:</strong> Split semanal com timer de descanso regressivo, ajuste de carga em tempo real e progresso por séries.</li>
+        <li><strong>Módulo de Dieta:</strong> Plano nutricional dividido em refeições com busca rápida de alimentos da Tabela TACO.</li>
+        <li><strong>Perfil &amp; Progresso:</strong> Histórico de peso, recálculo de plano e configurações de notificações.</li>
+      </ul>
+    </section>
+
+    <!-- Seção 3 -->
+    <section id="arquitetura" class="section-card">
+      <h2>3. Arquitetura do Sistema</h2>
+      <pre>
+┌─────────────────────────────────────────────────────────────────────┐
+│                        CLIENTES (Frontend)                         │
+│   React Native (Expo Mobile iOS/Android)  |  Next.js (Web PWA)       │
+└──────────────────────────────────┬──────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CAMADA DE API (Backend)                          │
+│   Supabase Auth & Gateway  ──►  Edge Functions (TypeScript/Deno)    │
+│                                           │                         │
+│                                           ▼                         │
+│                                 Claude 3.5 API (Anthropic)          │
+└──────────────────────────────────┬──────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   BANCO DE DADOS (PostgreSQL + RLS)                 │
+│   perfis | questionarios | planos_treino | planos_dieta | TACO      │
+└─────────────────────────────────────────────────────────────────────┘
+      </pre>
+    </section>
+
+    <!-- Seção 4 -->
+    <section id="stack" class="section-card">
+      <h2>4. Stack Técnica Recomendada</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th>Tecnologia</th>
+            <th>Justificativa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mobile</td>
+            <td><span class="tag">React Native + Expo</span></td>
+            <td>Base única para iOS e Android, ecossistema maduro, compilação nativa.</td>
+          </tr>
+          <tr>
+            <td>Web</td>
+            <td><span class="tag">Next.js 15</span></td>
+            <td>SSR de alta performance, SEO otimizado e mesmo idioma do mobile.</td>
+          </tr>
+          <tr>
+            <td>Backend</td>
+            <td><span class="tag">Supabase Edge Functions</span></td>
+            <td>Serverless em TypeScript, resposta rápida de baixa latência e integração nativa.</td>
+          </tr>
+          <tr>
+            <td>Banco de Dados</td>
+            <td><span class="tag">PostgreSQL</span></td>
+            <td>Relacional, robusto, com busca fuzzy (`pg_trgm`) e Row Level Security (RLS).</td>
+          </tr>
+          <tr>
+            <td>Inteligência Artificial</td>
+            <td><span class="tag">Claude API (Anthropic)</span></td>
+            <td>Geração estruturada (JSON mode) de treinos e dietas personalizadas sem alucinações.</td>
+          </tr>
+          <tr>
+            <td>Base de Alimentos</td>
+            <td><span class="tag">Tabela TACO (UNICAMP)</span></td>
+            <td>Padrão ouro brasileiro com mais de 600 alimentos nacionais categorizados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Seção 5 -->
+    <section id="design" class="section-card">
+      <h2>5. Design System — Liquid Glass</h2>
+      <p>Estilo baseado no iOS Liquid Glass: camadas escuras com desfoque de fundo (blur), bordas com brilho sutil e sombras projetadas com tom primário.</p>
+      
+      <div class="color-grid">
+        <div class="color-swatch">
+          <div class="color-box" style="background: #0A0E17;"></div>
+          <small>Fundo (#0A0E17)</small>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: #6C5CE7;"></div>
+          <small>Primária (#6C5CE7)</small>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: #00D2FF;"></div>
+          <small>Secundária (#00D2FF)</small>
+        </div>
+        <div class="color-swatch">
+          <div class="color-box" style="background: #00E676;"></div>
+          <small>Sucesso (#00E676)</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção 6: MOCKUPS INTERATIVOS -->
+    <section id="mockups" class="section-card">
+      <h2>6. Mockups Interativos das Telas Principais</h2>
+      <p>Clique em qualquer tela para ampliar e analisar a hierarquia visual em detalhes.</p>
+      
+      <div class="mockup-container">
+        <div class="mockup-card" onclick="openModal('docs/mockups/dashboard.png')">
+          <img src="docs/mockups/dashboard.png" alt="Dashboard FitApp">
+          <div class="mockup-info">
+            <h4>Dashboard</h4>
+            <p>Resumo diário, anel de calorias &amp; macros</p>
+          </div>
+        </div>
+
+        <div class="mockup-card" onclick="openModal('docs/mockups/treino-ao-vivo.png')">
+          <img src="docs/mockups/treino-ao-vivo.png" alt="Treino ao Vivo">
+          <div class="mockup-info">
+            <h4>Treino ao Vivo</h4>
+            <p>Timer regressivo e controle de cargas</p>
+          </div>
+        </div>
+
+        <div class="mockup-card" onclick="openModal('docs/mockups/dieta.png')">
+          <img src="docs/mockups/dieta.png" alt="Registro de Dieta">
+          <div class="mockup-info">
+            <h4>Dieta &amp; Refeições</h4>
+            <p>Acompanhamento de refeições em tempo real</p>
+          </div>
+        </div>
+
+        <div class="mockup-card" onclick="openModal('docs/mockups/resultado.png')">
+          <img src="docs/mockups/resultado.png" alt="Resultado do Questionário">
+          <div class="mockup-info">
+            <h4>Resultado</h4>
+            <p>Plano gerado com TMB e macros alvo</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seção 7 -->
+    <section id="pastas" class="section-card">
+      <h2>7. Estrutura de Pastas</h2>
+      <pre>
+fitapp/
+├── apps/
+│   ├── mobile/          # App React Native (Expo Router)
+│   └── web/             # App Next.js 15
+├── packages/
+│   ├── tipos/           # Interfaces TypeScript compartilhadas
+│   ├── utilidades/      # Fórmulas (TMB, TDEE), formatadores, validadores
+│   └── constantes/      # Enums, objetivos, cores do design system
+├── supabase/            # Migrations SQL e Edge Functions
+└── docs/                # Documentação e mockups
+      </pre>
+    </section>
+  </main>
+
+  <!-- Modal para Zoom do Mockup -->
+  <div class="modal" id="imageModal" onclick="closeModal()">
+    <img class="modal-content" id="modalImg" src="" alt="Ampliado">
+  </div>
+
+  <script>
+    function openModal(src) {
+      document.getElementById('modalImg').src = src;
+      document.getElementById('imageModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('imageModal').classList.remove('active');
+    }
+  </script>
+</body>
+</html>
