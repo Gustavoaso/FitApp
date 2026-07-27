@@ -1,70 +1,73 @@
-import { SymbolView } from 'expo-symbols';
-import { Link, Tabs } from 'expo-router';
-import { Platform, Pressable } from 'react-native';
+// ============================================================
+// LAYOUT DA TAB BAR: (app/(tabs)/_layout.tsx)
+// ============================================================
+// Configura as 4 abas principais do app: Início, Treino, Dieta, Perfil.
+// ============================================================
 
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import React from 'react';
+import { Tabs } from 'expo-router';
+import { Text, StyleSheet } from 'react-native';
+import { Cores } from '../../constantes/Cores';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+function TabBarIcon({ emoji }: { emoji: string }) {
+  return <Text style={estilos.iconeEmoji}>{emoji}</Text>;
+}
 
+export default function LayoutTabs() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        headerShown: false,
+        tabBarActiveTintColor: Cores.primaria.base,
+        tabBarInactiveTintColor: Cores.texto.secundario,
+        tabBarStyle: {
+          backgroundColor: Cores.fundo.superficie,
+          borderTopColor: Cores.vidro.borda,
+          borderTopWidth: 1,
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="inicio"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable style={{ marginRight: 15 }}>
-                {({ pressed }) => (
-                  <SymbolView
-                    name={{ ios: 'info.circle', android: 'info', web: 'info' }}
-                    size={25}
-                    tintColor={Colors[colorScheme].text}
-                    style={{ opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
-          ),
+          title: 'Início',
+          tabBarIcon: () => <TabBarIcon emoji="🏠" />,
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="treino"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: 'chevron.left.forwardslash.chevron.right',
-                android: 'code',
-                web: 'code',
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
+          title: 'Treino',
+          tabBarIcon: () => <TabBarIcon emoji="🏋️" />,
+        }}
+      />
+      <Tabs.Screen
+        name="dieta"
+        options={{
+          title: 'Dieta',
+          tabBarIcon: () => <TabBarIcon emoji="🥗" />,
+        }}
+      />
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          title: 'Perfil',
+          tabBarIcon: () => <TabBarIcon emoji="👤" />,
         }}
       />
     </Tabs>
   );
 }
+
+const estilos = StyleSheet.create({
+  iconeEmoji: {
+    fontSize: 20,
+  },
+});
