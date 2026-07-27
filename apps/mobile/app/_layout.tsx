@@ -10,6 +10,16 @@ import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvedor } from '../contextos/AuthContexto';
 import { Cores } from '../constantes/Cores';
 
+// Polyfill para React Native / Hermes (impede crash de DOMException indefinido)
+if (typeof globalThis.DOMException === 'undefined') {
+  (globalThis as any).DOMException = class DOMException extends Error {
+    constructor(message?: string, name?: string) {
+      super(message);
+      this.name = name || 'DOMException';
+    }
+  };
+}
+
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
@@ -27,6 +37,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: Cores.fundo.principal },
         }}
       >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/cadastro" options={{ headerShown: false }} />

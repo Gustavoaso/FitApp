@@ -141,7 +141,11 @@ const estilos = StyleSheet.create({
   },
   borda: {
     // Posiciona a borda sobre o conteúdo (absolutamente)
-    ...StyleSheet.absoluteFill,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     borderWidth: Glass.bordaLargura,
   },
 });

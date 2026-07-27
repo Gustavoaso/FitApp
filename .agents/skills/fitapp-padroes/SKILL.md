@@ -56,3 +56,5 @@ description: Convenções, padrões de nomenclatura, estrutura de pastas e decis
 - Distribuição de macros: percentual fixo por objetivo (não IA)
 - Cálculos matemáticos no motor de regras, combinações criativas na IA
 - Row Level Security (RLS) do Supabase para isolamento de dados por usuário
+- **Acompanhamento de tarefas**: mantido atualizado no arquivo `docs/checklist_construcao.md` ao longo das fases do projeto
+
