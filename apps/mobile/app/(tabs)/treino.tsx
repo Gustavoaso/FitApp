@@ -1,142 +1,154 @@
 // ============================================================
 // TELA: Módulo de Treino (app/(tabs)/treino.tsx)
 // ============================================================
-// Clean Dark UI — referência Fitbod.
-// Seletor de dias tipo chip, lista de exercícios horizontal enxuta,
-// botão flat accent. Sem gradientes, sem emojis, sem glow.
+// Clean Dark UI — réplica perfeita (SF Compact Rounded, sem bordas).
+// Suporte completo a customização: adicionar/editar/remover exercícios.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  TextInput,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import {
+  obterPlanoTreinoCustomizado,
+  adicionarExercicioAoDia,
+  atualizarExercicio,
+  removerExercicio,
+  DiaTreinoCustomizado,
+  ExercicioCustomizado,
+} from '../../servicos/planoGestaoServico';
 
-interface Exercicio {
-  nome: string;
-  series: number;
-  reps: number;
-  carga: number;
-  grupo: string;
-}
-
-interface DiaTreino {
-  abreviacao: string;
-  dia: string;
-  nome: string;
-  foco: string;
-  exercicios: Exercicio[];
-}
-
-const diasTreino: DiaTreino[] = [
-  {
-    abreviacao: 'SEG',
-    dia: 'Segunda',
-    nome: 'Treino A',
-    foco: 'Peito & Tríceps',
-    exercicios: [
-      { nome: 'Supino Reto com Barra', series: 4, reps: 10, carga: 60, grupo: 'Peito' },
-      { nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, carga: 24, grupo: 'Peito' },
-      { nome: 'Crossover no Cabo', series: 3, reps: 15, carga: 20, grupo: 'Peito' },
-      { nome: 'Tríceps Pulley com Corda', series: 4, reps: 12, carga: 35, grupo: 'Tríceps' },
-    ],
-  },
-  {
-    abreviacao: 'TER',
-    dia: 'Terça',
-    nome: 'Treino B',
-    foco: 'Costas & Bíceps',
-    exercicios: [
-      { nome: 'Puxada Frontal no Pulley', series: 4, reps: 10, carga: 55, grupo: 'Costas' },
-      { nome: 'Remada Curvada com Barra', series: 3, reps: 10, carga: 50, grupo: 'Costas' },
-      { nome: 'Rosca Direta Barra W', series: 4, reps: 12, carga: 24, grupo: 'Bíceps' },
-    ],
-  },
-  {
-    abreviacao: 'QUA',
-    dia: 'Quarta',
-    nome: 'Treino C',
-    foco: 'Pernas Completo',
-    exercicios: [
-      { nome: 'Agachamento Livre', series: 4, reps: 8, carga: 80, grupo: 'Quadríceps' },
-      { nome: 'Leg Press 45°', series: 3, reps: 12, carga: 160, grupo: 'Quadríceps' },
-      { nome: 'Cadeira Extensora', series: 3, reps: 15, carga: 50, grupo: 'Quadríceps' },
-      { nome: 'Mesa Flexora', series: 4, reps: 12, carga: 40, grupo: 'Posterior' },
-    ],
-  },
-  {
-    abreviacao: 'QUI',
-    dia: 'Quinta',
-    nome: 'Descanso',
-    foco: 'Recuperação ativa',
-    exercicios: [],
-  },
-  {
-    abreviacao: 'SEX',
-    dia: 'Sexta',
-    nome: 'Treino A',
-    foco: 'Ombros & Trapézio',
-    exercicios: [
-      { nome: 'Desenvolvimento com Halteres', series: 4, reps: 10, carga: 20, grupo: 'Ombros' },
-      { nome: 'Elevação Lateral', series: 4, reps: 15, carga: 10, grupo: 'Ombros' },
-      { nome: 'Encolhimento com Barra', series: 3, reps: 12, carga: 60, grupo: 'Trapézio' },
-    ],
-  },
+const DIAS_SEMANA_CARROSSEL = [
+  { abrev: 'dom', diaNum: '26', data: '2026-07-26' },
+  { abrev: 'seg', diaNum: '27', data: '2026-07-27' },
+  { abrev: 'ter', diaNum: '28', data: '2026-07-28' },
+  { abrev: 'qua', diaNum: '29', data: '2026-07-29' },
+  { abrev: 'qui', diaNum: '30', data: '2026-07-30' },
+  { abrev: 'sex', diaNum: '31', data: '2026-07-31' },
+  { abrev: 'sáb', diaNum: '01', data: '2026-08-01' },
 ];
 
 export default function TelaTreino() {
   const router = useRouter();
-  const [diaSelecionado, setDiaSelecionado] = useState(0);
+  const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
+  const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
 
-  const diaAtual = diasTreino[diaSelecionado];
-  const temTreino = diaAtual.exercicios.length > 0;
+  // Modais
+  const [modalAdicionarVisivel, setModalAdicionarVisivel] = useState(false);
+  const [modalEditarVisivel, setModalEditarVisivel] = useState(false);
+  const [exercicioEmEdicao, setExercicioEmEdicao] = useState<ExercicioCustomizado | null>(null);
+
+  // Form de novo exercício
+  const [novoNome, setNovoNome] = useState('');
+  const [novoGrupo, setNovoGrupo] = useState('Peito');
+  const [novasSeries, setNovasSeries] = useState('4');
+  const [novasReps, setNovasReps] = useState('10');
+  const [novaCarga, setNovaCarga] = useState('60');
+
+  useEffect(() => {
+    carregarPlanos();
+  }, []);
+
+  const carregarPlanos = async () => {
+    const dados = await obterPlanoTreinoCustomizado();
+    setPlanos(dados);
+  };
+
+  // Mapeia o dia selecionado do carrossel para o dia do treino (ABC)
+  const diaIndex = DIAS_SEMANA_CARROSSEL.findIndex(d => d.data === diaSelecionado);
+  const diaAtual = planos[diaIndex % (planos.length || 1)] || planos[0];
+  const temTreino = diaAtual && diaAtual.exercicios && diaAtual.exercicios.length > 0;
+
+  const lidarComSalvarNovoExercicio = async () => {
+    if (!diaAtual) return;
+    const atualizado = await adicionarExercicioAoDia(diaAtual.id, {
+      nome: novoNome || 'Novo Exercício',
+      grupoMuscular: novoGrupo,
+      series: parseInt(novasSeries, 10) || 4,
+      repeticoes: parseInt(novasReps, 10) || 10,
+      cargaKg: parseFloat(novaCarga) || 20,
+    });
+    setPlanos(atualizado);
+    setModalAdicionarVisivel(false);
+    setNovoNome('');
+  };
+
+  const lidarComSalvarEdicaoExercicio = async () => {
+    if (!diaAtual || !exercicioEmEdicao) return;
+    const atualizado = await atualizarExercicio(diaAtual.id, exercicioEmEdicao);
+    setPlanos(atualizado);
+    setModalEditarVisivel(false);
+    setExercicioEmEdicao(null);
+  };
+
+  const lidarComRemoverExercicio = async (idExercicio: string) => {
+    if (!diaAtual) return;
+    const atualizado = await removerExercicio(diaAtual.id, idExercicio);
+    setPlanos(atualizado);
+    setModalEditarVisivel(false);
+    setExercicioEmEdicao(null);
+  };
 
   return (
     <View style={estilos.container}>
-      <ScrollView
-        contentContainerStyle={estilos.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Cabeçalho ─────────────────────────────────────── */}
-        <View style={estilos.cabecalho}>
-          <Text style={estilos.titulo}>Treino</Text>
-          <Text style={estilos.subtitulo}>Divisão ABC · Hipertrofia</Text>
+      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+
+        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        <View style={estilos.topBar}>
+          <TouchableOpacity style={estilos.topBarIcone}>
+            <SymbolView name="magnifyingglass" size={20} tintColor="#FFFFFF" weight="semibold" />
+          </TouchableOpacity>
+
+          <Text style={estilos.topBarTitulo}>Treino</Text>
+
+          <View style={estilos.topBarDireita}>
+            <View style={estilos.streakBadge}>
+              <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
+              <Text style={estilos.streakTexto}>1</Text>
+            </View>
+            <TouchableOpacity style={estilos.topBarIcone}>
+              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* ── Seletor de dias ───────────────────────────────── */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={estilos.scrollDias}
-          style={estilos.scrollDiasWrapper}
-        >
-          {diasTreino.map((d, i) => (
-            <TouchableOpacity
-              key={i}
-              style={[estilos.chipDia, diaSelecionado === i && estilos.chipDiaSelecionado]}
-              onPress={() => setDiaSelecionado(i)}
-              activeOpacity={0.7}
-            >
-              <Text style={[estilos.chipAbrev, diaSelecionado === i && estilos.chipTextoAtivo]}>
-                {d.abreviacao}
-              </Text>
-              <Text style={[estilos.chipNome, diaSelecionado === i && estilos.chipTextoAtivo]}>
-                {d.nome}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        {/* ── Carrossel Semanal de Dias ─────────────────────── */}
+        <View style={estilos.carrosselContainer}>
+          {DIAS_SEMANA_CARROSSEL.map((dia) => {
+            const sel = dia.data === diaSelecionado;
+            return (
+              <TouchableOpacity
+                key={dia.data}
+                onPress={() => setDiaSelecionado(dia.data)}
+                activeOpacity={0.7}
+                style={estilos.itemDia}
+              >
+                <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>
+                  {dia.abrev}
+                </Text>
+                <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>
+                  {dia.diaNum}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-        {/* ── Card do dia selecionado ───────────────────────── */}
-        <CardVidro estilo={estilos.cardDiaHeader}>
+        {/* ── Card do Foco do Dia ────────────────────────────── */}
+        <CardVidro semBorda estilo={estilos.cardDiaHeader}>
           <View style={estilos.rowDiaHeader}>
             <View style={estilos.iconeFocoContainer}>
               <SymbolView
@@ -146,130 +158,282 @@ export default function TelaTreino() {
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={estilos.diaFoco}>{diaAtual.foco}</Text>
+              <Text style={estilos.diaFoco}>{diaAtual ? diaAtual.foco : 'Recuperação'}</Text>
               <Text style={estilos.diaDetalhes}>
-                {temTreino
-                  ? `${diaAtual.exercicios.length} exercícios`
-                  : 'Sem treino programado'}
+                {temTreino ? `${diaAtual.exercicios.length} exercícios programados` : 'Descanso ativo'}
               </Text>
             </View>
-            {temTreino && (
-              <View style={estilos.badgeSessao}>
-                <Text style={estilos.textoBadgeSessao}>{diaAtual.nome}</Text>
-              </View>
-            )}
+            <TouchableOpacity
+              style={estilos.btnAdicionarExercicio}
+              onPress={() => setModalAdicionarVisivel(true)}
+            >
+              <SymbolView name="plus" size={14} tintColor={Cores.accent} weight="bold" />
+            </TouchableOpacity>
           </View>
         </CardVidro>
 
-        {/* ── Lista de exercícios ───────────────────────────── */}
+        {/* ── Lista de Exercícios ───────────────────────────── */}
         {temTreino ? (
           <>
-            <Text style={estilos.secaoTitulo}>Exercícios</Text>
+            <Text style={estilos.secaoTitulo}>Exercícios do Dia</Text>
 
             {diaAtual.exercicios.map((ex, i) => (
-              <CardVidro key={i} estilo={estilos.cardExercicio}>
-                <View style={estilos.rowExercicio}>
-                  {/* Número de ordem */}
+              <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setExercicioEmEdicao(ex);
+                    setModalEditarVisivel(true);
+                  }}
+                  activeOpacity={0.7}
+                  style={estilos.rowExercicio}
+                >
                   <View style={estilos.ordemContainer}>
                     <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
                   </View>
 
-                  {/* Nome + detalhes */}
                   <View style={estilos.colExercicio}>
                     <Text style={estilos.exNome}>{ex.nome}</Text>
                     <Text style={estilos.exSub}>
-                      {ex.series} séries · {ex.reps} reps · {ex.carga}kg
+                      {ex.series} séries · {ex.repeticoes} reps · {ex.cargaKg}kg
                     </Text>
                   </View>
 
-                  {/* Grupo muscular */}
                   <View style={estilos.badgeGrupo}>
-                    <Text style={estilos.textoBadgeGrupo}>{ex.grupo}</Text>
+                    <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               </CardVidro>
             ))}
 
             <BotaoPrimario
-              texto="Iniciar Treino"
+              texto="Iniciar Treino ao Vivo"
               aoPresionar={() => router.push('/treino-ao-vivo')}
               estilo={estilos.botaoIniciar}
             />
           </>
         ) : (
           <View style={estilos.containerVazio}>
-            <Text style={estilos.textoVazioTitulo}>Dia de descanso</Text>
-            <Text style={estilos.textoVazioSub}>Recuperação é parte do treino.</Text>
+            <Text style={estilos.textoVazioTitulo}>Dia de Descanso</Text>
+            <Text style={estilos.textoVazioSub}>Recuperação ativa muscular</Text>
           </View>
         )}
       </ScrollView>
+
+      {/* ── Modal Adicionar Exercício ───────────────────────── */}
+      <Modal visible={modalAdicionarVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalAdicionarVisivel(false)} />
+          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <View style={estilos.modalHandle} />
+            <Text style={estilos.modalTitulo}>Adicionar Exercício</Text>
+
+            <TextInput
+              style={estilos.input}
+              placeholder="Nome do exercício..."
+              placeholderTextColor={Cores.texto.desabilitado}
+              value={novoNome}
+              onChangeText={setNovoNome}
+            />
+
+            <TextInput
+              style={estilos.input}
+              placeholder="Grupo muscular (ex: Peito, Costas...)"
+              placeholderTextColor={Cores.texto.desabilitado}
+              value={novoGrupo}
+              onChangeText={setNovoGrupo}
+            />
+
+            <View style={estilos.rowInputs}>
+              <TextInput
+                style={[estilos.input, { flex: 1 }]}
+                placeholder="Séries"
+                keyboardType="numeric"
+                value={novasSeries}
+                onChangeText={setNovasSeries}
+              />
+              <TextInput
+                style={[estilos.input, { flex: 1 }]}
+                placeholder="Reps"
+                keyboardType="numeric"
+                value={novasReps}
+                onChangeText={setNovasReps}
+              />
+              <TextInput
+                style={[estilos.input, { flex: 1 }]}
+                placeholder="Carga (kg)"
+                keyboardType="numeric"
+                value={novaCarga}
+                onChangeText={setNovaCarga}
+              />
+            </View>
+
+            <View style={estilos.modalAcoes}>
+              <TouchableOpacity onPress={() => setModalAdicionarVisivel(false)} style={estilos.btnCancelar}>
+                <Text style={estilos.txtCancelar}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={lidarComSalvarNovoExercicio} style={estilos.btnSalvar}>
+                <Text style={estilos.txtSalvar}>Adicionar</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Modal Editar / Excluir Exercício ───────────────── */}
+      {exercicioEmEdicao && (
+        <Modal visible={modalEditarVisivel} animationType="slide" transparent statusBarTranslucent>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalEditarVisivel(false)} />
+            <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+              <View style={estilos.modalHandle} />
+              <Text style={estilos.modalTitulo}>Editar Exercício</Text>
+
+              <TextInput
+                style={estilos.input}
+                value={exercicioEmEdicao.nome}
+                onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, nome: t })}
+              />
+
+              <View style={estilos.rowInputs}>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.labelInput}>Séries</Text>
+                  <TextInput
+                    style={estilos.input}
+                    keyboardType="numeric"
+                    value={String(exercicioEmEdicao.series)}
+                    onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, series: parseInt(t, 10) || 0 })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.labelInput}>Reps</Text>
+                  <TextInput
+                    style={estilos.input}
+                    keyboardType="numeric"
+                    value={String(exercicioEmEdicao.repeticoes)}
+                    onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, repeticoes: parseInt(t, 10) || 0 })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.labelInput}>Carga (kg)</Text>
+                  <TextInput
+                    style={estilos.input}
+                    keyboardType="numeric"
+                    value={String(exercicioEmEdicao.cargaKg)}
+                    onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, cargaKg: parseFloat(t) || 0 })}
+                  />
+                </View>
+              </View>
+
+              <View style={estilos.modalAcoesSpace}>
+                <TouchableOpacity
+                  onPress={() => lidarComRemoverExercicio(exercicioEmEdicao.id)}
+                  style={estilos.btnExcluir}
+                >
+                  <Text style={estilos.txtExcluir}>Excluir</Text>
+                </TouchableOpacity>
+
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <TouchableOpacity onPress={() => setModalEditarVisivel(false)} style={estilos.btnCancelar}>
+                    <Text style={estilos.txtCancelar}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={lidarComSalvarEdicaoExercicio} style={estilos.btnSalvar}>
+                    <Text style={estilos.txtSalvar}>Salvar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </BlurView>
+          </KeyboardAvoidingView>
+        </Modal>
+      )}
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Cores.fundo.principal,
-  },
+  container: { flex: 1, backgroundColor: Cores.fundo.principal },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
     paddingBottom: 120,
   },
 
-  cabecalho: {
-    marginBottom: 20,
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
   },
-  titulo: {
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.semibold,
+  topBarTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 20,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
-  subtitulo: {
-    fontSize: Fonte.label,
-    color: Cores.texto.secundario,
-    marginTop: 3,
+  topBarIcone: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  scrollDiasWrapper: {
-    marginBottom: 20,
+  topBarDireita: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  scrollDias: {
-    gap: Espacamento.sm,
-    paddingRight: 4,
-  },
-  chipDia: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: Raio.md,
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: Cores.fundo.superficie,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Raio.full,
     borderWidth: 1,
     borderColor: Cores.borda.sutil,
-    alignItems: 'center',
-    minWidth: 56,
   },
-  chipDiaSelecionado: {
-    backgroundColor: Cores.accentSuave,
-    borderColor: Cores.accentBorda,
-  },
-  chipAbrev: {
-    fontSize: Fonte.micro,
+  streakTexto: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 13,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.desabilitado,
-    letterSpacing: 0.5,
+    color: Cores.texto.principal,
   },
-  chipNome: {
-    fontSize: Fonte.micro,
-    color: Cores.texto.desabilitado,
-    marginTop: 2,
+
+  carrosselContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingHorizontal: 4,
   },
-  chipTextoAtivo: {
-    color: Cores.accent,
+  itemDia: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diaAbrev: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 13,
+    color: Cores.texto.desabilitado,
+    marginBottom: 6,
+  },
+  diaAbrevSelecionado: {
+    fontFamily: FamiliaFonte.semibold,
+    color: Cores.texto.principal,
+  },
+  diaNum: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 17,
+    color: Cores.texto.desabilitado,
+  },
+  diaNumSelecionado: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 20,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
   },
 
   cardDiaHeader: {
-    marginBottom: 20,
+    marginBottom: 24,
+    padding: Espacamento.lg,
   },
   rowDiaHeader: {
     flexDirection: 'row',
@@ -283,45 +447,40 @@ const estilos = StyleSheet.create({
     backgroundColor: Cores.fundo.elevada,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Cores.borda.sutil,
   },
   diaFoco: {
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.semibold,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 16,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   diaDetalhes: {
-    fontSize: Fonte.micro,
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 13,
     color: Cores.texto.secundario,
     marginTop: 2,
   },
-  badgeSessao: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: Raio.sm,
-    backgroundColor: Cores.accentSuave,
-    borderWidth: 1,
-    borderColor: Cores.accentBorda,
-  },
-  textoBadgeSessao: {
-    fontSize: Fonte.micro,
-    color: Cores.accent,
-    fontWeight: PesoFonte.semibold,
+  btnAdicionarExercicio: {
+    padding: 8,
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: 8,
   },
 
   secaoTitulo: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.secundario,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: Espacamento.md,
   },
 
-  cardExercicio: {
-    marginBottom: Espacamento.sm,
-    padding: Espacamento.md,
+  cardExercicioSemBorda: {
+    marginBottom: 12,
+    padding: Espacamento.lg,
+    borderWidth: 0,
+    marginHorizontal: -20,
   },
   rowExercicio: {
     flexDirection: 'row',
@@ -329,25 +488,27 @@ const estilos = StyleSheet.create({
     gap: Espacamento.md,
   },
   ordemContainer: {
-    width: 32,
+    width: 28,
     alignItems: 'center',
   },
   ordemTexto: {
-    fontSize: 13,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 14,
     fontWeight: PesoFonte.bold,
     color: Cores.accent,
-    fontVariant: ['tabular-nums'],
   },
   colExercicio: {
     flex: 1,
   },
   exNome: {
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.semibold,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 15,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   exSub: {
-    fontSize: Fonte.micro,
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 13,
     color: Cores.texto.secundario,
     marginTop: 2,
   },
@@ -356,17 +517,15 @@ const estilos = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: Raio.sm,
     backgroundColor: Cores.fundo.elevada,
-    borderWidth: 1,
-    borderColor: Cores.borda.sutil,
   },
   textoBadgeGrupo: {
-    fontSize: 10,
-    color: Cores.texto.desabilitado,
-    fontWeight: PesoFonte.medio,
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 11,
+    color: Cores.texto.secundario,
   },
 
   botaoIniciar: {
-    marginTop: 20,
+    marginTop: 24,
   },
 
   containerVazio: {
@@ -374,13 +533,68 @@ const estilos = StyleSheet.create({
     paddingVertical: 40,
   },
   textoVazioTitulo: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.semibold,
-    color: Cores.texto.secundario,
+    color: Cores.texto.principal,
   },
   textoVazioSub: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.desabilitado,
+    color: Cores.texto.secundario,
     marginTop: 4,
   },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Cores.borda.forte,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalCard: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    backgroundColor: 'rgba(16,19,24,0.97)',
+    borderTopWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  modalTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.subtitulo,
+    color: Cores.texto.principal,
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: Cores.fundo.elevada,
+    borderWidth: 1,
+    borderColor: Cores.borda.media,
+    borderRadius: Raio.md,
+    padding: 12,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
+    marginBottom: 12,
+  },
+  labelInput: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.texto.secundario,
+    marginBottom: 4,
+  },
+  rowInputs: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },
+  modalAcoesSpace: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
+  btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
+  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: Cores.texto.secundario, fontSize: Fonte.corpo },
+  btnSalvar: { backgroundColor: Cores.accent, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
+  txtSalvar: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: Fonte.corpo },
+  btnExcluir: { paddingVertical: 10, paddingHorizontal: 16 },
+  txtExcluir: { fontFamily: FamiliaFonte.semibold, color: Cores.feedback.erro, fontSize: Fonte.corpo },
 });

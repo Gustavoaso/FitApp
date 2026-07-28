@@ -2,9 +2,10 @@
 // TELA: Dieta / Nutrição (app/(tabs)/dieta.tsx)
 // ============================================================
 // Clean Dark UI — réplica ajustada (pt-BR, SF Symbols, SF Compact Rounded).
+// Histórico por data persistido via historicoServico + adição de novos alimentos/refeições.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -21,6 +22,11 @@ import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '../../componentes/ui';
 import { AnelProgresso } from '../../componentes/ui/AnelProgresso';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import {
+  obterHistoricoDieta,
+  salvarHistoricoDieta,
+  RegistroRefeicaoDiaria,
+} from '../../servicos/historicoServico';
 
 interface Alimento {
   id: string;
@@ -50,6 +56,29 @@ const DIAS_SEMANA = [
   { abrev: 'sáb', diaNum: '01', data: '2026-08-01' },
 ];
 
+const REFEICOES_INICIAIS_PADRAO: Refeicao[] = [
+  {
+    id: 'ref-1',
+    nome: 'Refeição 1',
+    horario: 'Café da Manhã',
+    concluida: true,
+    alimentos: [
+      { id: 'a1', nome: 'Ovos Mexidos', porcao: '3 un · 150g', calorias: 215, proteinas: 18, carbos: 2, gorduras: 15 },
+      { id: 'a2', nome: 'Pão Integral', porcao: '2 fatias · 50g', calorias: 130, proteinas: 6, carbos: 24, gorduras: 2 },
+    ],
+  },
+  {
+    id: 'ref-2',
+    nome: 'Refeição 2',
+    horario: 'Almoço',
+    concluida: true,
+    alimentos: [
+      { id: 'a4', nome: 'Peito de Frango Grelhado', porcao: '180g', calorias: 297, proteinas: 56, carbos: 0, gorduras: 6 },
+      { id: 'a5', nome: 'Feijão Carioca', porcao: '100g', calorias: 76, proteinas: 5, carbos: 14, gorduras: 1 },
+    ],
+  },
+];
+
 export default function TelaDieta() {
   const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
 
@@ -58,32 +87,42 @@ export default function TelaDieta() {
   const metaCarbos = 260;
   const metaGorduras = 65;
 
-  const [refeicoes, setRefeicoes] = useState<Refeicao[]>([
-    {
-      id: 'ref-1',
-      nome: 'Refeição 1',
-      horario: '131 kcal',
-      concluida: true,
-      alimentos: [
-        { id: 'a1', nome: 'Ovos Mexidos', porcao: '3 un · 150g', calorias: 215, proteinas: 18, carbos: 2, gorduras: 15 },
-        { id: 'a2', nome: 'Pão Integral', porcao: '2 fatias · 50g', calorias: 130, proteinas: 6, carbos: 24, gorduras: 2 },
-      ],
-    },
-    {
-      id: 'ref-2',
-      nome: 'Refeição 2',
-      horario: '624 kcal',
-      concluida: true,
-      alimentos: [
-        { id: 'a4', nome: 'Peito de Frango Grelhado', porcao: '180g', calorias: 297, proteinas: 56, carbos: 0, gorduras: 6 },
-        { id: 'a5', nome: 'Feijão Carioca', porcao: '100g', calorias: 76, proteinas: 5, carbos: 14, gorduras: 1 },
-      ],
-    },
-  ]);
-
+  const [refeicoes, setRefeicoes] = useState<Refeicao[]>(REFEICOES_INICIAIS_PADRAO);
   const [modalVisivel, setModalVisivel] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
   const [refeicaoAlvo, setRefeicaoAlvo] = useState<string | null>(null);
+
+  // Carrega o histórico da data selecionada no carrossel
+  useEffect(() => {
+    carregarHistoricoDoDia(diaSelecionado);
+  }, [diaSelecionado]);
+
+  const carregarHistoricoDoDia = async (dataStr: string) => {
+    const salvo = await obterHistoricoDieta(dataStr);
+    if (salvo && salvo.length > 0) {
+      const convertidas: Refeicao[] = salvo.map((r, i) => ({
+        id: r.idRefeicao || `ref-${i + 1}`,
+        nome: `Refeição ${i + 1}`,
+        horario: i === 0 ? 'Café da Manhã' : i === 1 ? 'Almoço' : 'Lanche',
+        concluida: r.concluida,
+        alimentos: r.alimentos,
+      }));
+      setRefeicoes(convertidas);
+    } else {
+      setRefeicoes(REFEICOES_INICIAIS_PADRAO);
+    }
+  };
+
+  const persistirRefeicoes = async (novasRefeicoes: Refeicao[]) => {
+    setRefeicoes(novasRefeicoes);
+    const paraSalvar: RegistroRefeicaoDiaria[] = novasRefeicoes.map(r => ({
+      idRefeicao: r.id,
+      data: diaSelecionado,
+      concluida: r.concluida,
+      alimentos: r.alimentos,
+    }));
+    await salvarHistoricoDieta(diaSelecionado, paraSalvar);
+  };
 
   const totais = refeicoes.reduce(
     (acc, ref) => {
@@ -98,7 +137,7 @@ export default function TelaDieta() {
     { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 }
   );
 
-  const adicionarAlimento = () => {
+  const adicionarAlimento = async () => {
     const novo: Alimento = {
       id: `a-${Date.now()}`,
       nome: termoBusca || 'Iogurte Grego Natural',
@@ -108,11 +147,29 @@ export default function TelaDieta() {
       carbos: 4,
       gorduras: 4,
     };
-    setRefeicoes(prev =>
-      prev.map(r => (r.id === (refeicaoAlvo || 'ref-1') ? { ...r, alimentos: [...r.alimentos, novo] } : r))
+
+    const atualizadas = refeicoes.map(r =>
+      r.id === (refeicaoAlvo || 'ref-1') ? { ...r, alimentos: [...r.alimentos, novo] } : r
     );
+
+    await persistirRefeicoes(atualizadas);
     setTermoBusca('');
     setModalVisivel(false);
+  };
+
+  const alternarConclusaoRefeicao = async (id: string) => {
+    const atualizadas = refeicoes.map(r => (r.id === id ? { ...r, concluida: !r.concluida } : r));
+    await persistirRefeicoes(atualizadas);
+  };
+
+  const removerAlimento = async (idRefeicao: string, idAlimento: string) => {
+    const atualizadas = refeicoes.map(r => {
+      if (r.id === idRefeicao) {
+        return { ...r, alimentos: r.alimentos.filter(a => a.id !== idAlimento) };
+      }
+      return r;
+    });
+    await persistirRefeicoes(atualizadas);
   };
 
   return (
@@ -128,7 +185,6 @@ export default function TelaDieta() {
           <Text style={estilos.topBarTitulo}>Refeições</Text>
 
           <View style={estilos.topBarDireita}>
-            {/* Badge de Streak com raio amarelo da SF Symbols */}
             <View style={estilos.streakBadge}>
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
@@ -140,7 +196,7 @@ export default function TelaDieta() {
           </View>
         </View>
 
-        {/* ── Carrossel Semanal de Dias (em PT-BR, texto limpo) ── */}
+        {/* ── Carrossel Semanal de Dias ─────────────────────── */}
         <View style={estilos.carrosselContainer}>
           {DIAS_SEMANA.map((dia) => {
             const sel = dia.data === diaSelecionado;
@@ -206,42 +262,68 @@ export default function TelaDieta() {
           </View>
         </View>
 
-        {/* ── Refeições (Sem Borda Cinza) ──────────────────────── */}
-        {refeicoes.map((ref) => (
-          <CardVidro key={ref.id} semBorda estilo={estilos.cardRefeicaoSemBorda}>
-            {/* Header da refeição */}
-            <View style={estilos.headerRefeicao}>
-              <View style={estilos.iconeSquare}>
-                <SymbolView name="fork.knife" size={16} tintColor="#FFFFFF" weight="semibold" />
-              </View>
+        {/* ── Refeições ─────────────────────────────────────── */}
+        {refeicoes.map((ref) => {
+          const calRef = ref.alimentos.reduce((s, a) => s + a.calorias, 0);
 
-              <View style={{ flex: 1 }}>
-                <Text style={estilos.nomeRefeicao}>{ref.nome}</Text>
-                <Text style={estilos.horarioRefeicao}>{ref.horario}</Text>
-              </View>
+          return (
+            <CardVidro key={ref.id} semBorda estilo={estilos.cardRefeicaoSemBorda}>
+              {/* Header da refeição */}
+              <View style={estilos.headerRefeicao}>
+                <TouchableOpacity
+                  onPress={() => alternarConclusaoRefeicao(ref.id)}
+                  activeOpacity={0.7}
+                  style={estilos.iconeSquare}
+                >
+                  <SymbolView
+                    name={ref.concluida ? 'checkmark.circle.fill' : 'circle'}
+                    size={20}
+                    tintColor={ref.concluida ? '#10B981' : Cores.texto.secundario}
+                  />
+                </TouchableOpacity>
 
-              <TouchableOpacity style={estilos.btnOpcoes}>
-                <SymbolView name="ellipsis" size={18} tintColor={Cores.texto.secundario} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Alimentos dentro da refeição */}
-            {ref.alimentos.map((ali) => (
-              <View key={ali.id} style={estilos.linhaAlimento}>
                 <View style={{ flex: 1 }}>
-                  <Text style={estilos.alimentoNome}>{ali.nome}</Text>
-                  <Text style={estilos.alimentoPorcao}>{ali.porcao}</Text>
+                  <Text style={estilos.nomeRefeicao}>{ref.nome}</Text>
+                  <Text style={estilos.horarioRefeicao}>{calRef > 0 ? `${calRef} kcal` : ref.horario}</Text>
                 </View>
-                <Text style={estilos.alimentoMacros}>
-                  {ali.proteinas}P {ali.carbos}C {ali.gorduras}G
-                </Text>
+
+                <TouchableOpacity
+                  style={estilos.btnOpcoes}
+                  onPress={() => {
+                    setRefeicaoAlvo(ref.id);
+                    setModalVisivel(true);
+                  }}
+                >
+                  <SymbolView name="plus" size={16} tintColor={Cores.accent} weight="bold" />
+                </TouchableOpacity>
               </View>
-            ))}
-          </CardVidro>
-        ))}
+
+              {/* Alimentos dentro da refeição */}
+              {ref.alimentos.map((ali) => (
+                <View key={ali.id} style={estilos.linhaAlimento}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={estilos.alimentoNome}>{ali.nome}</Text>
+                    <Text style={estilos.alimentoPorcao}>{ali.porcao}</Text>
+                  </View>
+
+                  <Text style={estilos.alimentoMacros}>
+                    {ali.proteinas}P {ali.carbos}C {ali.gorduras}G
+                  </Text>
+
+                  <TouchableOpacity
+                    onPress={() => removerAlimento(ref.id, ali.id)}
+                    style={estilos.btnRemoverAlimento}
+                  >
+                    <SymbolView name="trash" size={14} tintColor={Cores.texto.desabilitado} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </CardVidro>
+          );
+        })}
       </ScrollView>
 
-      {/* ── FAB de Incluir Refeição (Quadrado Arredondado Amarelo) ── */}
+      {/* ── FAB de Incluir Refeição ─────────────────────────── */}
       <TouchableOpacity
         style={estilos.fabAmarelo}
         onPress={() => { setRefeicaoAlvo('ref-1'); setModalVisivel(true); }}
@@ -269,7 +351,7 @@ export default function TelaDieta() {
 
             <TextInput
               style={estilos.inputBusca}
-              placeholder="Nome do alimento..."
+              placeholder="Nome do alimento (ex: Ovos, Arroz...)"
               placeholderTextColor={Cores.texto.desabilitado}
               value={termoBusca}
               onChangeText={setTermoBusca}
@@ -312,7 +394,6 @@ const estilos = StyleSheet.create({
     paddingBottom: 120,
   },
 
-  // Top Bar
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -354,7 +435,6 @@ const estilos = StyleSheet.create({
     color: Cores.texto.principal,
   },
 
-  // Carrossel de Dias (PT-BR)
   carrosselContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -388,7 +468,6 @@ const estilos = StyleSheet.create({
     color: Cores.texto.principal,
   },
 
-  // Metas Diárias
   secaoMetas: {
     marginBottom: 28,
   },
@@ -406,8 +485,8 @@ const estilos = StyleSheet.create({
     borderRadius: 1,
   },
 
-  // Card Refeição (Sem Borda Cinza)
   cardRefeicaoSemBorda: {
+    marginBottom: 16,
     padding: Espacamento.lg,
     borderWidth: 0,
     marginHorizontal: -20,
@@ -425,7 +504,6 @@ const estilos = StyleSheet.create({
     backgroundColor: Cores.fundo.elevada,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 0,
   },
   nomeRefeicao: {
     fontFamily: FamiliaFonte.bold,
@@ -440,7 +518,7 @@ const estilos = StyleSheet.create({
     marginTop: 2,
   },
   btnOpcoes: {
-    padding: 4,
+    padding: 6,
   },
   linhaAlimento: {
     flexDirection: 'row',
@@ -449,6 +527,7 @@ const estilos = StyleSheet.create({
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: Cores.borda.sutil,
+    gap: 8,
   },
   alimentoNome: {
     fontFamily: FamiliaFonte.semibold,
@@ -464,12 +543,14 @@ const estilos = StyleSheet.create({
   },
   alimentoMacros: {
     fontFamily: FamiliaFonte.bold,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
+  btnRemoverAlimento: {
+    padding: 4,
+  },
 
-  // FAB Amarelo
   fabAmarelo: {
     position: 'absolute',
     bottom: 96,
@@ -492,7 +573,6 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',

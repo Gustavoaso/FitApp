@@ -2,23 +2,34 @@
 // TELA: Dashboard / Início (app/(tabs)/inicio.tsx)
 // ============================================================
 // Clean Dark UI — referência Oura / WHOOP / Fitbod.
-// Hierarquia clara: saudação compacta → métricas → hidratação → treino.
-// Sem emojis, sem glow colorido, única accent color (#3B82F6).
+// Resumo do Dia, Progresso de Peso (SVG Chart), Aderência e Próximo Treino.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  TextInput,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
+import { BlurView } from 'expo-blur';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '../../componentes/ui';
+import { CardAderencia } from '../../componentes/ui/CardAderencia';
+import { GraficoEvolucao, PontoGrafico } from '../../componentes/ui/GraficoEvolucao';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import {
+  obterHistoricoPeso,
+  adicionarEntradaPeso,
+  calcularAderenciaSemanal,
+  EstatisticasAderencia,
+} from '../../servicos/progressoServico';
 
 export default function TelaInicio() {
   const router = useRouter();
@@ -38,6 +49,20 @@ export default function TelaInicio() {
   const [coposAgua, setCoposAgua] = useState(5);
   const totalCopos = 8;
 
+  // Estados de progresso
+  const [dadosGraficoPeso, setDadosGraficoPeso] = useState<PontoGrafico[]>([]);
+  const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia>({
+    diasTreinados: 4,
+    metaDiasTreino: 5,
+    refeicoesConcluidas: 18,
+    totalRefeicoesPrevistas: 21,
+    porcentagemAderenciaGeral: 88,
+  });
+
+  // Modal registrar peso
+  const [modalPesoVisivel, setModalPesoVisivel] = useState(false);
+  const [novoPesoStr, setNovoPesoStr] = useState('85.0');
+
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -45,24 +70,60 @@ export default function TelaInicio() {
 
   const porcentagemCalorias = Math.round((caloriasConsumidas / caloriasMeta) * 100);
 
+  useEffect(() => {
+    carregarDadosProgresso();
+  }, []);
+
+  const carregarDadosProgresso = async () => {
+    const historicoPesos = await obterHistoricoPeso();
+    const pontos: PontoGrafico[] = historicoPesos.map(p => ({
+      label: p.data.slice(8, 10) + '/' + p.data.slice(5, 7),
+      valor: p.pesoKg,
+    }));
+    setDadosGraficoPeso(pontos);
+
+    const stats = await calcularAderenciaSemanal();
+    setEstatisticas(stats);
+  };
+
+  const lidarComSalvarPeso = async () => {
+    const valor = parseFloat(novoPesoStr.replace(',', '.'));
+    if (!isNaN(valor) && valor > 30 && valor < 300) {
+      const atualizados = await adicionarEntradaPeso(valor);
+      const pontos: PontoGrafico[] = atualizados.map(p => ({
+        label: p.data.slice(8, 10) + '/' + p.data.slice(5, 7),
+        valor: p.pesoKg,
+      }));
+      setDadosGraficoPeso(pontos);
+    }
+    setModalPesoVisivel(false);
+  };
+
   return (
     <View style={estilos.container}>
-      <ScrollView
-        contentContainerStyle={estilos.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Cabeçalho ─────────────────────────────────────── */}
-        <View style={estilos.cabecalho}>
+      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+
+        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        <View style={estilos.topBar}>
           <View>
             <Text style={estilos.saudacao}>{saudacao}</Text>
             <Text style={estilos.dataAtual}>{diasemana}</Text>
           </View>
+
+          <View style={estilos.topBarDireita}>
+            <View style={estilos.streakBadge}>
+              <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
+              <Text style={estilos.streakTexto}>1</Text>
+            </View>
+            <TouchableOpacity style={estilos.topBarIcone} onPress={() => router.push('/perfil')}>
+              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Card Principal: Calorias (compacto) ──────────── */}
-        <CardVidro estilo={estilos.cardCalorias}>
+        <CardVidro semBorda estilo={estilos.cardCalorias}>
           <View style={estilos.rowCalorias}>
-            {/* Anel menor — não dominando a tela */}
             <AnelProgresso
               atual={caloriasConsumidas}
               meta={caloriasMeta}
@@ -76,7 +137,6 @@ export default function TelaInicio() {
               <Text style={estilos.valorCalorias}>{caloriasConsumidas.toLocaleString()}</Text>
               <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
 
-              {/* Barra de progresso fina */}
               <View style={estilos.barraFundo}>
                 <View
                   style={[
@@ -94,11 +154,11 @@ export default function TelaInicio() {
         <Text style={estilos.secaoTitulo}>Macronutrientes</Text>
         <View style={estilos.gridMacros}>
           {[
-        { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
-          { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
-          { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
+            { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
+            { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
+            { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
           ].map((macro, i) => (
-            <CardVidro key={i} estilo={estilos.cardMacro}>
+            <CardVidro key={i} semBorda estilo={estilos.cardMacro}>
               <View style={estilos.rowMacroTopo}>
                 {macro.icone}
                 <Text style={estilos.macroNome}>{macro.nome}</Text>
@@ -117,9 +177,24 @@ export default function TelaInicio() {
           ))}
         </View>
 
+        {/* ── Painel de Aderência Semanal Real ─────────────── */}
+        <CardAderencia estatisticas={estatisticas} />
+
+        {/* ── Gráfico de Evolução de Peso ───────────────────── */}
+        <CardVidro semBorda estilo={estilos.cardEvolucao}>
+          <View style={estilos.headerEvolucao}>
+            <Text style={estilos.tituloEvolucao}>Evolução de Peso</Text>
+            <TouchableOpacity style={estilos.btnNovoPeso} onPress={() => setModalPesoVisivel(true)}>
+              <SymbolView name="plus" size={12} tintColor={Cores.accent} weight="bold" />
+              <Text style={estilos.txtNovoPeso}>Registrar</Text>
+            </TouchableOpacity>
+          </View>
+          <GraficoEvolucao dados={dadosGraficoPeso} unidade="kg" altura={130} />
+        </CardVidro>
+
         {/* ── Hidratação ────────────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Hidratação</Text>
-        <CardVidro estilo={estilos.cardAgua}>
+        <CardVidro semBorda estilo={estilos.cardAgua}>
           <View style={estilos.rowAguaTopo}>
             <View style={estilos.rowAguaInfo}>
               <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
@@ -158,7 +233,7 @@ export default function TelaInicio() {
 
         {/* ── Próxima Sessão de Treino ──────────────────────── */}
         <Text style={estilos.secaoTitulo}>Próxima Sessão</Text>
-        <CardVidro estilo={estilos.cardTreino}>
+        <CardVidro semBorda estilo={estilos.cardTreino}>
           <View style={estilos.rowTreino}>
             <View style={estilos.colTreino}>
               <Text style={estilos.badgeTreino}>HOJE</Text>
@@ -171,12 +246,42 @@ export default function TelaInicio() {
           </View>
 
           <BotaoPrimario
-            texto="Iniciar Treino"
+            texto="Iniciar Treino ao Vivo"
             aoPresionar={() => router.push('/treino-ao-vivo')}
             estilo={estilos.botaoIniciar}
           />
         </CardVidro>
       </ScrollView>
+
+      {/* ── Modal Registrar Peso ────────────────────────────── */}
+      <Modal visible={modalPesoVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalPesoVisivel(false)} />
+          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <View style={estilos.modalHandle} />
+            <Text style={estilos.modalTitulo}>Registrar Peso Atual</Text>
+
+            <TextInput
+              style={estilos.input}
+              placeholder="Peso em kg (ex: 85.0)"
+              placeholderTextColor={Cores.texto.desabilitado}
+              keyboardType="decimal-pad"
+              value={novoPesoStr}
+              onChangeText={setNovoPesoStr}
+              autoFocus
+            />
+
+            <View style={estilos.modalAcoes}>
+              <TouchableOpacity onPress={() => setModalPesoVisivel(false)} style={estilos.btnCancelar}>
+                <Text style={estilos.txtCancelar}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={lidarComSalvarPeso} style={estilos.btnSalvar}>
+                <Text style={estilos.txtSalvar}>Salvar Peso</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -192,8 +297,10 @@ const estilos = StyleSheet.create({
     paddingBottom: 120,
   },
 
-  // Cabeçalho
-  cabecalho: {
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 24,
   },
   saudacao: {
@@ -208,10 +315,38 @@ const estilos = StyleSheet.create({
     color: Cores.texto.secundario,
     marginTop: 3,
   },
+  topBarIcone: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topBarDireita: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Cores.fundo.superficie,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Raio.full,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  streakTexto: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 13,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
 
-  // Card Calorias
   cardCalorias: {
-    marginBottom: 24,
+    marginBottom: 20,
+    marginHorizontal: -20,
   },
   rowCalorias: {
     flexDirection: 'row',
@@ -261,7 +396,6 @@ const estilos = StyleSheet.create({
     color: Cores.texto.secundario,
   },
 
-  // Macros
   secaoTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
@@ -270,12 +404,12 @@ const estilos = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: Espacamento.md,
-    marginTop: 4,
+    marginTop: 12,
   },
   gridMacros: {
     flexDirection: 'row',
     gap: Espacamento.sm,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   cardMacro: {
     flex: 1,
@@ -290,17 +424,18 @@ const estilos = StyleSheet.create({
   macroNome: {
     fontSize: Fonte.micro,
     color: Cores.texto.secundario,
-    fontWeight: PesoFonte.medio,
+    fontFamily: FamiliaFonte.regular,
   },
   macroValor: {
     fontSize: 18,
+    fontFamily: FamiliaFonte.bold,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   macroUnidade: {
     fontSize: Fonte.micro,
     color: Cores.texto.secundario,
-    fontWeight: PesoFonte.regular,
+    fontFamily: FamiliaFonte.regular,
   },
   barraFundoMacro: {
     height: 2,
@@ -318,11 +453,44 @@ const estilos = StyleSheet.create({
   macroMeta: {
     fontSize: Fonte.micro,
     color: Cores.texto.desabilitado,
+    fontFamily: FamiliaFonte.regular,
   },
 
-  // Água
+  cardEvolucao: {
+    marginVertical: 12,
+    marginHorizontal: -20,
+    padding: 16,
+  },
+  headerEvolucao: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tituloEvolucao: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 15,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
+  btnNovoPeso: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Cores.fundo.elevada,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  txtNovoPeso: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 11,
+    color: Cores.accent,
+  },
+
   cardAgua: {
-    marginBottom: 24,
+    marginBottom: 16,
+    marginHorizontal: -20,
   },
   rowAguaTopo: {
     flexDirection: 'row',
@@ -336,17 +504,17 @@ const estilos = StyleSheet.create({
     gap: 6,
   },
   aguaLabel: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.semibold,
     color: Cores.texto.principal,
   },
   aguaValor: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
     color: Cores.accent,
   },
   aguaUnidade: {
-    fontWeight: PesoFonte.regular,
+    fontFamily: FamiliaFonte.regular,
     color: Cores.texto.secundario,
     fontSize: Fonte.label,
   },
@@ -378,18 +546,19 @@ const estilos = StyleSheet.create({
     borderRadius: Raio.sm,
   },
   textoBotaoMaisAgua: {
+    fontFamily: FamiliaFonte.semibold,
     fontSize: Fonte.label,
     color: Cores.accent,
-    fontWeight: PesoFonte.semibold,
   },
   textoCoposAgua: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
     color: Cores.texto.desabilitado,
   },
 
-  // Card Treino
   cardTreino: {
     marginBottom: 24,
+    marginHorizontal: -20,
   },
   rowTreino: {
     flexDirection: 'row',
@@ -401,18 +570,19 @@ const estilos = StyleSheet.create({
     flex: 1,
   },
   badgeTreino: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.micro,
-    fontWeight: PesoFonte.bold,
     color: Cores.accent,
     letterSpacing: 1,
     marginBottom: 4,
   },
   treinoTitulo: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.semibold,
     color: Cores.texto.principal,
   },
   treinoSub: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
     marginTop: 3,
@@ -426,6 +596,47 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   botaoIniciar: {
-    // margem herdada
+    marginTop: 12,
   },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  modalHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Cores.borda.forte,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalCard: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    backgroundColor: 'rgba(16,19,24,0.97)',
+    borderTopWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  modalTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.subtitulo,
+    color: Cores.texto.principal,
+    marginBottom: 16,
+  },
+  input: {
+    backgroundColor: Cores.fundo.elevada,
+    borderWidth: 1,
+    borderColor: Cores.borda.media,
+    borderRadius: Raio.md,
+    padding: 12,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
+    marginBottom: 20,
+  },
+  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+  btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
+  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: Cores.texto.secundario, fontSize: Fonte.corpo },
+  btnSalvar: { backgroundColor: Cores.accent, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
+  txtSalvar: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: Fonte.corpo },
 });
