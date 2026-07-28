@@ -1,9 +1,7 @@
 // ============================================================
 // TELA: Dieta / Nutrição (app/(tabs)/dieta.tsx)
 // ============================================================
-// Clean Dark UI — referência Cronometer / Lose It / Oura / Apple HIG.
-// Carrossel semanal + metas com 4 anéis interligados (o-o-o-o) + refeições.
-// Sem emojis, accent branco (#FFFFFF), SF Pro typography.
+// Clean Dark UI — réplica ajustada (pt-BR, SF Symbols, SF Compact Rounded).
 // ============================================================
 
 import React, { useState } from 'react';
@@ -22,7 +20,7 @@ import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '../../componentes/ui';
 import { AnelProgresso } from '../../componentes/ui/AnelProgresso';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 
 interface Alimento {
   id: string;
@@ -43,13 +41,13 @@ interface Refeicao {
 }
 
 const DIAS_SEMANA = [
-  { abrev: 'D', diaNum: '26', data: '2026-07-26' },
-  { abrev: 'S', diaNum: '27', data: '2026-07-27' },
-  { abrev: 'T', diaNum: '28', data: '2026-07-28' },
-  { abrev: 'Q', diaNum: '29', data: '2026-07-29' },
-  { abrev: 'Q', diaNum: '30', data: '2026-07-30' },
-  { abrev: 'S', diaNum: '31', data: '2026-07-31' },
-  { abrev: 'S', diaNum: '01', data: '2026-08-01' },
+  { abrev: 'dom', diaNum: '26', data: '2026-07-26' },
+  { abrev: 'seg', diaNum: '27', data: '2026-07-27' },
+  { abrev: 'ter', diaNum: '28', data: '2026-07-28' },
+  { abrev: 'qua', diaNum: '29', data: '2026-07-29' },
+  { abrev: 'qui', diaNum: '30', data: '2026-07-30' },
+  { abrev: 'sex', diaNum: '31', data: '2026-07-31' },
+  { abrev: 'sáb', diaNum: '01', data: '2026-08-01' },
 ];
 
 export default function TelaDieta() {
@@ -63,45 +61,22 @@ export default function TelaDieta() {
   const [refeicoes, setRefeicoes] = useState<Refeicao[]>([
     {
       id: 'ref-1',
-      nome: 'Café da Manhã',
-      horario: '07:30',
+      nome: 'Refeição 1',
+      horario: '131 kcal',
       concluida: true,
       alimentos: [
         { id: 'a1', nome: 'Ovos Mexidos', porcao: '3 un · 150g', calorias: 215, proteinas: 18, carbos: 2, gorduras: 15 },
         { id: 'a2', nome: 'Pão Integral', porcao: '2 fatias · 50g', calorias: 130, proteinas: 6, carbos: 24, gorduras: 2 },
-        { id: 'a3', nome: 'Café preto', porcao: '200ml', calorias: 5, proteinas: 0, carbos: 1, gorduras: 0 },
       ],
     },
     {
       id: 'ref-2',
-      nome: 'Almoço',
-      horario: '12:30',
+      nome: 'Refeição 2',
+      horario: '624 kcal',
       concluida: true,
       alimentos: [
         { id: 'a4', nome: 'Peito de Frango Grelhado', porcao: '180g', calorias: 297, proteinas: 56, carbos: 0, gorduras: 6 },
-        { id: 'a5', nome: 'Arroz Integral', porcao: '150g', calorias: 186, proteinas: 4, carbos: 38, gorduras: 2 },
-        { id: 'a6', nome: 'Feijão Carioca', porcao: '100g', calorias: 76, proteinas: 5, carbos: 14, gorduras: 1 },
-        { id: 'a7', nome: 'Salada + Azeite', porcao: '80g', calorias: 65, proteinas: 1, carbos: 3, gorduras: 6 },
-      ],
-    },
-    {
-      id: 'ref-3',
-      nome: 'Lanche da Tarde',
-      horario: '16:30',
-      concluida: false,
-      alimentos: [
-        { id: 'a8', nome: 'Whey Protein', porcao: '1 scoop · 30g', calorias: 120, proteinas: 25, carbos: 2, gorduras: 1 },
-        { id: 'a9', nome: 'Banana Prata', porcao: '1 un · 90g', calorias: 89, proteinas: 1, carbos: 23, gorduras: 0 },
-      ],
-    },
-    {
-      id: 'ref-4',
-      nome: 'Jantar',
-      horario: '20:00',
-      concluida: false,
-      alimentos: [
-        { id: 'a10', nome: 'Salmão Grelhado', porcao: '150g', calorias: 310, proteinas: 34, carbos: 0, gorduras: 18 },
-        { id: 'a11', nome: 'Batata Doce Assada', porcao: '150g', calorias: 129, proteinas: 2, carbos: 30, gorduras: 0 },
+        { id: 'a5', nome: 'Feijão Carioca', porcao: '100g', calorias: 76, proteinas: 5, carbos: 14, gorduras: 1 },
       ],
     },
   ]);
@@ -123,10 +98,6 @@ export default function TelaDieta() {
     { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 }
   );
 
-  const alternarRefeicao = (id: string) => {
-    setRefeicoes(prev => prev.map(r => (r.id === id ? { ...r, concluida: !r.concluida } : r)));
-  };
-
   const adicionarAlimento = () => {
     const novo: Alimento = {
       id: `a-${Date.now()}`,
@@ -138,7 +109,7 @@ export default function TelaDieta() {
       gorduras: 4,
     };
     setRefeicoes(prev =>
-      prev.map(r => (r.id === (refeicaoAlvo || 'ref-3') ? { ...r, alimentos: [...r.alimentos, novo] } : r))
+      prev.map(r => (r.id === (refeicaoAlvo || 'ref-1') ? { ...r, alimentos: [...r.alimentos, novo] } : r))
     );
     setTermoBusca('');
     setModalVisivel(false);
@@ -148,19 +119,29 @@ export default function TelaDieta() {
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Cabeçalho ─────────────────────────────────────── */}
-        <View style={estilos.cabecalho}>
-          <Text style={estilos.titulo}>Nutrição</Text>
-          <Text style={estilos.subtitulo}>Plano alimentar diário</Text>
+        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        <View style={estilos.topBar}>
+          <TouchableOpacity style={estilos.topBarIcone}>
+            <SymbolView name="magnifyingglass" size={20} tintColor="#FFFFFF" weight="semibold" />
+          </TouchableOpacity>
+
+          <Text style={estilos.topBarTitulo}>Refeições</Text>
+
+          <View style={estilos.topBarDireita}>
+            {/* Badge de Streak com raio amarelo da SF Symbols */}
+            <View style={estilos.streakBadge}>
+              <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
+              <Text style={estilos.streakTexto}>1</Text>
+            </View>
+
+            <TouchableOpacity style={estilos.topBarIcone}>
+              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* ── Carrossel semanal ─────────────────────────────── */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={estilos.scrollDias}
-          style={estilos.scrollDiasWrapper}
-        >
+        {/* ── Carrossel Semanal de Dias (em PT-BR, texto limpo) ── */}
+        <View style={estilos.carrosselContainer}>
           {DIAS_SEMANA.map((dia) => {
             const sel = dia.data === diaSelecionado;
             return (
@@ -168,139 +149,106 @@ export default function TelaDieta() {
                 key={dia.data}
                 onPress={() => setDiaSelecionado(dia.data)}
                 activeOpacity={0.7}
-                style={[estilos.cardDia, sel && estilos.cardDiaSelecionado]}
+                style={estilos.itemDia}
               >
-                <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>{dia.abrev}</Text>
-                <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>{dia.diaNum}</Text>
+                <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>
+                  {dia.abrev}
+                </Text>
+                <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>
+                  {dia.diaNum}
+                </Text>
               </TouchableOpacity>
             );
           })}
-        </ScrollView>
+        </View>
 
-        {/* ── Metas Diárias (anéis interligados o-o-o-o) ──── */}
+        {/* ── Metas Diárias (Aneis + Linha Interconectada o-o-o-o) ── */}
         <View style={estilos.secaoMetas}>
-          <View style={estilos.metasTopo}>
-            <Text style={estilos.secaoTitulo}>Metas Diárias</Text>
-            <Text style={estilos.metasPorcentagem}>
-              {Math.round((totais.calorias / metaCalorias) * 100)}%
-            </Text>
-          </View>
-
-          {/* Grid dos anéis intercalados por segmentos de linha de conexão */}
           <View style={estilos.gridAneisComLinhas}>
             <AnelProgresso
-              titulo="Cal"
+              titulo="Calorias"
               atual={totais.calorias}
               meta={metaCalorias}
-              tamanho={56}
+              tamanho={60}
               espessura={4}
+              mostrarRestante={true}
             />
             <View style={estilos.segmentoLinha} />
             <AnelProgresso
-              titulo="Prot"
+              titulo="Proteína"
               atual={totais.proteinas}
               meta={metaProteinas}
               unidade="g"
-              tamanho={56}
+              tamanho={60}
               espessura={4}
+              mostrarRestante={true}
             />
             <View style={estilos.segmentoLinha} />
             <AnelProgresso
-              titulo="Carb"
+              titulo="Carbos"
               atual={totais.carbos}
               meta={metaCarbos}
               unidade="g"
-              tamanho={56}
+              tamanho={60}
               espessura={4}
+              mostrarRestante={true}
             />
             <View style={estilos.segmentoLinha} />
             <AnelProgresso
-              titulo="Gord"
+              titulo="Gordura"
               atual={totais.gorduras}
               meta={metaGorduras}
               unidade="g"
-              tamanho={56}
+              tamanho={60}
               espessura={4}
+              mostrarRestante={true}
             />
           </View>
         </View>
 
-        {/* ── Refeições ─────────────────────────────────────── */}
-        <Text style={[estilos.secaoTitulo, { marginTop: 4 }]}>Refeições</Text>
-
-        {refeicoes.map((ref) => {
-          const calRef = ref.alimentos.reduce((s, a) => s + a.calorias, 0);
-          const protRef = ref.alimentos.reduce((s, a) => s + a.proteinas, 0);
-          const carbRef = ref.alimentos.reduce((s, a) => s + a.carbos, 0);
-          const gordRef = ref.alimentos.reduce((s, a) => s + a.gorduras, 0);
-
-          return (
-            <CardVidro key={ref.id} estilo={estilos.cardRefeicao}>
-              {/* Header da refeição */}
-              <View style={estilos.headerRefeicao}>
-                <TouchableOpacity
-                  onPress={() => alternarRefeicao(ref.id)}
-                  activeOpacity={0.7}
-                  style={[estilos.checkbox, ref.concluida && estilos.checkboxAtivo]}
-                >
-                  {ref.concluida && (
-                    <SymbolView
-                      name="checkmark"
-                      size={11}
-                      tintColor="#080A0E"
-                      weight="bold"
-                    />
-                  )}
-                </TouchableOpacity>
-
-                <View style={{ flex: 1 }}>
-                  <Text style={estilos.nomeRefeicao}>{ref.nome}</Text>
-                  <Text style={estilos.horarioRefeicao}>{ref.horario}</Text>
-                </View>
-
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={estilos.calRefeicao}>{calRef} kcal</Text>
-                  <Text style={estilos.macrosRefeicao}>P{protRef} · C{carbRef} · G{gordRef}</Text>
-                </View>
+        {/* ── Refeições (Sem Borda Cinza) ──────────────────────── */}
+        {refeicoes.map((ref) => (
+          <CardVidro key={ref.id} semBorda estilo={estilos.cardRefeicaoSemBorda}>
+            {/* Header da refeição */}
+            <View style={estilos.headerRefeicao}>
+              <View style={estilos.iconeSquare}>
+                <SymbolView name="fork.knife" size={16} tintColor="#FFFFFF" weight="semibold" />
               </View>
 
-              {/* Divisor */}
-              <View style={estilos.divisor} />
+              <View style={{ flex: 1 }}>
+                <Text style={estilos.nomeRefeicao}>{ref.nome}</Text>
+                <Text style={estilos.horarioRefeicao}>{ref.horario}</Text>
+              </View>
 
-              {/* Alimentos */}
-              {ref.alimentos.map((ali) => (
-                <View key={ali.id} style={estilos.linhaAlimento}>
-                  <View style={estilos.pontoAlimento} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={estilos.alimentoNome}>{ali.nome}</Text>
-                    <Text style={estilos.alimentoPorcao}>{ali.porcao}</Text>
-                  </View>
-                  <Text style={estilos.alimentoCal}>{ali.calorias}</Text>
-                </View>
-              ))}
-
-              {/* Botão adicionar */}
-              <TouchableOpacity
-                style={estilos.botaoAdicionar}
-                onPress={() => { setRefeicaoAlvo(ref.id); setModalVisivel(true); }}
-                activeOpacity={0.7}
-              >
-                <SymbolView name="plus" size={12} tintColor={Cores.accent} weight="semibold" />
-                <Text style={estilos.textoBotaoAdicionar}>Adicionar</Text>
+              <TouchableOpacity style={estilos.btnOpcoes}>
+                <SymbolView name="ellipsis" size={18} tintColor={Cores.texto.secundario} />
               </TouchableOpacity>
-            </CardVidro>
-          );
-        })}
+            </View>
+
+            {/* Alimentos dentro da refeição */}
+            {ref.alimentos.map((ali) => (
+              <View key={ali.id} style={estilos.linhaAlimento}>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.alimentoNome}>{ali.nome}</Text>
+                  <Text style={estilos.alimentoPorcao}>{ali.porcao}</Text>
+                </View>
+                <Text style={estilos.alimentoMacros}>
+                  {ali.proteinas}P {ali.carbos}C {ali.gorduras}G
+                </Text>
+              </View>
+            ))}
+          </CardVidro>
+        ))}
       </ScrollView>
 
-      {/* ── FAB de Registrar Alimento (Quadrado Arredondado Amarelo) ── */}
+      {/* ── FAB de Incluir Refeição (Quadrado Arredondado Amarelo) ── */}
       <TouchableOpacity
-        style={estilos.fab}
-        onPress={() => { setRefeicaoAlvo('ref-3'); setModalVisivel(true); }}
+        style={estilos.fabAmarelo}
+        onPress={() => { setRefeicaoAlvo('ref-1'); setModalVisivel(true); }}
         activeOpacity={0.85}
       >
-        <View style={estilos.fabInner}>
-          <SymbolView name="plus" size={24} tintColor="#FFFFFF" weight="bold" />
+        <View style={estilos.fabInnerAmarelo}>
+          <SymbolView name="plus" size={26} tintColor="#FFFFFF" weight="bold" />
         </View>
       </TouchableOpacity>
 
@@ -364,41 +312,86 @@ const estilos = StyleSheet.create({
     paddingBottom: 120,
   },
 
-  cabecalho: { marginBottom: 20 },
-  titulo: { fontSize: Fonte.titulo, fontWeight: PesoFonte.semibold, color: Cores.texto.principal },
-  subtitulo: { fontSize: Fonte.label, color: Cores.texto.secundario, marginTop: 3 },
-
-  scrollDiasWrapper: { marginBottom: 24 },
-  scrollDias: { gap: 8 },
-  cardDia: {
-    width: 44,
-    height: 60,
-    borderRadius: Raio.md,
-    backgroundColor: Cores.fundo.superficie,
-    borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+  // Top Bar
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  topBarTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 20,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
+  topBarIcone: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardDiaSelecionado: {
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-    borderColor: Cores.accent,
-    borderWidth: 1.5,
+  topBarDireita: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  diaAbrev: { fontSize: 10, fontWeight: PesoFonte.semibold, color: Cores.texto.desabilitado },
-  diaNum: { fontSize: 16, fontWeight: PesoFonte.bold, color: Cores.texto.secundario, marginTop: 3 },
-  diaAbrevSelecionado: { color: 'rgba(255, 255, 255, 0.7)' },
-  diaNumSelecionado: { color: '#FFFFFF' },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Cores.fundo.superficie,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: Raio.full,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  streakTexto: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 13,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
 
-  secaoMetas: { marginBottom: 28 },
-  metasTopo: {
+  // Carrossel de Dias (PT-BR)
+  carrosselContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 28,
+    paddingHorizontal: 4,
   },
-  metasPorcentagem: { fontSize: Fonte.label, color: Cores.accent, fontWeight: PesoFonte.semibold },
+  itemDia: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  diaAbrev: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 13,
+    color: Cores.texto.desabilitado,
+    marginBottom: 6,
+  },
+  diaAbrevSelecionado: {
+    fontFamily: FamiliaFonte.semibold,
+    color: Cores.texto.principal,
+  },
+  diaNum: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 17,
+    color: Cores.texto.desabilitado,
+  },
+  diaNumSelecionado: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 20,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
 
+  // Metas Diárias
+  secaoMetas: {
+    marginBottom: 28,
+  },
   gridAneisComLinhas: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -407,84 +400,90 @@ const estilos = StyleSheet.create({
   segmentoLinha: {
     flex: 1,
     height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    marginTop: 45,
+    backgroundColor: 'rgba(255, 255, 255, 0.20)',
+    marginTop: 56,
     marginHorizontal: 2,
     borderRadius: 1,
   },
 
-  secaoTitulo: {
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.semibold,
-    color: Cores.texto.secundario,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: Espacamento.md,
+  // Card Refeição (Sem Borda Cinza)
+  cardRefeicaoSemBorda: {
+    padding: Espacamento.lg,
+    borderWidth: 0,
+    marginHorizontal: -20,
   },
-
-  cardRefeicao: { marginBottom: Espacamento.sm, padding: Espacamento.md },
-  headerRefeicao: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  checkbox: {
-    width: 20,
-    height: 20,
+  headerRefeicao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 14,
+  },
+  iconeSquare: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: Cores.borda.media,
+    backgroundColor: Cores.fundo.elevada,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 0,
   },
-  checkboxAtivo: {
-    backgroundColor: Cores.accent,
-    borderColor: Cores.accent,
+  nomeRefeicao: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 16,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
   },
-  nomeRefeicao: { fontSize: Fonte.corpo, fontWeight: PesoFonte.semibold, color: Cores.texto.principal },
-  horarioRefeicao: { fontSize: Fonte.micro, color: Cores.texto.desabilitado, marginTop: 1 },
-  calRefeicao: { fontSize: Fonte.label, fontWeight: PesoFonte.bold, color: Cores.texto.principal },
-  macrosRefeicao: { fontSize: Fonte.micro, color: Cores.texto.desabilitado, marginTop: 1 },
-
-  divisor: { height: 1, backgroundColor: Cores.borda.sutil, marginVertical: 10 },
-
+  horarioRefeicao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 13,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+  btnOpcoes: {
+    padding: 4,
+  },
   linhaAlimento: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 5,
+    justifyContent: 'space-between',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: Cores.borda.sutil,
   },
-  pontoAlimento: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Cores.borda.forte,
+  alimentoNome: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 14,
+    color: Cores.texto.principal,
   },
-  alimentoNome: { fontSize: Fonte.label, color: Cores.texto.principal, fontWeight: PesoFonte.medio },
-  alimentoPorcao: { fontSize: Fonte.micro, color: Cores.texto.desabilitado },
-  alimentoCal: { fontSize: Fonte.label, color: Cores.texto.secundario, fontWeight: PesoFonte.semibold },
+  alimentoPorcao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+  alimentoMacros: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 14,
+    fontWeight: PesoFonte.bold,
+    color: Cores.texto.principal,
+  },
 
-  botaoAdicionar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 10,
-    alignSelf: 'flex-start',
-  },
-  textoBotaoAdicionar: { fontSize: Fonte.micro, color: Cores.accent, fontWeight: PesoFonte.semibold },
-
-  // FAB: Quadrado arredondado com fundo amarelo e "+" em branco
-  fab: {
+  // FAB Amarelo
+  fabAmarelo: {
     position: 'absolute',
     bottom: 96,
     right: 20,
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     overflow: 'hidden',
     shadowColor: Cores.amarelo,
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    elevation: 8,
   },
-  fabInner: {
+  fabInnerAmarelo: {
     width: '100%',
     height: '100%',
     backgroundColor: Cores.amarelo,
@@ -492,6 +491,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -514,8 +514,9 @@ const estilos = StyleSheet.create({
     overflow: 'hidden',
   },
   modalTitulo: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
     marginBottom: 16,
   },
@@ -527,6 +528,7 @@ const estilos = StyleSheet.create({
     padding: 12,
     fontSize: Fonte.corpo,
     color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
     marginBottom: 12,
   },
   resultadoItem: {
@@ -539,17 +541,37 @@ const estilos = StyleSheet.create({
     borderRadius: Raio.md,
     marginBottom: 20,
   },
-  resultadoNome: { fontSize: Fonte.corpo, fontWeight: PesoFonte.semibold, color: Cores.texto.principal },
-  resultadoSub: { fontSize: Fonte.micro, color: Cores.texto.secundario },
-  resultadoCal: { fontSize: Fonte.corpo, fontWeight: PesoFonte.bold, color: Cores.accent },
+  resultadoNome: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  resultadoSub: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.micro,
+    color: Cores.texto.secundario,
+  },
+  resultadoCal: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
   modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
   btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
-  txtCancelar: { color: Cores.texto.secundario, fontWeight: PesoFonte.semibold, fontSize: Fonte.corpo },
+  txtCancelar: {
+    fontFamily: FamiliaFonte.semibold,
+    color: Cores.texto.secundario,
+    fontSize: Fonte.corpo,
+  },
   btnSalvar: {
     backgroundColor: Cores.accent,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: Raio.md,
   },
-  txtSalvar: { color: '#080A0E', fontWeight: PesoFonte.semibold, fontSize: Fonte.corpo },
+  txtSalvar: {
+    fontFamily: FamiliaFonte.bold,
+    color: '#080A0E',
+    fontSize: Fonte.corpo,
+  },
 });

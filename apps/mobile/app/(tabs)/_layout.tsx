@@ -2,8 +2,7 @@
 // LAYOUT: Tab Bar Flutuante (app/(tabs)/_layout.tsx)
 // ============================================================
 // Ícones nativos SF Symbols via expo-symbols (SymbolView).
-// Tab bar centralizada verticalmente, altura correta.
-// Accent branco para tab ativa, cinza-escuro para inativas.
+// Réplica idêntica do design da referência (house, dumbbell, apple, person).
 // ============================================================
 
 import React from 'react';
@@ -12,11 +11,10 @@ import { Platform, View, StyleSheet } from 'react-native';
 import { SymbolView, SymbolViewProps } from 'expo-symbols';
 import { Cores } from '../../constantes/Cores';
 
-// SF Symbol names usados por tab
 const SIMBOLOS = {
   inicio: { inativo: 'house', ativo: 'house.fill' },
   treino: { inativo: 'dumbbell', ativo: 'dumbbell.fill' },
-  dieta: { inativo: 'fork.knife', ativo: 'fork.knife' },
+  dieta: { inativo: 'apple.logo', ativo: 'apple.logo' },
   perfil: { inativo: 'person', ativo: 'person.fill' },
 } as const;
 
@@ -33,7 +31,7 @@ function ItemTab({ focused, simboloInativo, simboloAtivo }: PropsItemTab) {
         name={focused ? simboloAtivo : simboloInativo}
         size={22}
         tintColor={focused ? Cores.accent : Cores.texto.desabilitado}
-        weight={focused ? 'semibold' : 'regular'}
+        weight={focused ? 'bold' : 'regular'}
       />
       {focused && <View style={estilos.pontoAtivo} />}
     </View>
@@ -110,22 +108,20 @@ const TAB_BAR_HEIGHT = 64;
 const estilos = StyleSheet.create({
   tabBar: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 28 : 20,
-    left: 24,
-    right: 24,
+    bottom: Platform.OS === 'ios' ? 24 : 16,
+    left: 20,
+    right: 20,
     height: TAB_BAR_HEIGHT,
     borderRadius: 32,
     borderTopWidth: 0,
-    backgroundColor: '#181C23',
+    backgroundColor: '#0D0E12',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.09)',
-    // Sombra neutra
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
     elevation: 12,
-    // Centralizar conteúdo verticalmente
     paddingBottom: 0,
     paddingTop: 0,
   },

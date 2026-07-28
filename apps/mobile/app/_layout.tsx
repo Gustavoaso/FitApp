@@ -1,12 +1,14 @@
 // ============================================================
 // LAYOUT RAIZ: (app/_layout.tsx)
 // ============================================================
-// Envolve todo o app no AuthProvedor e configura as pilhas de navegação.
+// Envolve todo o app no AuthProvedor, carrega a fonte nativa
+// SF Compact Rounded em todo o aplicativo e configura as pilhas de navegação.
 // ============================================================
 
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
 import { AuthProvedor } from '../contextos/AuthContexto';
 import { Cores } from '../constantes/Cores';
 
@@ -25,9 +27,22 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    'SF-Compact-Rounded-Regular': require('../assets/fonts/SF-Compact-Rounded-Regular.otf'),
+    'SF-Compact-Rounded-Medium': require('../assets/fonts/SF-Compact-Rounded-Medium.otf'),
+    'SF-Compact-Rounded-Semibold': require('../assets/fonts/SF-Compact-Rounded-Semibold.otf'),
+    'SF-Compact-Rounded-Bold': require('../assets/fonts/SF-Compact-Rounded-Bold.otf'),
+  });
+
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <AuthProvedor>

@@ -2,13 +2,13 @@
 // COMPONENTE: AnelProgresso (Progress Ring)
 // ============================================================
 // Indicador circular de progresso em SVG — Clean Dark UI.
-// Stroke fino, cor accent única, sem gradiente colorido, sem glow.
+// Suporta a tipografia arredondada SF Compact Rounded.
 // ============================================================
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Cores, PesoFonte } from '../../constantes/Cores';
+import { Cores, FamiliaFonte, PesoFonte } from '../../constantes/Cores';
 
 export interface PropsAnelProgresso {
   titulo?: string;
@@ -16,12 +16,11 @@ export interface PropsAnelProgresso {
   meta: number;
   unidade?: string;
   cor?: string;
-  corGradienteInicio?: string;
-  corGradienteFim?: string;
   tamanho?: number;
   espessura?: number;
   mostrarRestante?: boolean;
   mostrarValor?: boolean;
+  subtextoCustom?: string;
 }
 
 export function AnelProgresso({
@@ -30,10 +29,11 @@ export function AnelProgresso({
   meta,
   unidade = '',
   cor,
-  tamanho = 80,
+  tamanho = 60,
   espessura = 4,
-  mostrarRestante = false,
+  mostrarRestante = true,
   mostrarValor = true,
+  subtextoCustom,
 }: PropsAnelProgresso) {
   const raio = (tamanho - espessura) / 2;
   const circunferencia = 2 * Math.PI * raio;
@@ -43,18 +43,24 @@ export function AnelProgresso({
   const corStroke = cor || Cores.accent;
   const restante = Math.max(meta - atual, 0);
 
+  const textoAbaixo = subtextoCustom
+    ? subtextoCustom
+    : mostrarRestante
+      ? `${restante}${unidade} restam`
+      : `/${meta}${unidade}`;
+
   return (
     <View style={estilos.container}>
       {titulo ? <Text style={estilos.tituloLabel}>{titulo}</Text> : null}
 
       <View style={[estilos.ringWrapper, { width: tamanho, height: tamanho }]}>
         <Svg width={tamanho} height={tamanho}>
-          {/* Track de fundo */}
+          {/* Track de fundo escuro */}
           <Circle
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
-            stroke="rgba(255, 255, 255, 0.06)"
+            stroke="rgba(255, 255, 255, 0.12)"
             strokeWidth={espessura}
             fill="transparent"
           />
@@ -77,23 +83,20 @@ export function AnelProgresso({
         {/* Valor Central */}
         {mostrarValor && (
           <View style={estilos.valorCentralContainer}>
-            <Text style={[estilos.valorTexto, { fontSize: tamanho > 90 ? 22 : 13 }]} numberOfLines={1}>
+            <Text
+              style={[
+                estilos.valorTexto,
+                { fontSize: tamanho > 80 ? 20 : 13 },
+              ]}
+              numberOfLines={1}
+            >
               {atual}
             </Text>
-            {unidade ? (
-              <Text style={[estilos.unidadeTexto, { fontSize: tamanho > 90 ? 11 : 9 }]}>
-                {unidade}
-              </Text>
-            ) : null}
           </View>
         )}
       </View>
 
-      {titulo && (
-        <Text style={estilos.metaTexto}>
-          {mostrarRestante ? `${restante}${unidade} faltam` : `/${meta}${unidade}`}
-        </Text>
-      )}
+      {textoAbaixo ? <Text style={estilos.metaTexto}>{textoAbaixo}</Text> : null}
     </View>
   );
 }
@@ -104,12 +107,10 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   tituloLabel: {
-    fontSize: 10,
+    fontFamily: FamiliaFonte.medio,
+    fontSize: 12,
     color: Cores.texto.secundario,
-    fontWeight: PesoFonte.medio,
-    marginBottom: 6,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    marginBottom: 8,
   },
   ringWrapper: {
     alignItems: 'center',
@@ -122,18 +123,15 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   valorTexto: {
+    fontFamily: FamiliaFonte.bold,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
-  unidadeTexto: {
-    color: Cores.texto.secundario,
-    fontWeight: PesoFonte.medio,
-    marginTop: -1,
-  },
   metaTexto: {
-    fontSize: 10,
-    color: Cores.texto.desabilitado,
-    fontWeight: PesoFonte.medio,
-    marginTop: 4,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 11,
+    color: Cores.texto.principal,
+    fontWeight: PesoFonte.bold,
+    marginTop: 8,
   },
 });

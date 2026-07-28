@@ -4,7 +4,7 @@
 // Clean Dark UI — referência Oura, WHOOP, Fitbod, Linear, Apple HIG.
 //
 // Princípios:
-// - Tipografia: SF Pro (fonte padrão do iOS)
+// - Tipografia: SF Compact Rounded (fonte nativa arredondada da Apple)
 // - Base monocromática: preto/grafite/cinza-chumbo
 // - UMA única cor de destaque (accent): branco #FFFFFF
 // - Sem gradientes decorativos, sem emojis, sem glow colorido
@@ -15,29 +15,30 @@ import { Platform } from 'react-native';
 
 export const Cores = {
   fundo: {
-    principal: '#080A0E',
-    superficie: '#101318',
-    elevada: '#181C23',
+    principal: '#000000',    // Preto puro estilo OLED iOS
+    superficie: '#121418',   // Cards de primeiro nível
+    elevada: '#1A1D24',      // Modais e elementos elevados
   },
 
-  // Única cor de destaque — branco puro (estilo Arc / Linear)
+  // Única cor de destaque — branco puro
   accent: '#FFFFFF',
   accentSuave: 'rgba(255, 255, 255, 0.08)',
   accentBorda: 'rgba(255, 255, 255, 0.20)',
 
-  // Destaque de ação especial (ex: FAB de adicionar)
+  // Destaques de ação especial
   amarelo: '#EAB308',
+  laranja: '#F05A28',
 
   texto: {
-    principal: '#F4F5F7',
-    secundario: '#6B7280',
-    desabilitado: '#374151',
+    principal: '#FFFFFF',
+    secundario: '#71717A',
+    desabilitado: '#3F3F46',
   },
 
   borda: {
-    sutil: 'rgba(255, 255, 255, 0.07)',
-    media: 'rgba(255, 255, 255, 0.12)',
-    forte: 'rgba(255, 255, 255, 0.20)',
+    sutil: 'rgba(255, 255, 255, 0.08)',
+    media: 'rgba(255, 255, 255, 0.15)',
+    forte: 'rgba(255, 255, 255, 0.25)',
   },
 
   feedback: {
@@ -55,8 +56,8 @@ export const Cores = {
   secundaria: '#FFFFFF',
   vidro: {
     fundo: 'rgba(255, 255, 255, 0.04)',
-    borda: 'rgba(255, 255, 255, 0.07)',
-    brilho: 'rgba(255, 255, 255, 0.12)',
+    borda: 'rgba(255, 255, 255, 0.08)',
+    brilho: 'rgba(255, 255, 255, 0.15)',
   },
 } as const;
 
@@ -88,10 +89,14 @@ export const Fonte = {
 } as const;
 
 /**
- * Família de fonte padrão do sistema iOS (SF Pro).
+ * Família de fonte oficial Apple: SF Compact Rounded
  */
 export const FamiliaFonte = {
-  padrao: Platform.OS === 'ios' ? 'System' : 'sans-serif',
+  regular: 'SF-Compact-Rounded-Regular',
+  medio: 'SF-Compact-Rounded-Medium',
+  semibold: 'SF-Compact-Rounded-Semibold',
+  bold: 'SF-Compact-Rounded-Bold',
+  extrabold: 'SF-Compact-Rounded-Bold',
 } as const;
 
 export const PesoFonte = {

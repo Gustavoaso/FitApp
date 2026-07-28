@@ -18,7 +18,7 @@ import {
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '../../componentes/ui';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 
 export default function TelaInicio() {
   const router = useRouter();
@@ -197,11 +197,13 @@ const estilos = StyleSheet.create({
     marginBottom: 24,
   },
   saudacao: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   dataAtual: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
     marginTop: 3,
@@ -220,20 +222,23 @@ const estilos = StyleSheet.create({
     flex: 1,
   },
   labelCalorias: {
+    fontFamily: FamiliaFonte.semibold,
     fontSize: Fonte.micro,
     color: Cores.texto.secundario,
-    fontWeight: PesoFonte.medio,
+    fontWeight: PesoFonte.semibold,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 4,
   },
   valorCalorias: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.display,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
     letterSpacing: -0.5,
   },
   metaCalorias: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
     color: Cores.texto.desabilitado,
     marginBottom: 10,
@@ -251,14 +256,16 @@ const estilos = StyleSheet.create({
     borderRadius: 2,
   },
   textoPorcentagem: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
     color: Cores.texto.secundario,
   },
 
   // Macros
   secaoTitulo: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.secundario,
     textTransform: 'uppercase',
     letterSpacing: 0.8,

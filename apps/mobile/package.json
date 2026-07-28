@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@expo-google-fonts/outfit": "^0.4.3",
     "@fitapp/constantes": "*",
     "@fitapp/tipos": "*",
     "@fitapp/utilidades": "*",
