@@ -1,8 +1,11 @@
 // ============================================================
 // TELA: Dieta / Nutrição (app/(tabs)/dieta.tsx)
 // ============================================================
-// Clean Dark UI — réplica ajustada (pt-BR, SF Symbols, SF Compact Rounded).
-// Histórico por data persistido via historicoServico + adição de novos alimentos/refeições.
+// Clean Dark UI — Ajuste 1: Botão flutuante abre menu com 3 opções:
+// 1. Criar nova refeição (do zero)
+// 2. Criar refeição personalizada (molde para reutilizar)
+// 3. Minhas refeições (lista de refeições salvas para adicionar ao dia)
+// Botão '+' nos cards continua adicionando alimentos avulsos.
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -19,6 +22,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CardVidro } from '../../componentes/ui';
 import { AnelProgresso } from '../../componentes/ui/AnelProgresso';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
@@ -43,6 +47,12 @@ interface Refeicao {
   nome: string;
   horario: string;
   concluida: boolean;
+  alimentos: Alimento[];
+}
+
+interface RefeicaoPersonalizadaTemplate {
+  id: string;
+  nome: string;
   alimentos: Alimento[];
 }
 
@@ -79,6 +89,28 @@ const REFEICOES_INICIAIS_PADRAO: Refeicao[] = [
   },
 ];
 
+const TEMPLATES_PADRAO: RefeicaoPersonalizadaTemplate[] = [
+  {
+    id: 'tpl-1',
+    nome: 'Shake Pós-Treino Proteico',
+    alimentos: [
+      { id: 'ta1', nome: 'Whey Protein Concentrado', porcao: '30g', calorias: 120, proteinas: 24, carbos: 3, gorduras: 2 },
+      { id: 'ta2', nome: 'Banana Prata', porcao: '1 un · 100g', calorias: 89, proteinas: 1, carbos: 23, gorduras: 0 },
+      { id: 'ta3', nome: 'Leite Desnatado', porcao: '200ml', calorias: 70, proteinas: 6, carbos: 10, gorduras: 0 },
+    ],
+  },
+  {
+    id: 'tpl-2',
+    nome: 'Omelete de Claras com Aveia',
+    alimentos: [
+      { id: 'ta4', nome: 'Clara de Ovo', porcao: '4 un · 120g', calorias: 60, proteinas: 13, carbos: 1, gorduras: 0 },
+      { id: 'ta5', nome: 'Farinha de Aveia', porcao: '30g', calorias: 118, proteinas: 4, carbos: 20, gorduras: 2 },
+    ],
+  },
+];
+
+const CHAVE_TEMPLATES = '@fitapp_refeicoes_personalizadas_v1';
+
 export default function TelaDieta() {
   const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
 
@@ -88,21 +120,45 @@ export default function TelaDieta() {
   const metaGorduras = 65;
 
   const [refeicoes, setRefeicoes] = useState<Refeicao[]>(REFEICOES_INICIAIS_PADRAO);
-  const [modalVisivel, setModalVisivel] = useState(false);
+  const [templates, setTemplates] = useState<RefeicaoPersonalizadaTemplate[]>(TEMPLATES_PADRAO);
+
+  // Modais do Ajuste 1
+  const [menuOpcoesVisivel, setMenuOpcoesVisivel] = useState(false);
+  const [modalCriarTemplateVisivel, setModalCriarTemplateVisivel] = useState(false);
+  const [modalMinhasRefeicoesVisivel, setModalMinhasRefeicoesVisivel] = useState(false);
+
+  // Modal para adicionar alimento avulso (botão '+' do card)
+  const [modalAlimentoVisivel, setModalAlimentoVisivel] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
   const [refeicaoAlvo, setRefeicaoAlvo] = useState<string | null>(null);
 
-  // Carrega o histórico da data selecionada no carrossel
+  // Form do novo template personalizado
+  const [nomeNovoTemplate, setNomeNovoTemplate] = useState('');
+
   useEffect(() => {
     carregarHistoricoDoDia(diaSelecionado);
+    carregarTemplates();
   }, [diaSelecionado]);
+
+  const carregarTemplates = async () => {
+    try {
+      const json = await AsyncStorage.getItem(CHAVE_TEMPLATES);
+      if (json) {
+        setTemplates(JSON.parse(json));
+      } else {
+        await AsyncStorage.setItem(CHAVE_TEMPLATES, JSON.stringify(TEMPLATES_PADRAO));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const carregarHistoricoDoDia = async (dataStr: string) => {
     const salvo = await obterHistoricoDieta(dataStr);
     if (salvo && salvo.length > 0) {
       const convertidas: Refeicao[] = salvo.map((r, i) => ({
         id: r.idRefeicao || `ref-${i + 1}`,
-        nome: `Refeição ${i + 1}`,
+        nome: r.idRefeicao?.startsWith('ref-') ? `Refeição ${i + 1}` : r.idRefeicao || `Refeição ${i + 1}`,
         horario: i === 0 ? 'Café da Manhã' : i === 1 ? 'Almoço' : 'Lanche',
         concluida: r.concluida,
         alimentos: r.alimentos,
@@ -116,7 +172,7 @@ export default function TelaDieta() {
   const persistirRefeicoes = async (novasRefeicoes: Refeicao[]) => {
     setRefeicoes(novasRefeicoes);
     const paraSalvar: RegistroRefeicaoDiaria[] = novasRefeicoes.map(r => ({
-      idRefeicao: r.id,
+      idRefeicao: r.nome,
       data: diaSelecionado,
       concluida: r.concluida,
       alimentos: r.alimentos,
@@ -124,20 +180,54 @@ export default function TelaDieta() {
     await salvarHistoricoDieta(diaSelecionado, paraSalvar);
   };
 
-  const totais = refeicoes.reduce(
-    (acc, ref) => {
-      if (!ref.concluida) return acc;
-      return {
-        calorias: acc.calorias + ref.alimentos.reduce((s, a) => s + a.calorias, 0),
-        proteinas: acc.proteinas + ref.alimentos.reduce((s, a) => s + a.proteinas, 0),
-        carbos: acc.carbos + ref.alimentos.reduce((s, a) => s + a.carbos, 0),
-        gorduras: acc.gorduras + ref.alimentos.reduce((s, a) => s + a.gorduras, 0),
-      };
-    },
-    { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 }
-  );
+  // 1. Criar nova refeição do zero
+  const lidarComCriarNovaRefeicao = async () => {
+    setMenuOpcoesVisivel(false);
+    const numeroNovaRef = refeicoes.length + 1;
+    const nova: Refeicao = {
+      id: `ref-${Date.now()}`,
+      nome: `Refeição ${numeroNovaRef}`,
+      horario: 'Personalizado',
+      concluida: false,
+      alimentos: [],
+    };
+    const atualizadas = [...refeicoes, nova];
+    await persistirRefeicoes(atualizadas);
+  };
 
-  const adicionarAlimento = async () => {
+  // 2. Criar molde de refeição personalizada
+  const lidarComSalvarTemplatePersonalizado = async () => {
+    if (!nomeNovoTemplate.trim()) return;
+    const novoTemplate: RefeicaoPersonalizadaTemplate = {
+      id: `tpl-${Date.now()}`,
+      nome: nomeNovoTemplate,
+      alimentos: [
+        { id: `a-${Date.now()}`, nome: 'Item Base', porcao: '100g', calorias: 150, proteinas: 15, carbos: 15, gorduras: 3 },
+      ],
+    };
+    const atualizados = [...templates, novoTemplate];
+    setTemplates(atualizados);
+    await AsyncStorage.setItem(CHAVE_TEMPLATES, JSON.stringify(atualizados));
+    setNomeNovoTemplate('');
+    setModalCriarTemplateVisivel(false);
+  };
+
+  // 3. Adicionar refeição da lista "Minhas Refeições" ao dia
+  const lidarComAdicionarTemplateAoDia = async (tpl: RefeicaoPersonalizadaTemplate) => {
+    setModalMinhasRefeicoesVisivel(false);
+    const nova: Refeicao = {
+      id: `ref-${Date.now()}`,
+      nome: tpl.nome,
+      horario: 'Refeição Salva',
+      concluida: false,
+      alimentos: tpl.alimentos.map(a => ({ ...a, id: `a-${Date.now()}-${Math.random()}` })),
+    };
+    const atualizadas = [...refeicoes, nova];
+    await persistirRefeicoes(atualizadas);
+  };
+
+  // Adicionar alimento avulso (botão '+' do card)
+  const adicionarAlimentoAvulso = async () => {
     const novo: Alimento = {
       id: `a-${Date.now()}`,
       nome: termoBusca || 'Iogurte Grego Natural',
@@ -154,7 +244,7 @@ export default function TelaDieta() {
 
     await persistirRefeicoes(atualizadas);
     setTermoBusca('');
-    setModalVisivel(false);
+    setModalAlimentoVisivel(false);
   };
 
   const alternarConclusaoRefeicao = async (id: string) => {
@@ -171,6 +261,19 @@ export default function TelaDieta() {
     });
     await persistirRefeicoes(atualizadas);
   };
+
+  const totais = refeicoes.reduce(
+    (acc, ref) => {
+      if (!ref.concluida) return acc;
+      return {
+        calorias: acc.calorias + ref.alimentos.reduce((s, a) => s + a.calorias, 0),
+        proteinas: acc.proteinas + ref.alimentos.reduce((s, a) => s + a.proteinas, 0),
+        carbos: acc.carbos + ref.alimentos.reduce((s, a) => s + a.carbos, 0),
+        gorduras: acc.gorduras + ref.alimentos.reduce((s, a) => s + a.gorduras, 0),
+      };
+    },
+    { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 }
+  );
 
   return (
     <View style={estilos.container}>
@@ -189,7 +292,6 @@ export default function TelaDieta() {
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
-
             <TouchableOpacity style={estilos.topBarIcone}>
               <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
             </TouchableOpacity>
@@ -262,7 +364,7 @@ export default function TelaDieta() {
           </View>
         </View>
 
-        {/* ── Refeições ─────────────────────────────────────── */}
+        {/* ── Refeições do Dia ──────────────────────────────── */}
         {refeicoes.map((ref) => {
           const calRef = ref.alimentos.reduce((s, a) => s + a.calorias, 0);
 
@@ -287,11 +389,12 @@ export default function TelaDieta() {
                   <Text style={estilos.horarioRefeicao}>{calRef > 0 ? `${calRef} kcal` : ref.horario}</Text>
                 </View>
 
+                {/* Botão '+' do card: Adiciona alimento avulso a ESTA refeição específica */}
                 <TouchableOpacity
                   style={estilos.btnOpcoes}
                   onPress={() => {
                     setRefeicaoAlvo(ref.id);
-                    setModalVisivel(true);
+                    setModalAlimentoVisivel(true);
                   }}
                 >
                   <SymbolView name="plus" size={16} tintColor={Cores.accent} weight="bold" />
@@ -323,10 +426,10 @@ export default function TelaDieta() {
         })}
       </ScrollView>
 
-      {/* ── FAB de Incluir Refeição ─────────────────────────── */}
+      {/* ── FAB Primário Amarelo: Abre Menu Flutuante (Ajuste 1) ── */}
       <TouchableOpacity
         style={estilos.fabAmarelo}
-        onPress={() => { setRefeicaoAlvo('ref-1'); setModalVisivel(true); }}
+        onPress={() => setMenuOpcoesVisivel(true)}
         activeOpacity={0.85}
       >
         <View style={estilos.fabInnerAmarelo}>
@@ -334,20 +437,141 @@ export default function TelaDieta() {
         </View>
       </TouchableOpacity>
 
-      {/* ── Modal de busca de alimento ────────────────────── */}
-      <Modal visible={modalVisivel} animationType="slide" transparent statusBarTranslucent>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+      {/* ── Menu Flutuante (3 Opções do Ajuste 1) ─────────────── */}
+      <Modal visible={menuOpcoesVisivel} animationType="fade" transparent statusBarTranslucent>
+        <TouchableOpacity
+          style={estilos.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setMenuOpcoesVisivel(false)}
+        />
+        <BlurView intensity={90} tint="dark" style={estilos.menuSheetContainer}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Adicionar Refeição</Text>
+
+          {/* Opção 1: Criar nova refeição */}
           <TouchableOpacity
-            style={estilos.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setModalVisivel(false)}
-          />
+            style={estilos.itemMenuOpcao}
+            onPress={lidarComCriarNovaRefeicao}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="plus.circle.fill" size={22} tintColor={Cores.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Criar nova refeição</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Adicionar refeição em branco do zero</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Opção 2: Criar refeição personalizada */}
+          <TouchableOpacity
+            style={estilos.itemMenuOpcao}
+            onPress={() => {
+              setMenuOpcoesVisivel(false);
+              setModalCriarTemplateVisivel(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="square.and.pencil" size={22} tintColor="#EAB308" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Criar refeição personalizada</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Salvar um molde com itens para reutilizar</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Opção 3: Minhas refeições */}
+          <TouchableOpacity
+            style={estilos.itemMenuOpcao}
+            onPress={() => {
+              setMenuOpcoesVisivel(false);
+              setModalMinhasRefeicoesVisivel(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="folder.fill" size={22} tintColor="#3B82F6" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Minhas refeições</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Escolher refeições salvas do seu catálogo</Text>
+            </View>
+          </TouchableOpacity>
+        </BlurView>
+      </Modal>
+
+      {/* ── Modal Criar Refeição Personalizada (Template) ────── */}
+      <Modal visible={modalCriarTemplateVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalCriarTemplateVisivel(false)} />
           <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
-            <Text style={estilos.modalTitulo}>Registrar Alimento</Text>
+            <Text style={estilos.modalTitulo}>Criar Refeição Personalizada</Text>
+            <Text style={estilos.subtituloModal}>Defina o nome do molde para salvar no catálogo:</Text>
+
+            <TextInput
+              style={estilos.inputBusca}
+              placeholder="Ex: Almoço Low Carb, Shake Proteico..."
+              placeholderTextColor={Cores.texto.desabilitado}
+              value={nomeNovoTemplate}
+              onChangeText={setNomeNovoTemplate}
+              autoFocus
+            />
+
+            <View style={estilos.modalAcoes}>
+              <TouchableOpacity onPress={() => setModalCriarTemplateVisivel(false)} style={estilos.btnCancelar}>
+                <Text style={estilos.txtCancelar}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={lidarComSalvarTemplatePersonalizado} style={estilos.btnSalvar}>
+                <Text style={estilos.txtSalvar}>Salvar Molde</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Modal Minhas Refeições (Lista de Templates) ───────── */}
+      <Modal visible={modalMinhasRefeicoesVisivel} animationType="slide" transparent statusBarTranslucent>
+        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMinhasRefeicoesVisivel(false)} />
+        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Minhas Refeições</Text>
+          <Text style={estilos.subtituloModal}>Selecione uma refeição salva para adicionar ao dia:</Text>
+
+          {templates.map(tpl => {
+            const cal = tpl.alimentos.reduce((s, a) => s + a.calorias, 0);
+            return (
+              <TouchableOpacity
+                key={tpl.id}
+                style={estilos.itemTemplateSalvo}
+                onPress={() => lidarComAdicionarTemplateAoDia(tpl)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.nomeTemplateSalvo}>{tpl.nome}</Text>
+                  <Text style={estilos.subTemplateSalvo}>{tpl.alimentos.length} alimentos · {cal} kcal</Text>
+                </View>
+                <SymbolView name="plus.circle.fill" size={20} tintColor={Cores.accent} />
+              </TouchableOpacity>
+            );
+          })}
+
+          <View style={estilos.modalAcoes}>
+            <TouchableOpacity onPress={() => setModalMinhasRefeicoesVisivel(false)} style={estilos.btnCancelar}>
+              <Text style={estilos.txtCancelar}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      </Modal>
+
+      {/* ── Modal Adicionar Alimento Avulso ───────────────────── */}
+      <Modal visible={modalAlimentoVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalAlimentoVisivel(false)} />
+          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <View style={estilos.modalHandle} />
+            <Text style={estilos.modalTitulo}>Registrar Alimento Avulso</Text>
 
             <TextInput
               style={estilos.inputBusca}
@@ -359,11 +583,7 @@ export default function TelaDieta() {
               returnKeyType="search"
             />
 
-            <TouchableOpacity
-              style={estilos.resultadoItem}
-              onPress={adicionarAlimento}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={estilos.resultadoItem} onPress={adicionarAlimentoAvulso} activeOpacity={0.7}>
               <View style={{ flex: 1 }}>
                 <Text style={estilos.resultadoNome}>{termoBusca || 'Iogurte Grego Natural'}</Text>
                 <Text style={estilos.resultadoSub}>100g · Tabela TACO</Text>
@@ -372,10 +592,10 @@ export default function TelaDieta() {
             </TouchableOpacity>
 
             <View style={estilos.modalAcoes}>
-              <TouchableOpacity onPress={() => setModalVisivel(false)} style={estilos.btnCancelar}>
+              <TouchableOpacity onPress={() => setModalAlimentoVisivel(false)} style={estilos.btnCancelar}>
                 <Text style={estilos.txtCancelar}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={adicionarAlimento} style={estilos.btnSalvar}>
+              <TouchableOpacity onPress={adicionarAlimentoAvulso} style={estilos.btnSalvar}>
                 <Text style={estilos.txtSalvar}>Salvar</Text>
               </TouchableOpacity>
             </View>
@@ -573,6 +793,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
 
+  // Modais e Sheet
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -584,6 +805,18 @@ const estilos = StyleSheet.create({
     backgroundColor: Cores.borda.forte,
     alignSelf: 'center',
     marginBottom: 16,
+  },
+  menuSheetContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    backgroundColor: 'rgba(16,19,24,0.98)',
+    borderTopWidth: 1,
+    borderColor: Cores.borda.sutil,
   },
   modalCard: {
     borderTopLeftRadius: 24,
@@ -599,8 +832,63 @@ const estilos = StyleSheet.create({
     fontSize: Fonte.subtitulo,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
+    marginBottom: 12,
+  },
+  subtituloModal: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.label,
+    color: Cores.texto.secundario,
     marginBottom: 16,
   },
+
+  itemMenuOpcao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  iconeMenuOpcao: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: Cores.fundo.elevada,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tituloMenuOpcao: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  subtituloMenuOpcao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+
+  itemTemplateSalvo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: Raio.md,
+    marginBottom: 10,
+  },
+  nomeTemplateSalvo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  subTemplateSalvo: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+
   inputBusca: {
     backgroundColor: Cores.fundo.elevada,
     borderWidth: 1,
@@ -637,7 +925,7 @@ const estilos = StyleSheet.create({
     fontSize: Fonte.corpo,
     color: Cores.texto.principal,
   },
-  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 8 },
   btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
   txtCancelar: {
     fontFamily: FamiliaFonte.semibold,
