@@ -1,9 +1,9 @@
 // ============================================================
 // TELA: Dieta / Nutrição (app/(tabs)/dieta.tsx)
 // ============================================================
-// Clean Dark UI — referência Cronometer / Lose It / Oura.
-// Carrossel semanal + metas com anéis interligados + cards de refeição.
-// Sem emojis, accent branco (#FFFFFF), radius uniforme 16px.
+// Clean Dark UI — referência Cronometer / Lose It / Oura / Apple HIG.
+// Carrossel semanal + metas com 4 anéis interligados (o-o-o-o) + refeições.
+// Sem emojis, accent branco (#FFFFFF), SF Pro typography.
 // ============================================================
 
 import React, { useState } from 'react';
@@ -170,14 +170,14 @@ export default function TelaDieta() {
                 activeOpacity={0.7}
                 style={[estilos.cardDia, sel && estilos.cardDiaSelecionado]}
               >
-                <Text style={[estilos.diaAbrev, sel && estilos.diaTextoAtivo]}>{dia.abrev}</Text>
-                <Text style={[estilos.diaNum, sel && estilos.diaTextoAtivo]}>{dia.diaNum}</Text>
+                <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>{dia.abrev}</Text>
+                <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>{dia.diaNum}</Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
 
-        {/* ── Metas Diárias (anéis interligados, sem card) ─── */}
+        {/* ── Metas Diárias (anéis interligados o-o-o-o) ──── */}
         <View style={estilos.secaoMetas}>
           <View style={estilos.metasTopo}>
             <Text style={estilos.secaoTitulo}>Metas Diárias</Text>
@@ -186,43 +186,42 @@ export default function TelaDieta() {
             </Text>
           </View>
 
-          <View style={estilos.containerAneis}>
-            {/* Linha que interliga os anéis */}
-            <View style={estilos.linhaInterconexao} />
-
-            <View style={estilos.gridAneis}>
-              <AnelProgresso
-                titulo="Cal"
-                atual={totais.calorias}
-                meta={metaCalorias}
-                tamanho={56}
-                espessura={4}
-              />
-              <AnelProgresso
-                titulo="Prot"
-                atual={totais.proteinas}
-                meta={metaProteinas}
-                unidade="g"
-                tamanho={56}
-                espessura={4}
-              />
-              <AnelProgresso
-                titulo="Carb"
-                atual={totais.carbos}
-                meta={metaCarbos}
-                unidade="g"
-                tamanho={56}
-                espessura={4}
-              />
-              <AnelProgresso
-                titulo="Gord"
-                atual={totais.gorduras}
-                meta={metaGorduras}
-                unidade="g"
-                tamanho={56}
-                espessura={4}
-              />
-            </View>
+          {/* Grid dos anéis intercalados por segmentos de linha de conexão */}
+          <View style={estilos.gridAneisComLinhas}>
+            <AnelProgresso
+              titulo="Cal"
+              atual={totais.calorias}
+              meta={metaCalorias}
+              tamanho={56}
+              espessura={4}
+            />
+            <View style={estilos.segmentoLinha} />
+            <AnelProgresso
+              titulo="Prot"
+              atual={totais.proteinas}
+              meta={metaProteinas}
+              unidade="g"
+              tamanho={56}
+              espessura={4}
+            />
+            <View style={estilos.segmentoLinha} />
+            <AnelProgresso
+              titulo="Carb"
+              atual={totais.carbos}
+              meta={metaCarbos}
+              unidade="g"
+              tamanho={56}
+              espessura={4}
+            />
+            <View style={estilos.segmentoLinha} />
+            <AnelProgresso
+              titulo="Gord"
+              atual={totais.gorduras}
+              meta={metaGorduras}
+              unidade="g"
+              tamanho={56}
+              espessura={4}
+            />
           </View>
         </View>
 
@@ -294,14 +293,14 @@ export default function TelaDieta() {
         })}
       </ScrollView>
 
-      {/* ── FAB ───────────────────────────────────────────── */}
+      {/* ── FAB de Registrar Alimento (Quadrado Arredondado Amarelo) ── */}
       <TouchableOpacity
         style={estilos.fab}
         onPress={() => { setRefeicaoAlvo('ref-3'); setModalVisivel(true); }}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
         <View style={estilos.fabInner}>
-          <SymbolView name="fork.knife" size={20} tintColor="#080A0E" weight="semibold" />
+          <SymbolView name="plus" size={24} tintColor="#FFFFFF" weight="bold" />
         </View>
       </TouchableOpacity>
 
@@ -382,12 +381,14 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   cardDiaSelecionado: {
-    backgroundColor: Cores.accent,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderColor: Cores.accent,
+    borderWidth: 1.5,
   },
   diaAbrev: { fontSize: 10, fontWeight: PesoFonte.semibold, color: Cores.texto.desabilitado },
-  diaNum: { fontSize: 16, fontWeight: PesoFonte.bold, color: Cores.texto.principal, marginTop: 3 },
-  diaTextoAtivo: { color: '#FFFFFF' },
+  diaNum: { fontSize: 16, fontWeight: PesoFonte.bold, color: Cores.texto.secundario, marginTop: 3 },
+  diaAbrevSelecionado: { color: 'rgba(255, 255, 255, 0.7)' },
+  diaNumSelecionado: { color: '#FFFFFF' },
 
   secaoMetas: { marginBottom: 28 },
   metasTopo: {
@@ -397,21 +398,19 @@ const estilos = StyleSheet.create({
     marginBottom: 16,
   },
   metasPorcentagem: { fontSize: Fonte.label, color: Cores.accent, fontWeight: PesoFonte.semibold },
-  containerAneis: { position: 'relative' },
-  linhaInterconexao: {
-    position: 'absolute',
-    left: 28,
-    right: 28,
-    top: 38,
-    height: 1,
-    backgroundColor: Cores.borda.sutil,
-    zIndex: 1,
-  },
-  gridAneis: {
+
+  gridAneisComLinhas: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 2,
+  },
+  segmentoLinha: {
+    flex: 1,
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    marginTop: 45,
+    marginHorizontal: 2,
+    borderRadius: 1,
   },
 
   secaoTitulo: {
@@ -470,16 +469,17 @@ const estilos = StyleSheet.create({
   },
   textoBotaoAdicionar: { fontSize: Fonte.micro, color: Cores.accent, fontWeight: PesoFonte.semibold },
 
+  // FAB: Quadrado arredondado com fundo amarelo e "+" em branco
   fab: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 96,
     right: 20,
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
+    shadowColor: Cores.amarelo,
+    shadowOpacity: 0.35,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
@@ -487,7 +487,7 @@ const estilos = StyleSheet.create({
   fabInner: {
     width: '100%',
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: Cores.amarelo,
     alignItems: 'center',
     justifyContent: 'center',
   },

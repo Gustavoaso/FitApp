@@ -1,15 +1,17 @@
 // ============================================================
 // CONSTANTES VISUAIS — DESIGN SYSTEM DO FITAPP
 // ============================================================
-// Clean Dark UI — referência Oura, WHOOP, Fitbod, Linear.
+// Clean Dark UI — referência Oura, WHOOP, Fitbod, Linear, Apple HIG.
 //
 // Princípios:
+// - Tipografia: SF Pro (fonte padrão do iOS)
 // - Base monocromática: preto/grafite/cinza-chumbo
 // - UMA única cor de destaque (accent): branco #FFFFFF
 // - Sem gradientes decorativos, sem emojis, sem glow colorido
 // - Border radius uniforme: 16px para todos os cards
-// - Tipografia: máximo 4 tamanhos por tela, sem extrabold abusivo
 // ============================================================
+
+import { Platform } from 'react-native';
 
 export const Cores = {
   fundo: {
@@ -19,10 +21,12 @@ export const Cores = {
   },
 
   // Única cor de destaque — branco puro (estilo Arc / Linear)
-  // Usar APENAS em: CTAs, estados ativos, indicadores de progresso
   accent: '#FFFFFF',
   accentSuave: 'rgba(255, 255, 255, 0.08)',
   accentBorda: 'rgba(255, 255, 255, 0.20)',
+
+  // Destaque de ação especial (ex: FAB de adicionar)
+  amarelo: '#EAB308',
 
   texto: {
     principal: '#F4F5F7',
@@ -81,6 +85,13 @@ export const Fonte = {
   subtitulo: 18,
   titulo: 20,
   display: 28,
+} as const;
+
+/**
+ * Família de fonte padrão do sistema iOS (SF Pro).
+ */
+export const FamiliaFonte = {
+  padrao: Platform.OS === 'ios' ? 'System' : 'sans-serif',
 } as const;
 
 export const PesoFonte = {
