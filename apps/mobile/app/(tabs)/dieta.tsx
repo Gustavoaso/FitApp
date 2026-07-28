@@ -279,12 +279,8 @@ export default function TelaDieta() {
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
         <View style={estilos.topBar}>
-          <TouchableOpacity style={estilos.topBarIcone}>
-            <SymbolView name="magnifyingglass" size={20} tintColor="#FFFFFF" weight="semibold" />
-          </TouchableOpacity>
-
           <Text style={estilos.topBarTitulo}>Refeições</Text>
 
           <View style={estilos.topBarDireita}>
@@ -292,9 +288,6 @@ export default function TelaDieta() {
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
-            <TouchableOpacity style={estilos.topBarIcone}>
-              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
-            </TouchableOpacity>
           </View>
         </View>
 

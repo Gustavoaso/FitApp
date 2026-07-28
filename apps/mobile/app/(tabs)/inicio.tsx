@@ -1,8 +1,9 @@
 // ============================================================
 // TELA: Dashboard / Início (app/(tabs)/inicio.tsx)
 // ============================================================
-// Clean Dark UI — referência Oura / WHOOP / Fitbod.
-// Resumo do Dia, Progresso de Peso (SVG Chart), Aderência e Próximo Treino.
+// Clean Dark UI — Ajuste 3 & 4:
+// - Ajuste 3: Meta de água editável + incrementos de 250ml, 500ml e 1L.
+// - Ajuste 4: Limpeza de ícones da barra superior (lupa/engrenagem removidos).
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -46,8 +47,11 @@ export default function TelaInicio() {
   const [gordura] = useState(52);
   const [gorduraMeta] = useState(72);
 
-  const [coposAgua, setCoposAgua] = useState(5);
-  const totalCopos = 8;
+  // Ajuste 3: Hidratação em ml com meta editável
+  const [aguaConsumidaMl, setAguaConsumidaMl] = useState(1250);
+  const [metaAguaMl, setMetaAguaMl] = useState(2000);
+  const [modalMetaAguaVisivel, setModalMetaAguaVisivel] = useState(false);
+  const [novaMetaAguaStr, setNovaMetaAguaStr] = useState('2000');
 
   // Estados de progresso
   const [dadosGraficoPeso, setDadosGraficoPeso] = useState<PontoGrafico[]>([]);
@@ -99,11 +103,24 @@ export default function TelaInicio() {
     setModalPesoVisivel(false);
   };
 
+  // Ajuste 3: Adicionar quantidade específica de água (250ml, 500ml, 1000ml)
+  const adicionarAgua = (quantidadeMl: number) => {
+    setAguaConsumidaMl(prev => Math.min(prev + quantidadeMl, metaAguaMl + 2000));
+  };
+
+  const salvarMetaAgua = () => {
+    const valor = parseInt(novaMetaAguaStr, 10);
+    if (!isNaN(valor) && valor >= 500 && valor <= 10000) {
+      setMetaAguaMl(valor);
+    }
+    setModalMetaAguaVisivel(false);
+  };
+
   return (
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
         <View style={estilos.topBar}>
           <View>
             <Text style={estilos.saudacao}>{saudacao}</Text>
@@ -115,9 +132,6 @@ export default function TelaInicio() {
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
-            <TouchableOpacity style={estilos.topBarIcone} onPress={() => router.push('/perfil')}>
-              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -192,7 +206,7 @@ export default function TelaInicio() {
           <GraficoEvolucao dados={dadosGraficoPeso} unidade="kg" altura={130} />
         </CardVidro>
 
-        {/* ── Hidratação ────────────────────────────────────── */}
+        {/* ── Hidratação Editável & Opções 250ml/500ml/1L (Ajuste 3) ── */}
         <Text style={estilos.secaoTitulo}>Hidratação</Text>
         <CardVidro semBorda estilo={estilos.cardAgua}>
           <View style={estilos.rowAguaTopo}>
@@ -200,34 +214,38 @@ export default function TelaInicio() {
               <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
               <Text style={estilos.aguaLabel}>Meta de Água</Text>
             </View>
-            <Text style={estilos.aguaValor}>
-              {coposAgua * 250}
-              <Text style={estilos.aguaUnidade}> / {totalCopos * 250}ml</Text>
-            </Text>
-          </View>
-
-          <View style={estilos.dotsAgua}>
-            {Array.from({ length: totalCopos }).map((_, i) => (
-              <TouchableOpacity
-                key={i}
-                onPress={() => i === coposAgua && setCoposAgua(coposAgua + 1)}
-                style={[
-                  estilos.dotAgua,
-                  i < coposAgua && estilos.dotAguaPreenchido,
-                ]}
-              />
-            ))}
-          </View>
-
-          <View style={estilos.rowAguaBotao}>
-            <TouchableOpacity
-              style={estilos.botaoMaisAgua}
-              onPress={() => coposAgua < totalCopos && setCoposAgua(coposAgua + 1)}
-              activeOpacity={0.7}
-            >
-              <Text style={estilos.textoBotaoMaisAgua}>+ 250ml</Text>
+            <TouchableOpacity onPress={() => setModalMetaAguaVisivel(true)}>
+              <Text style={estilos.aguaValor}>
+                {aguaConsumidaMl}
+                <Text style={estilos.aguaUnidade}> / {metaAguaMl}ml ✏️</Text>
+              </Text>
             </TouchableOpacity>
-            <Text style={estilos.textoCoposAgua}>{coposAgua} de {totalCopos} copos</Text>
+          </View>
+
+          {/* Barra contínua de água */}
+          <View style={estilos.barraFundoAgua}>
+            <View
+              style={[
+                estilos.barraProgressoAgua,
+                { width: `${Math.min((aguaConsumidaMl / metaAguaMl) * 100, 100)}%` },
+              ]}
+            />
+          </View>
+
+          {/* Incrementos Rápidos de Água (Ajuste 3: +250ml, +500ml, +1L) */}
+          <View style={estilos.rowIncrementosAgua}>
+            <TouchableOpacity style={estilos.btnIncrementoAgua} onPress={() => adicionarAgua(250)}>
+              <Text style={estilos.txtIncrementoAgua}>+ 250ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={estilos.btnIncrementoAgua} onPress={() => adicionarAgua(500)}>
+              <Text style={estilos.txtIncrementoAgua}>+ 500ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={estilos.btnIncrementoAgua} onPress={() => adicionarAgua(1000)}>
+              <Text style={estilos.txtIncrementoAgua}>+ 1L</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={estilos.btnEditarMetaAgua} onPress={() => setModalMetaAguaVisivel(true)}>
+              <Text style={estilos.txtEditarMetaAgua}>Meta</Text>
+            </TouchableOpacity>
           </View>
         </CardVidro>
 
@@ -252,6 +270,36 @@ export default function TelaInicio() {
           />
         </CardVidro>
       </ScrollView>
+
+      {/* ── Modal Editar Meta de Água (Ajuste 3) ─────────────── */}
+      <Modal visible={modalMetaAguaVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMetaAguaVisivel(false)} />
+          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <View style={estilos.modalHandle} />
+            <Text style={estilos.modalTitulo}>Editar Meta de Água</Text>
+
+            <TextInput
+              style={estilos.input}
+              placeholder="Meta em ml (ex: 2500)"
+              placeholderTextColor={Cores.texto.desabilitado}
+              keyboardType="number-pad"
+              value={novaMetaAguaStr}
+              onChangeText={setNovaMetaAguaStr}
+              autoFocus
+            />
+
+            <View style={estilos.modalAcoes}>
+              <TouchableOpacity onPress={() => setModalMetaAguaVisivel(false)} style={estilos.btnCancelar}>
+                <Text style={estilos.txtCancelar}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={salvarMetaAgua} style={estilos.btnSalvar}>
+                <Text style={estilos.txtSalvar}>Salvar Meta</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* ── Modal Registrar Peso ────────────────────────────── */}
       <Modal visible={modalPesoVisivel} animationType="slide" transparent statusBarTranslucent>
@@ -314,12 +362,6 @@ const estilos = StyleSheet.create({
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
     marginTop: 3,
-  },
-  topBarIcone: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   topBarDireita: {
     flexDirection: 'row',
@@ -496,7 +538,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   rowAguaInfo: {
     flexDirection: 'row',
@@ -518,42 +560,47 @@ const estilos = StyleSheet.create({
     color: Cores.texto.secundario,
     fontSize: Fonte.label,
   },
-  dotsAgua: {
-    flexDirection: 'row',
-    gap: 6,
+  barraFundoAgua: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 3,
+    overflow: 'hidden',
     marginBottom: 14,
   },
-  dotAgua: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  dotAguaPreenchido: {
+  barraProgressoAgua: {
+    height: '100%',
     backgroundColor: Cores.accent,
+    borderRadius: 3,
   },
-  rowAguaBotao: {
+  rowIncrementosAgua: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 8,
   },
-  botaoMaisAgua: {
+  btnIncrementoAgua: {
+    flex: 1,
     backgroundColor: Cores.accentSuave,
     borderWidth: 1,
     borderColor: Cores.accentBorda,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: Raio.sm,
+    alignItems: 'center',
   },
-  textoBotaoMaisAgua: {
+  txtIncrementoAgua: {
     fontFamily: FamiliaFonte.semibold,
-    fontSize: Fonte.label,
+    fontSize: 12,
     color: Cores.accent,
   },
-  textoCoposAgua: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: Cores.texto.desabilitado,
+  btnEditarMetaAgua: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: Raio.sm,
+    alignItems: 'center',
+  },
+  txtEditarMetaAgua: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 12,
+    color: Cores.texto.secundario,
   },
 
   cardTreino: {

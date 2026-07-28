@@ -2,8 +2,7 @@
 // TELA: Treino ao Vivo (app/treino-ao-vivo/index.tsx)
 // ============================================================
 // Modo de execução do treino em tempo real.
-// Exibe exercício atual, séries, peso usado, timer de descanso
-// circular e botões de ação com feedback háptico.
+// Ajuste 6: Botão 'Sair' estilo pílula amarela (#EAB308) no canto superior esquerdo.
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -14,14 +13,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import { CardVidro, BotaoPrimario, AnelProgresso } from '../../componentes/ui';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { formatarTempo } from '@fitapp/utilidades';
 
-// Dados simulados do treino atual
 const exercicios = [
   { id: '1', nome: 'Supino Reto com Barra', series: 4, reps: 10, cargaSugerida: 60, descansoSegundos: 90 },
   { id: '2', nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, cargaSugerida: 24, descansoSegundos: 60 },
@@ -60,19 +60,16 @@ export default function TelaTreinoAoVivo() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (serieAtual < exAtual.series) {
-      // Avança para a próxima série e inicia descanso
       setSerieAtual(serieAtual + 1);
       setTempoRestante(exAtual.descansoSegundos);
       setEmDescanso(true);
     } else {
-      // Concluiu todas as séries deste exercício -> avança para próximo exercício
       if (indexExercicio < exercicios.length - 1) {
         setIndexExercicio(indexExercicio + 1);
         setSerieAtual(1);
         setTempoRestante(exercicios[indexExercicio + 1].descansoSegundos);
         setEmDescanso(true);
       } else {
-        // Treino concluído!
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         Alert.alert('Parabéns! 🎉', 'Treino concluído com sucesso!');
         router.back();
@@ -92,15 +89,23 @@ export default function TelaTreinoAoVivo() {
 
   return (
     <View style={estilos.container}>
-      {/* Topo / Progresso da Sessão */}
+      {/* Topo / Progresso da Sessão (Ajuste 6: Botão Sair Amarelo no Canto Superior Esquerdo) */}
       <View style={estilos.topo}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={estilos.textoSair}>✕ Sair</Text>
+        <TouchableOpacity
+          style={estilos.btnSairAmarelo}
+          onPress={() => router.back()}
+          activeOpacity={0.8}
+        >
+          <SymbolView name="xmark" size={14} tintColor="#FFFFFF" weight="bold" />
+          <Text style={estilos.txtSairAmarelo}>Sair</Text>
         </TouchableOpacity>
-        <Text style={estilos.tituloTreino}>Peito + Tríceps</Text>
-        <Text style={estilos.progressoTexto}>
-          Exercício {indexExercicio + 1}/{exercicios.length}
-        </Text>
+
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={estilos.tituloTreino}>Peito + Tríceps</Text>
+          <Text style={estilos.progressoTexto}>
+            Exercício {indexExercicio + 1}/{exercicios.length}
+          </Text>
+        </View>
       </View>
 
       {/* Nome do Exercício */}
@@ -109,7 +114,7 @@ export default function TelaTreinoAoVivo() {
       </View>
 
       {/* Card da Série Atual */}
-      <CardVidro estilo={estilos.cardSerie}>
+      <CardVidro semBorda estilo={estilos.cardSerie}>
         <Text style={estilos.serieDetalhes}>
           Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} · {exAtual.reps} reps · {exAtual.cargaSugerida}kg
         </Text>
@@ -122,7 +127,6 @@ export default function TelaTreinoAoVivo() {
           meta={exAtual.descansoSegundos}
           tamanho={180}
           espessura={14}
-          cor={emDescanso ? Cores.secundaria : Cores.primaria.base}
           mostrarValor={false}
         />
         <View style={estilos.timerTextoAbsolute}>
@@ -138,22 +142,22 @@ export default function TelaTreinoAoVivo() {
           style={estilos.inputCarga}
           keyboardType="numeric"
           placeholder={String(exAtual.cargaSugerida)}
-          placeholderTextColor={Cores.texto.secundario}
+          placeholderTextColor={Cores.texto.desabilitado}
           value={cargaUsada}
           onChangeText={setCargaUsada}
         />
       </View>
 
-      {/* Botões de Ação */}
-      <View style={estilos.acoesRow}>
-        <TouchableOpacity style={estilos.botaoGlass} onPress={pularExercicio}>
-          <Text style={estilos.textoGlass}>Pular</Text>
+      {/* Ações Inferiores */}
+      <View style={estilos.acoesContainer}>
+        <TouchableOpacity style={estilos.botaoPular} onPress={pularExercicio}>
+          <Text style={estilos.textoPular}>Pular Exercício</Text>
         </TouchableOpacity>
 
         <BotaoPrimario
-          texto={serieAtual === exAtual.series && indexExercicio === exercicios.length - 1 ? 'Finalizar Treino' : 'Concluir Série ✓'}
+          texto={serieAtual === exAtual.series ? 'Finalizar Exercício' : 'Concluir Série'}
           aoPresionar={concluirSerie}
-          estilo={{ flex: 2 }}
+          estilo={estilos.botaoConcluir}
         />
       </View>
     </View>
@@ -164,109 +168,141 @@ const estilos = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Cores.fundo.principal,
-    padding: Espacamento.xxl,
-    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
   topo: {
-    marginTop: Espacamento.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
   },
-  textoSair: {
-    color: Cores.texto.secundario,
-    fontSize: Fonte.corpo,
-    marginBottom: Espacamento.sm,
+
+  // Ajuste 6: Estilo botão pílula amarela no canto superior esquerdo
+  btnSairAmarelo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#EAB308',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: Raio.full,
+    shadowColor: '#EAB308',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
+  txtSairAmarelo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 13,
+    fontWeight: PesoFonte.bold,
+    color: '#FFFFFF',
+  },
+
   tituloTreino: {
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.extrabold,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.subtitulo,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   progressoTexto: {
-    fontSize: Fonte.label,
-    color: Cores.secundaria,
-    fontWeight: PesoFonte.bold,
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.micro,
+    color: Cores.texto.secundario,
     marginTop: 2,
   },
+
   exercicioHeader: {
     alignItems: 'center',
-    marginVertical: Espacamento.md,
+    marginBottom: 16,
   },
   exercicioNome: {
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.extrabold,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.titulo,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
     textAlign: 'center',
   },
+
   cardSerie: {
     alignItems: 'center',
-    paddingVertical: Espacamento.md,
+    paddingVertical: 14,
+    marginBottom: 24,
   },
   serieDetalhes: {
-    fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.secundario,
   },
   destaque: {
-    color: Cores.primaria.base,
-    fontWeight: PesoFonte.extrabold,
+    fontFamily: FamiliaFonte.bold,
+    color: Cores.accent,
+    fontWeight: PesoFonte.bold,
   },
+
   timerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: Espacamento.md,
+    marginVertical: 12,
   },
   timerTextoAbsolute: {
     position: 'absolute',
     alignItems: 'center',
   },
   timerTempo: {
-    fontSize: 40,
-    fontWeight: PesoFonte.extrabold,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.display,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
   timerLabel: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
-    marginTop: 2,
+    marginTop: 4,
   },
+
   inputCargaContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Espacamento.md,
+    gap: 10,
+    marginTop: 20,
+    marginBottom: 24,
   },
   cargaLabel: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.corpo,
     color: Cores.texto.secundario,
   },
   inputCarga: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: Cores.vidro.borda,
-    borderRadius: Raio.md,
-    paddingHorizontal: Espacamento.md,
-    paddingVertical: Espacamento.sm,
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
     color: Cores.texto.principal,
+    backgroundColor: Cores.fundo.elevada,
+    borderWidth: 1,
+    borderColor: Cores.borda.media,
+    borderRadius: Raio.sm,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     width: 80,
     textAlign: 'center',
   },
-  acoesRow: {
-    flexDirection: 'row',
-    gap: Espacamento.md,
-    marginBottom: Espacamento.xl,
+
+  acoesContainer: {
+    gap: 12,
+    marginTop: 'auto',
+    marginBottom: Platform.OS === 'ios' ? 40 : 20,
   },
-  botaoGlass: {
-    flex: 1,
-    backgroundColor: Cores.vidro.fundo,
-    borderWidth: 1,
-    borderColor: Cores.vidro.borda,
-    borderRadius: Raio.lg,
+  botaoPular: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Espacamento.lg,
+    paddingVertical: 12,
   },
-  textoGlass: {
-    color: Cores.texto.principal,
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
+  textoPular: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.label,
+    color: Cores.texto.desabilitado,
   },
+  botaoConcluir: {},
 });

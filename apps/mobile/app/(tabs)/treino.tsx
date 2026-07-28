@@ -1,8 +1,10 @@
 // ============================================================
 // TELA: Módulo de Treino (app/(tabs)/treino.tsx)
 // ============================================================
-// Clean Dark UI — réplica perfeita (SF Compact Rounded, sem bordas).
-// Suporte completo a customização: adicionar/editar/remover exercícios.
+// Clean Dark UI — Ajuste 2:
+// - Definição de exercícios, séries e tempo de descanso entre séries (ex: 60s)
+// - Histórico da última carga/reps utilizada por exercício
+// - Botão para trocar o treino planejado da data por outro treino do catálogo
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -27,6 +29,9 @@ import {
   adicionarExercicioAoDia,
   atualizarExercicio,
   removerExercicio,
+  definirTreinoEspecialParaData,
+  obterTreinoEspecialParaData,
+  obterUltimaCargaExercicio,
   DiaTreinoCustomizado,
   ExercicioCustomizado,
 } from '../../servicos/planoGestaoServico';
@@ -45,10 +50,16 @@ export default function TelaTreino() {
   const router = useRouter();
   const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
   const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
+  const [idTreinoEspecial, setIdTreinoEspecial] = useState<string | null>(null);
+
+  // Histórico de últimas cargas
+  const [ultimasCargas, setUltimasCargas] = useState<Record<string, { cargaKg: number; repeticoes: number }>>({});
 
   // Modais
   const [modalAdicionarVisivel, setModalAdicionarVisivel] = useState(false);
   const [modalEditarVisivel, setModalEditarVisivel] = useState(false);
+  const [modalTrocarTreinoVisivel, setModalTrocarTreinoVisivel] = useState(false);
+
   const [exercicioEmEdicao, setExercicioEmEdicao] = useState<ExercicioCustomizado | null>(null);
 
   // Form de novo exercício
@@ -57,19 +68,38 @@ export default function TelaTreino() {
   const [novasSeries, setNovasSeries] = useState('4');
   const [novasReps, setNovasReps] = useState('10');
   const [novaCarga, setNovaCarga] = useState('60');
+  const [novoDescanso, setNovoDescanso] = useState('60');
 
   useEffect(() => {
     carregarPlanos();
-  }, []);
+  }, [diaSelecionado]);
 
   const carregarPlanos = async () => {
     const dados = await obterPlanoTreinoCustomizado();
     setPlanos(dados);
+
+    // Carrega se o usuário trocou o treino deste dia específico
+    const especial = await obterTreinoEspecialParaData(diaSelecionado);
+    setIdTreinoEspecial(especial);
+
+    // Carrega últimas cargas dos exercícios
+    const cargasMapa: Record<string, { cargaKg: number; repeticoes: number }> = {};
+    for (const dia of dados) {
+      for (const ex of dia.exercicios) {
+        const u = await obterUltimaCargaExercicio(ex.id);
+        if (u) {
+          cargasMapa[ex.id] = { cargaKg: u.cargaKg, repeticoes: u.repeticoes };
+        }
+      }
+    }
+    setUltimasCargas(cargasMapa);
   };
 
-  // Mapeia o dia selecionado do carrossel para o dia do treino (ABC)
-  const diaIndex = DIAS_SEMANA_CARROSSEL.findIndex(d => d.data === diaSelecionado);
-  const diaAtual = planos[diaIndex % (planos.length || 1)] || planos[0];
+  // Mapeia o dia selecionado (ou o treino trocado)
+  const diaIndexDefault = DIAS_SEMANA_CARROSSEL.findIndex(d => d.data === diaSelecionado);
+  const treinoDefault = planos[diaIndexDefault % (planos.length || 1)] || planos[0];
+  const diaAtual = idTreinoEspecial ? planos.find(p => p.id === idTreinoEspecial) || treinoDefault : treinoDefault;
+
   const temTreino = diaAtual && diaAtual.exercicios && diaAtual.exercicios.length > 0;
 
   const lidarComSalvarNovoExercicio = async () => {
@@ -80,6 +110,7 @@ export default function TelaTreino() {
       series: parseInt(novasSeries, 10) || 4,
       repeticoes: parseInt(novasReps, 10) || 10,
       cargaKg: parseFloat(novaCarga) || 20,
+      tempoDescansoSegundos: parseInt(novoDescanso, 10) || 60,
     });
     setPlanos(atualizado);
     setModalAdicionarVisivel(false);
@@ -102,16 +133,18 @@ export default function TelaTreino() {
     setExercicioEmEdicao(null);
   };
 
+  const lidarComTrocarTreinoData = async (idTreino: string) => {
+    await definirTreinoEspecialParaData(diaSelecionado, idTreino);
+    setIdTreinoEspecial(idTreino);
+    setModalTrocarTreinoVisivel(false);
+  };
+
   return (
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar / Cabeçalho em PT-BR ─────────────────────── */}
+        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
         <View style={estilos.topBar}>
-          <TouchableOpacity style={estilos.topBarIcone}>
-            <SymbolView name="magnifyingglass" size={20} tintColor="#FFFFFF" weight="semibold" />
-          </TouchableOpacity>
-
           <Text style={estilos.topBarTitulo}>Treino</Text>
 
           <View style={estilos.topBarDireita}>
@@ -119,9 +152,6 @@ export default function TelaTreino() {
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
-            <TouchableOpacity style={estilos.topBarIcone}>
-              <SymbolView name="gearshape" size={20} tintColor="#FFFFFF" weight="semibold" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -147,7 +177,7 @@ export default function TelaTreino() {
           })}
         </View>
 
-        {/* ── Card do Foco do Dia ────────────────────────────── */}
+        {/* ── Card do Foco do Dia + Botão de Trocar Treino ── */}
         <CardVidro semBorda estilo={estilos.cardDiaHeader}>
           <View style={estilos.rowDiaHeader}>
             <View style={estilos.iconeFocoContainer}>
@@ -160,15 +190,27 @@ export default function TelaTreino() {
             <View style={{ flex: 1 }}>
               <Text style={estilos.diaFoco}>{diaAtual ? diaAtual.foco : 'Recuperação'}</Text>
               <Text style={estilos.diaDetalhes}>
-                {temTreino ? `${diaAtual.exercicios.length} exercícios programados` : 'Descanso ativo'}
+                {temTreino ? `${diaAtual.exercicios.length} exercícios` : 'Descanso ativo'}
               </Text>
             </View>
-            <TouchableOpacity
-              style={estilos.btnAdicionarExercicio}
-              onPress={() => setModalAdicionarVisivel(true)}
-            >
-              <SymbolView name="plus" size={14} tintColor={Cores.accent} weight="bold" />
-            </TouchableOpacity>
+
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {/* Botão Trocar Treino do Dia (Ajuste 2) */}
+              <TouchableOpacity
+                style={estilos.btnTrocarTreino}
+                onPress={() => setModalTrocarTreinoVisivel(true)}
+              >
+                <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor={Cores.accent} weight="bold" />
+                <Text style={estilos.txtTrocarTreino}>Trocar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={estilos.btnAdicionarExercicio}
+                onPress={() => setModalAdicionarVisivel(true)}
+              >
+                <SymbolView name="plus" size={14} tintColor={Cores.accent} weight="bold" />
+              </TouchableOpacity>
+            </View>
           </View>
         </CardVidro>
 
@@ -177,33 +219,40 @@ export default function TelaTreino() {
           <>
             <Text style={estilos.secaoTitulo}>Exercícios do Dia</Text>
 
-            {diaAtual.exercicios.map((ex, i) => (
-              <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setExercicioEmEdicao(ex);
-                    setModalEditarVisivel(true);
-                  }}
-                  activeOpacity={0.7}
-                  style={estilos.rowExercicio}
-                >
-                  <View style={estilos.ordemContainer}>
-                    <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
-                  </View>
+            {diaAtual.exercicios.map((ex, i) => {
+              const ultima = ultimasCargas[ex.id];
+              return (
+                <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setExercicioEmEdicao(ex);
+                      setModalEditarVisivel(true);
+                    }}
+                    activeOpacity={0.7}
+                    style={estilos.rowExercicio}
+                  >
+                    <View style={estilos.ordemContainer}>
+                      <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
+                    </View>
 
-                  <View style={estilos.colExercicio}>
-                    <Text style={estilos.exNome}>{ex.nome}</Text>
-                    <Text style={estilos.exSub}>
-                      {ex.series} séries · {ex.repeticoes} reps · {ex.cargaKg}kg
-                    </Text>
-                  </View>
+                    <View style={estilos.colExercicio}>
+                      <Text style={estilos.exNome}>{ex.nome}</Text>
+                      <Text style={estilos.exSub}>
+                        {ex.series} séries · {ex.repeticoes} reps · {ex.cargaKg}kg · {ex.tempoDescansoSegundos || 60}s descanso
+                      </Text>
+                      {/* Histórico de última execução */}
+                      <Text style={estilos.exUltimaExecucao}>
+                        Última: {ultima ? `${ultima.cargaKg}kg x ${ultima.repeticoes} reps` : `${ex.cargaKg}kg (atual)`}
+                      </Text>
+                    </View>
 
-                  <View style={estilos.badgeGrupo}>
-                    <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
-                  </View>
-                </TouchableOpacity>
-              </CardVidro>
-            ))}
+                    <View style={estilos.badgeGrupo}>
+                      <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
+                    </View>
+                  </TouchableOpacity>
+                </CardVidro>
+              );
+            })}
 
             <BotaoPrimario
               texto="Iniciar Treino ao Vivo"
@@ -218,6 +267,38 @@ export default function TelaTreino() {
           </View>
         )}
       </ScrollView>
+
+      {/* ── Modal Trocar Treino do Dia (Ajuste 2) ───────────── */}
+      <Modal visible={modalTrocarTreinoVisivel} animationType="slide" transparent statusBarTranslucent>
+        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalTrocarTreinoVisivel(false)} />
+        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Trocar Treino para esta Data</Text>
+          <Text style={estilos.subtituloModal}>Selecione qual treino deseja realizar no dia {diaSelecionado}:</Text>
+
+          {planos.map(p => (
+            <TouchableOpacity
+              key={p.id}
+              style={[estilos.itemTrocaTreino, diaAtual.id === p.id && estilos.itemTrocaTreinoAtivo]}
+              onPress={() => lidarComTrocarTreinoData(p.id)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
+                <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios</Text>
+              </View>
+              {diaAtual.id === p.id && (
+                <SymbolView name="checkmark.circle.fill" size={20} tintColor={Cores.accent} />
+              )}
+            </TouchableOpacity>
+          ))}
+
+          <View style={estilos.modalAcoes}>
+            <TouchableOpacity onPress={() => setModalTrocarTreinoVisivel(false)} style={estilos.btnCancelar}>
+              <Text style={estilos.txtCancelar}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      </Modal>
 
       {/* ── Modal Adicionar Exercício ───────────────────────── */}
       <Modal visible={modalAdicionarVisivel} animationType="slide" transparent statusBarTranslucent>
@@ -264,6 +345,13 @@ export default function TelaTreino() {
                 keyboardType="numeric"
                 value={novaCarga}
                 onChangeText={setNovaCarga}
+              />
+              <TextInput
+                style={[estilos.input, { flex: 1 }]}
+                placeholder="Descanso (s)"
+                keyboardType="numeric"
+                value={novoDescanso}
+                onChangeText={setNovoDescanso}
               />
             </View>
 
@@ -320,6 +408,15 @@ export default function TelaTreino() {
                     keyboardType="numeric"
                     value={String(exercicioEmEdicao.cargaKg)}
                     onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, cargaKg: parseFloat(t) || 0 })}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.labelInput}>Descanso (s)</Text>
+                  <TextInput
+                    style={estilos.input}
+                    keyboardType="numeric"
+                    value={String(exercicioEmEdicao.tempoDescansoSegundos || 60)}
+                    onChangeText={t => setExercicioEmEdicao({ ...exercicioEmEdicao, tempoDescansoSegundos: parseInt(t, 10) || 60 })}
                   />
                 </View>
               </View>
@@ -460,6 +557,20 @@ const estilos = StyleSheet.create({
     color: Cores.texto.secundario,
     marginTop: 2,
   },
+  btnTrocarTreino: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: 8,
+  },
+  txtTrocarTreino: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 11,
+    color: Cores.accent,
+  },
   btnAdicionarExercicio: {
     padding: 8,
     backgroundColor: Cores.fundo.elevada,
@@ -511,6 +622,12 @@ const estilos = StyleSheet.create({
     fontSize: 13,
     color: Cores.texto.secundario,
     marginTop: 2,
+  },
+  exUltimaExecucao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.accent,
+    marginTop: 3,
   },
   badgeGrupo: {
     paddingHorizontal: 8,
@@ -566,8 +683,39 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
     color: Cores.texto.principal,
+    marginBottom: 12,
+  },
+  subtituloModal: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.label,
+    color: Cores.texto.secundario,
     marginBottom: 16,
   },
+
+  itemTrocaTreino: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: Raio.md,
+    marginBottom: 10,
+  },
+  itemTrocaTreinoAtivo: {
+    borderWidth: 1,
+    borderColor: Cores.accent,
+  },
+  nomeTrocaTreino: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  subTrocaTreino: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+
   input: {
     backgroundColor: Cores.fundo.elevada,
     borderWidth: 1,
@@ -587,7 +735,7 @@ const estilos = StyleSheet.create({
   },
   rowInputs: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
   },
   modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },
   modalAcoesSpace: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
