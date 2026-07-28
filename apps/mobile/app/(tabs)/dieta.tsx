@@ -460,6 +460,7 @@ const estilos = StyleSheet.create({
     fontSize: 12,
     color: Cores.texto.secundario,
     marginTop: 2,
+    marginBottom: 5,
   },
   alimentoMacros: {
     fontFamily: FamiliaFonte.bold,

@@ -2,8 +2,8 @@
 // COMPONENTE: BotaoPrimario
 // ============================================================
 // Botão principal do app — Clean Dark UI.
-// Background: accent sólido (#3B82F6), sem gradiente vibrante.
-// Feedback háptico sutil + escala de press.
+// Background: accent sólido (#FFFFFF), texto escuro (#080A0E) para contraste perfeito.
+// Tipografia arredondada SF Compact Rounded + Feedback háptico.
 // ============================================================
 
 import React from 'react';
@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Cores, Raio, Espacamento, Fonte, PesoFonte } from '../../constantes/Cores';
+import { Cores, Raio, Espacamento, FamiliaFonte, Fonte, PesoFonte } from '../../constantes/Cores';
 
 interface BotaoPrimarioProps {
   texto: string;
@@ -71,7 +71,7 @@ export function BotaoPrimario({
       <View style={estilos.conteudo}>
         {carregando ? (
           <ActivityIndicator
-            color={variante === 'primario' ? '#FFFFFF' : Cores.accent}
+            color={variante === 'primario' ? '#080A0E' : Cores.accent}
             size="small"
           />
         ) : (
@@ -89,7 +89,6 @@ const estilos = StyleSheet.create({
   },
   containerPrimario: {
     backgroundColor: Cores.accent,
-    // Sombra neutra — sem glow colorido
     shadowColor: '#000',
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -113,11 +112,12 @@ const estilos = StyleSheet.create({
     gap: 8,
   },
   texto: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.bold,
   },
   textoPrimario: {
-    color: '#FFFFFF',
+    color: '#080A0E', // Texto escuro visível sobre o fundo branco do botão!
   },
   textoAlternativo: {
     color: Cores.accent,
