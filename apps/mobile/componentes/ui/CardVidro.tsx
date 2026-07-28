@@ -1,13 +1,9 @@
 // ============================================================
 // COMPONENTE: CardVidro
 // ============================================================
-// O componente visual mais importante do FitApp.
-// Implementa o efeito "liquid glass": um card semi-transparente
-// com blur (desfoque) no fundo, borda luminosa e sombra colorida.
-//
-// É a base visual de todos os cards do app: dashboard, treino,
-// dieta, questionário, etc. Qualquer conteúdo pode ir dentro.
-//
+// Container base de todos os cards do FitApp — Clean Dark UI.
+// Fundo escuro sólido, borda sutil monocromática, sem glow colorido.
+// Border radius uniforme: 16px em toda a UI.
 // ============================================================
 // COMO FUNCIONA:
 //
@@ -73,24 +69,23 @@ export function CardVidro({
         estilos.container,
         {
           borderRadius,
-          // Sombra (iOS)
-          shadowColor: Cores.primaria.base,
-          shadowOpacity: Glass.sombraOpacidade,
-          shadowRadius: Glass.sombraRaio,
-          shadowOffset: { width: 0, height: 8 },
-          // Sombra (Android)
-          elevation: 4,
+          // Sombra neutra — sem cor, indicando apenas profundidade
+          shadowColor: '#000000',
+          shadowOpacity: 0.35,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 3,
         },
         estilo,
       ]}
     >
       {usarFallback ? (
-        // Fallback: fundo sólido semi-transparente (sem blur)
+        // Fallback para web: fundo sólido
         <View
           style={[
             estilos.conteudo,
             {
-              backgroundColor: Cores.vidro.fundo,
+              backgroundColor: Cores.fundo.superficie,
               borderRadius,
               padding: paddingValue,
             },
@@ -99,32 +94,30 @@ export function CardVidro({
           {children}
         </View>
       ) : (
-        // Glass real: BlurView com blur de fundo
-        <BlurView
-          intensity={Glass.blurIntensidade}
-          tint="dark"
+        // iOS/Android: fundo escuro sólido — sem blur para evitar inconsistências
+        <View
           style={[
             estilos.conteudo,
             {
+              backgroundColor: Cores.fundo.superficie,
               borderRadius,
               padding: paddingValue,
             },
           ]}
         >
           {children}
-        </BlurView>
+        </View>
       )}
 
-      {/* Borda luminosa — simula reflexo de luz no vidro */}
+      {/* Borda sutil — sem cor, apenas luminosidade mínima */}
       <View
         style={[
           estilos.borda,
           {
             borderRadius,
-            borderColor: Cores.vidro.borda,
+            borderColor: Cores.borda.sutil,
           },
         ]}
-        // Não intercepta toques (é só visual)
         pointerEvents="none"
       />
     </View>

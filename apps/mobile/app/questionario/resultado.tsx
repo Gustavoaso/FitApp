@@ -84,7 +84,7 @@ export default function TelaResultadoQuestionario() {
             </View>
 
             <View style={estilos.macroItem}>
-              <View style={[estilos.dotMacro, { backgroundColor: Cores.feedback.alerta }]} />
+              <View style={[estilos.dotMacro, { backgroundColor: Cores.borda.forte }]} />
               <Text style={estilos.macroLabel}>Gordura</Text>
               <Text style={estilos.macroValor}>{formatarGramas(resumo.macros.gorduras)}</Text>
             </View>

@@ -1,9 +1,9 @@
 // ============================================================
 // TELA: Dashboard / Início (app/(tabs)/inicio.tsx)
 // ============================================================
-// Tela principal do app após login/questionário.
-// Exibe anel de calorias, progresso de macros, meta de água
-// e o card de atalho para o próximo treino.
+// Clean Dark UI — referência Oura / WHOOP / Fitbod.
+// Hierarquia clara: saudação compacta → métricas → hidratação → treino.
+// Sem emojis, sem glow colorido, única accent color (#3B82F6).
 // ============================================================
 
 import React, { useState } from 'react';
@@ -13,16 +13,16 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
-import { formatarCalorias, formatarGramas, formatarAgua } from '@fitapp/utilidades';
 
 export default function TelaInicio() {
   const router = useRouter();
 
-  // Estados simulados do progresso do dia (futuramente sincronizados com Supabase)
   const [caloriasConsumidas] = useState(1847);
   const [caloriasMeta] = useState(2400);
 
@@ -38,141 +38,142 @@ export default function TelaInicio() {
   const [coposAgua, setCoposAgua] = useState(5);
   const totalCopos = 8;
 
-  const adicionarCopoAgua = () => {
-    if (coposAgua < totalCopos) {
-      setCoposAgua(coposAgua + 1);
-    }
-  };
+  const hora = new Date().getHours();
+  const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const diasemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+  const porcentagemCalorias = Math.round((caloriasConsumidas / caloriasMeta) * 100);
 
   return (
     <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent}>
-        {/* Cabeçalho */}
+      <ScrollView
+        contentContainerStyle={estilos.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Cabeçalho ─────────────────────────────────────── */}
         <View style={estilos.cabecalho}>
           <View>
-            <Text style={estilos.saudacao}>Olá, Atleta 👋</Text>
-            <Text style={estilos.dataAtual}>Segunda-feira, 27 de Julho</Text>
+            <Text style={estilos.saudacao}>{saudacao}</Text>
+            <Text style={estilos.dataAtual}>{diasemana}</Text>
           </View>
         </View>
 
-        {/* Card Principal: Anel de Calorias */}
+        {/* ── Card Principal: Calorias (compacto) ──────────── */}
         <CardVidro estilo={estilos.cardCalorias}>
-          <Text style={estilos.cardTitulo}>Resumo de Calorias</Text>
-          <View style={estilos.anelContainer}>
+          <View style={estilos.rowCalorias}>
+            {/* Anel menor — não dominando a tela */}
             <AnelProgresso
               atual={caloriasConsumidas}
               meta={caloriasMeta}
-              tamanho={160}
-              espessura={14}
-              cor={Cores.primaria.base}
-              unidade={`/ ${caloriasMeta} kcal`}
+              tamanho={88}
+              espessura={5}
+              mostrarValor={true}
             />
+
+            <View style={estilos.colInfoCalorias}>
+              <Text style={estilos.labelCalorias}>Calorias hoje</Text>
+              <Text style={estilos.valorCalorias}>{caloriasConsumidas.toLocaleString()}</Text>
+              <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
+
+              {/* Barra de progresso fina */}
+              <View style={estilos.barraFundo}>
+                <View
+                  style={[
+                    estilos.barraProgresso,
+                    { width: `${porcentagemCalorias}%` },
+                  ]}
+                />
+              </View>
+              <Text style={estilos.textoPorcentagem}>{porcentagemCalorias}% concluído</Text>
+            </View>
           </View>
         </CardVidro>
 
-        {/* Macros */}
+        {/* ── Macronutrientes ───────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Macronutrientes</Text>
         <View style={estilos.gridMacros}>
-          {/* Proteína */}
-          <CardVidro estilo={estilos.cardMacroItem}>
-            <Text style={estilos.macroEmoji}>🥩</Text>
-            <Text style={estilos.macroNome}>Proteína</Text>
-            <Text style={estilos.macroValores}>
-              {proteina} / <Text style={estilos.textMuted}>{proteinaMeta}g</Text>
-            </Text>
-            <View style={estilos.barFundo}>
-              <View
-                style={[
-                  estilos.barProgresso,
-                  {
-                    width: `${Math.min((proteina / proteinaMeta) * 100, 100)}%`,
-                    backgroundColor: Cores.feedback.sucesso,
-                  },
-                ]}
-              />
-            </View>
-          </CardVidro>
-
-          {/* Carboidrato */}
-          <CardVidro estilo={estilos.cardMacroItem}>
-            <Text style={estilos.macroEmoji}>🍚</Text>
-            <Text style={estilos.macroNome}>Carbos</Text>
-            <Text style={estilos.macroValores}>
-              {carboidrato} / <Text style={estilos.textMuted}>{carboidratoMeta}g</Text>
-            </Text>
-            <View style={estilos.barFundo}>
-              <View
-                style={[
-                  estilos.barProgresso,
-                  {
-                    width: `${Math.min((carboidrato / carboidratoMeta) * 100, 100)}%`,
-                    backgroundColor: Cores.secundaria,
-                  },
-                ]}
-              />
-            </View>
-          </CardVidro>
-
-          {/* Gordura */}
-          <CardVidro estilo={estilos.cardMacroItem}>
-            <Text style={estilos.macroEmoji}>🥑</Text>
-            <Text style={estilos.macroNome}>Gordura</Text>
-            <Text style={estilos.macroValores}>
-              {gordura} / <Text style={estilos.textMuted}>{gorduraMeta}g</Text>
-            </Text>
-            <View style={estilos.barFundo}>
-              <View
-                style={[
-                  estilos.barProgresso,
-                  {
-                    width: `${Math.min((gordura / gorduraMeta) * 100, 100)}%`,
-                    backgroundColor: Cores.feedback.alerta,
-                  },
-                ]}
-              />
-            </View>
-          </CardVidro>
+          {[
+        { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
+          { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
+          { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
+          ].map((macro, i) => (
+            <CardVidro key={i} estilo={estilos.cardMacro}>
+              <View style={estilos.rowMacroTopo}>
+                {macro.icone}
+                <Text style={estilos.macroNome}>{macro.nome}</Text>
+              </View>
+              <Text style={estilos.macroValor}>{macro.atual}<Text style={estilos.macroUnidade}>g</Text></Text>
+              <View style={estilos.barraFundoMacro}>
+                <View
+                  style={[
+                    estilos.barraProgressoMacro,
+                    { width: `${Math.min((macro.atual / macro.meta) * 100, 100)}%` },
+                  ]}
+                />
+              </View>
+              <Text style={estilos.macroMeta}>/{macro.meta}g</Text>
+            </CardVidro>
+          ))}
         </View>
 
-        {/* Registro de Água */}
+        {/* ── Hidratação ────────────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Hidratação</Text>
         <CardVidro estilo={estilos.cardAgua}>
-          <View style={estilos.rowAguaTop}>
-            <Text style={estilos.cardTitulo}>Meta de Água</Text>
-            <Text style={estilos.aguaTotal}>{coposAgua * 250}ml / {totalCopos * 250}ml</Text>
+          <View style={estilos.rowAguaTopo}>
+            <View style={estilos.rowAguaInfo}>
+              <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
+              <Text style={estilos.aguaLabel}>Meta de Água</Text>
+            </View>
+            <Text style={estilos.aguaValor}>
+              {coposAgua * 250}
+              <Text style={estilos.aguaUnidade}> / {totalCopos * 250}ml</Text>
+            </Text>
           </View>
 
-          <View style={estilos.coposRow}>
-            {Array.from({ length: totalCopos }).map((_, index) => (
+          <View style={estilos.dotsAgua}>
+            {Array.from({ length: totalCopos }).map((_, i) => (
               <TouchableOpacity
-                key={index}
-                onPress={adicionarCopoAgua}
+                key={i}
+                onPress={() => i === coposAgua && setCoposAgua(coposAgua + 1)}
                 style={[
-                  estilos.copoIcone,
-                  index < coposAgua && estilos.copoPreenchido,
+                  estilos.dotAgua,
+                  i < coposAgua && estilos.dotAguaPreenchido,
                 ]}
-              >
-                <Text style={{ fontSize: 18 }}>💧</Text>
-              </TouchableOpacity>
+              />
             ))}
+          </View>
+
+          <View style={estilos.rowAguaBotao}>
+            <TouchableOpacity
+              style={estilos.botaoMaisAgua}
+              onPress={() => coposAgua < totalCopos && setCoposAgua(coposAgua + 1)}
+              activeOpacity={0.7}
+            >
+              <Text style={estilos.textoBotaoMaisAgua}>+ 250ml</Text>
+            </TouchableOpacity>
+            <Text style={estilos.textoCoposAgua}>{coposAgua} de {totalCopos} copos</Text>
           </View>
         </CardVidro>
 
-        {/* Card do Próximo Treino */}
+        {/* ── Próxima Sessão de Treino ──────────────────────── */}
         <Text style={estilos.secaoTitulo}>Próxima Sessão</Text>
         <CardVidro estilo={estilos.cardTreino}>
-          <View style={estilos.rowTreinoTop}>
-            <View>
+          <View style={estilos.rowTreino}>
+            <View style={estilos.colTreino}>
               <Text style={estilos.badgeTreino}>HOJE</Text>
-              <Text style={estilos.treinoTitulo}>Peito + Tríceps</Text>
-              <Text style={estilos.treinoSub}>4 exercícios · 45 min</Text>
+              <Text style={estilos.treinoTitulo}>Peito & Tríceps</Text>
+              <Text style={estilos.treinoSub}>4 exercícios · ~45 min</Text>
+            </View>
+            <View style={estilos.iconeTreinoContainer}>
+              <SymbolView name="bolt.fill" size={20} tintColor={Cores.accent} />
             </View>
           </View>
 
           <BotaoPrimario
-            texto="Iniciar Treino Ao Vivo ➔"
+            texto="Iniciar Treino"
             aoPresionar={() => router.push('/treino-ao-vivo')}
-            estilo={estilos.botaoIniciarTreino}
+            estilo={estilos.botaoIniciar}
           />
         </CardVidro>
       </ScrollView>
@@ -186,148 +187,238 @@ const estilos = StyleSheet.create({
     backgroundColor: Cores.fundo.principal,
   },
   scrollContent: {
-    padding: Espacamento.xxl,
-    paddingBottom: Espacamento.xxxl * 2,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 120,
   },
+
+  // Cabeçalho
   cabecalho: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Espacamento.xl,
-    marginTop: Espacamento.md,
+    marginBottom: 24,
   },
   saudacao: {
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.extrabold,
+    fontSize: Fonte.titulo,
+    fontWeight: PesoFonte.semibold,
     color: Cores.texto.principal,
   },
   dataAtual: {
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
-    marginTop: 2,
+    marginTop: 3,
   },
+
+  // Card Calorias
   cardCalorias: {
+    marginBottom: 24,
+  },
+  rowCalorias: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Espacamento.xl,
-    marginBottom: Espacamento.xl,
+    gap: 20,
   },
-  cardTitulo: {
-    fontSize: Fonte.subtitulo,
+  colInfoCalorias: {
+    flex: 1,
+  },
+  labelCalorias: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.secundario,
+    fontWeight: PesoFonte.medio,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  valorCalorias: {
+    fontSize: Fonte.display,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
-    marginBottom: Espacamento.md,
+    letterSpacing: -0.5,
   },
-  anelContainer: {
-    marginVertical: Espacamento.sm,
+  metaCalorias: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.desabilitado,
+    marginBottom: 10,
   },
+  barraFundo: {
+    height: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 5,
+  },
+  barraProgresso: {
+    height: '100%',
+    backgroundColor: Cores.accent,
+    borderRadius: 2,
+  },
+  textoPorcentagem: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.secundario,
+  },
+
+  // Macros
   secaoTitulo: {
-    fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    fontSize: Fonte.label,
+    fontWeight: PesoFonte.semibold,
+    color: Cores.texto.secundario,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
     marginBottom: Espacamento.md,
-    marginTop: Espacamento.sm,
+    marginTop: 4,
   },
   gridMacros: {
     flexDirection: 'row',
-    gap: Espacamento.md,
-    marginBottom: Espacamento.xl,
+    gap: Espacamento.sm,
+    marginBottom: 24,
   },
-  cardMacroItem: {
+  cardMacro: {
     flex: 1,
     padding: Espacamento.md,
   },
-  macroEmoji: {
-    fontSize: 20,
-    marginBottom: 4,
+  rowMacroTopo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 6,
   },
   macroNome: {
     fontSize: Fonte.micro,
     color: Cores.texto.secundario,
     fontWeight: PesoFonte.medio,
   },
-  macroValores: {
-    fontSize: Fonte.corpo,
+  macroValor: {
+    fontSize: 18,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
-    marginVertical: 4,
   },
-  textMuted: {
+  macroUnidade: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.secundario,
+    fontWeight: PesoFonte.regular,
+  },
+  barraFundoMacro: {
+    height: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 1,
+    overflow: 'hidden',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  barraProgressoMacro: {
+    height: '100%',
+    backgroundColor: Cores.accent,
+    borderRadius: 1,
+  },
+  macroMeta: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.desabilitado,
+  },
+
+  // Água
+  cardAgua: {
+    marginBottom: 24,
+  },
+  rowAguaTopo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  rowAguaInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  aguaLabel: {
+    fontSize: Fonte.corpo,
+    fontWeight: PesoFonte.semibold,
+    color: Cores.texto.principal,
+  },
+  aguaValor: {
+    fontSize: Fonte.corpo,
+    fontWeight: PesoFonte.bold,
+    color: Cores.accent,
+  },
+  aguaUnidade: {
+    fontWeight: PesoFonte.regular,
     color: Cores.texto.secundario,
     fontSize: Fonte.label,
   },
-  barFundo: {
+  dotsAgua: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 14,
+  },
+  dotAgua: {
+    flex: 1,
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 2,
-    marginTop: 4,
-    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
-  barProgresso: {
-    height: '100%',
-    borderRadius: 2,
+  dotAguaPreenchido: {
+    backgroundColor: Cores.accent,
   },
-  cardAgua: {
-    marginBottom: Espacamento.xl,
-  },
-  rowAguaTop: {
+  rowAguaBotao: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Espacamento.md,
-  },
-  aguaTotal: {
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.bold,
-    color: Cores.secundaria,
-  },
-  coposRow: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  copoIcone: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  botaoMaisAgua: {
+    backgroundColor: Cores.accentSuave,
     borderWidth: 1,
-    borderColor: Cores.vidro.borda,
-    opacity: 0.4,
+    borderColor: Cores.accentBorda,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: Raio.sm,
   },
-  copoPreenchido: {
-    backgroundColor: 'rgba(0, 210, 255, 0.2)',
-    borderColor: Cores.secundaria,
-    opacity: 1,
+  textoBotaoMaisAgua: {
+    fontSize: Fonte.label,
+    color: Cores.accent,
+    fontWeight: PesoFonte.semibold,
   },
+  textoCoposAgua: {
+    fontSize: Fonte.micro,
+    color: Cores.texto.desabilitado,
+  },
+
+  // Card Treino
   cardTreino: {
-    marginBottom: Espacamento.xl,
+    marginBottom: 24,
   },
-  rowTreinoTop: {
-    marginBottom: Espacamento.md,
+  rowTreino: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: Espacamento.lg,
+  },
+  colTreino: {
+    flex: 1,
   },
   badgeTreino: {
-    fontSize: 10,
+    fontSize: Fonte.micro,
     fontWeight: PesoFonte.bold,
-    color: Cores.primaria.base,
-    backgroundColor: Cores.primaria.suave,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: Raio.sm,
-    alignSelf: 'flex-start',
+    color: Cores.accent,
+    letterSpacing: 1,
     marginBottom: 4,
   },
   treinoTitulo: {
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.bold,
+    fontSize: Fonte.subtitulo,
+    fontWeight: PesoFonte.semibold,
     color: Cores.texto.principal,
   },
   treinoSub: {
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
-    marginTop: 2,
+    marginTop: 3,
   },
-  botaoIniciarTreino: {
-    marginTop: Espacamento.sm,
+  iconeTreinoContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Cores.accentSuave,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  botaoIniciar: {
+    // margem herdada
   },
 });

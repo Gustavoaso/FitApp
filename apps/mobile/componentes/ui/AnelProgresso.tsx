@@ -1,13 +1,13 @@
 // ============================================================
-// COMPONENTE: AnelProgresso (Liquid Glass Progress Ring)
+// COMPONENTE: AnelProgresso (Progress Ring)
 // ============================================================
-// Indicador circular de progresso em SVG para Calorias e Macros
-// com estilo minimalista Liquid Glass, valor central e meta.
+// Indicador circular de progresso em SVG — Clean Dark UI.
+// Stroke fino, cor accent única, sem gradiente colorido, sem glow.
 // ============================================================
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
 import { Cores, PesoFonte } from '../../constantes/Cores';
 
 export interface PropsAnelProgresso {
@@ -30,11 +30,9 @@ export function AnelProgresso({
   meta,
   unidade = '',
   cor,
-  corGradienteInicio,
-  corGradienteFim,
-  tamanho = 76,
-  espessura = 5,
-  mostrarRestante = true,
+  tamanho = 80,
+  espessura = 4,
+  mostrarRestante = false,
   mostrarValor = true,
 }: PropsAnelProgresso) {
   const raio = (tamanho - espessura) / 2;
@@ -42,46 +40,31 @@ export function AnelProgresso({
   const porcentagem = Math.min(Math.max(atual / (meta || 1), 0), 1);
   const strokeDashoffset = circunferencia * (1 - porcentagem);
 
+  const corStroke = cor || Cores.accent;
   const restante = Math.max(meta - atual, 0);
-  const corInicio = corGradienteInicio || cor || Cores.primaria.base;
-  const corFim = corGradienteFim || cor || Cores.primaria.base;
-  const gradientId = `grad_${(titulo || 'ring').replace(/\s+/g, '_')}_${tamanho}`;
-
-  const ePequeno = tamanho <= 62;
 
   return (
     <View style={estilos.container}>
-      {titulo ? (
-        <Text style={[estilos.tituloLabel, ePequeno && estilos.tituloLabelPequeno]}>
-          {titulo}
-        </Text>
-      ) : null}
+      {titulo ? <Text style={estilos.tituloLabel}>{titulo}</Text> : null}
 
       <View style={[estilos.ringWrapper, { width: tamanho, height: tamanho }]}>
         <Svg width={tamanho} height={tamanho}>
-          <Defs>
-            <LinearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <Stop offset="0%" stopColor={corInicio} stopOpacity={1} />
-              <Stop offset="100%" stopColor={corFim} stopOpacity={1} />
-            </LinearGradient>
-          </Defs>
-
-          {/* Círculo de Fundo (Track Traseiro) */}
+          {/* Track de fundo */}
           <Circle
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke="rgba(255, 255, 255, 0.06)"
             strokeWidth={espessura}
             fill="transparent"
           />
 
-          {/* Círculo de Progresso Ativo */}
+          {/* Progresso ativo */}
           <Circle
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
-            stroke={`url(#${gradientId})`}
+            stroke={corStroke}
             strokeWidth={espessura}
             strokeDasharray={circunferencia}
             strokeDashoffset={strokeDashoffset}
@@ -94,15 +77,11 @@ export function AnelProgresso({
         {/* Valor Central */}
         {mostrarValor && (
           <View style={estilos.valorCentralContainer}>
-            <Text
-              style={[estilos.valorTexto, ePequeno && estilos.valorTextoPequeno]}
-              numberOfLines={1}
-            >
+            <Text style={[estilos.valorTexto, { fontSize: tamanho > 90 ? 22 : 13 }]} numberOfLines={1}>
               {atual}
             </Text>
-
             {unidade ? (
-              <Text style={[estilos.unidadeTexto, ePequeno && estilos.unidadeTextoPequeno]}>
+              <Text style={[estilos.unidadeTexto, { fontSize: tamanho > 90 ? 11 : 9 }]}>
                 {unidade}
               </Text>
             ) : null}
@@ -110,10 +89,9 @@ export function AnelProgresso({
         )}
       </View>
 
-      {/* Meta / Restante */}
       {titulo && (
-        <Text style={[estilos.metaTexto, ePequeno && estilos.metaTextoPequeno]}>
-          {mostrarRestante ? `${restante}${unidade} faltam` : `Meta: ${meta}${unidade}`}
+        <Text style={estilos.metaTexto}>
+          {mostrarRestante ? `${restante}${unidade} faltam` : `/${meta}${unidade}`}
         </Text>
       )}
     </View>
@@ -124,26 +102,19 @@ const estilos = StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 2,
   },
   tituloLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: Cores.texto.secundario,
-    fontWeight: PesoFonte.semibold,
+    fontWeight: PesoFonte.medio,
     marginBottom: 6,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  tituloLabelPequeno: {
-    fontSize: 10,
-    marginBottom: 4,
+    letterSpacing: 0.6,
   },
   ringWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
-    backgroundColor: '#0A0F1D',
-    borderRadius: 999,
   },
   valorCentralContainer: {
     position: 'absolute',
@@ -151,31 +122,18 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
   valorTexto: {
-    fontSize: 15,
-    fontWeight: PesoFonte.extrabold,
+    fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
-  valorTextoPequeno: {
-    fontSize: 12,
-  },
   unidadeTexto: {
-    fontSize: 9,
-    color: Cores.texto.desabilitado,
-    fontWeight: PesoFonte.medio,
-    marginTop: -2,
-  },
-  unidadeTextoPequeno: {
-    fontSize: 8,
-  },
-  metaTexto: {
-    fontSize: 11,
     color: Cores.texto.secundario,
     fontWeight: PesoFonte.medio,
-    marginTop: 6,
+    marginTop: -1,
   },
-  metaTextoPequeno: {
+  metaTexto: {
     fontSize: 10,
-    marginTop: 4,
     color: Cores.texto.desabilitado,
+    fontWeight: PesoFonte.medio,
+    marginTop: 4,
   },
 });
