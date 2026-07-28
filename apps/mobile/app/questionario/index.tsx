@@ -1,8 +1,9 @@
 // ============================================================
-// TELA: Questionário Onboarding (app/questionario/index.tsx)
+// TELA: Questionário Onboarding / Recálculo IA (app/questionario/index.tsx)
 // ============================================================
-// Fluxo em 6 etapas para coletar o perfil do usuário e chamar
-// a Edge Function `gerar-plano` via Supabase.
+// Rodada 2 — Ajuste 5:
+// Botão de saída no topo (botão 'Cancelar Recálculo' / 'Sair') que permite
+// ao usuário desistir e retornar ao perfil sem aplicar mudanças.
 // ============================================================
 
 import React, { useState } from 'react';
@@ -15,10 +16,12 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { OBJETIVOS } from '@fitapp/constantes';
 import { supabase } from '../../servicos/supabase';
 import {
@@ -80,7 +83,6 @@ export default function TelaQuestionario() {
   const finalizarQuestionario = async () => {
     setCarregando(true);
     try {
-      // Prepara o payload para a Edge Function
       const payload = {
         nome: 'Atleta',
         idade: Number(idade),
@@ -95,7 +97,6 @@ export default function TelaQuestionario() {
         restricoesAlimentares: restricoes,
       };
 
-      // Chama a Edge Function `gerar-plano` no Supabase
       const { data, error } = await supabase.functions.invoke('gerar-plano', {
         body: payload,
       });
@@ -105,7 +106,6 @@ export default function TelaQuestionario() {
       }
 
       setCarregando(false);
-      // Navega para a tela de resultado com o plano gerado
       router.replace({
         pathname: '/questionario/resultado',
         params: { plano: JSON.stringify(data) },
@@ -120,7 +120,7 @@ export default function TelaQuestionario() {
   if (carregando) {
     return (
       <View style={[estilos.container, estilos.centralizado]}>
-        <ActivityIndicator size="large" color={Cores.primaria.base} />
+        <ActivityIndicator size="large" color={Cores.accent} />
         <Text style={estilos.textoCarregando}>Criando seu plano personalizado com IA...</Text>
         <Text style={estilos.subTextoCarregando}>Calculando TMB, calorias e estruturando treinos</Text>
       </View>
@@ -129,6 +129,18 @@ export default function TelaQuestionario() {
 
   return (
     <View style={estilos.container}>
+      {/* Rodada 2 — Ajuste 5: Botão de Sair do Recálculo no Topo */}
+      <View style={estilos.topoHeader}>
+        <TouchableOpacity
+          style={estilos.btnSairQuestionario}
+          onPress={() => router.back()}
+          activeOpacity={0.8}
+        >
+          <SymbolView name="xmark" size={14} tintColor="#FFFFFF" weight="bold" />
+          <Text style={estilos.txtSairQuestionario}>Cancelar Recálculo</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Barra de Progresso no Topo */}
       <View style={estilos.barraProgressoContainer}>
         <View
@@ -146,7 +158,7 @@ export default function TelaQuestionario() {
         {etapa === 1 && (
           <View>
             <Text style={estilos.tituloEtapa}>Seus dados básicos</Text>
-            <CardVidro estilo={estilos.cardStep}>
+            <CardVidro semBorda estilo={estilos.cardStep}>
               <Text style={estilos.label}>Sexo Biológico</Text>
               <View style={estilos.opcoesRow}>
                 <TouchableOpacity
@@ -178,7 +190,7 @@ export default function TelaQuestionario() {
         {etapa === 2 && (
           <View>
             <Text style={estilos.tituloEtapa}>Suas medidas corporais</Text>
-            <CardVidro estilo={estilos.cardStep}>
+            <CardVidro semBorda estilo={estilos.cardStep}>
               <Text style={estilos.label}>Peso Atual (kg)</Text>
               <TextInput
                 style={estilos.input}
@@ -202,49 +214,52 @@ export default function TelaQuestionario() {
         {etapa === 3 && (
           <View>
             <Text style={estilos.tituloEtapa}>Qual é o seu objetivo principal?</Text>
-            <View style={{ gap: Espacamento.md }}>
+            <CardVidro semBorda estilo={estilos.cardStep}>
               {OBJETIVOS.map((obj) => (
                 <TouchableOpacity
                   key={obj.valor}
+                  style={[
+                    estilos.opcaoCard,
+                    objetivo === obj.valor && estilos.opcaoCardSelecionada,
+                  ]}
                   onPress={() => setObjetivo(obj.valor)}
                 >
-                  <CardVidro
-                    estilo={
-                      objetivo === obj.valor
-                        ? estilos.cardObjetivoSelecionado
-                        : undefined
-                    }
-                  >
-                    <Text style={estilos.objetivoLabel}>{obj.label}</Text>
-                    <Text style={estilos.objetivoDesc}>{obj.descricao}</Text>
-                  </CardVidro>
+                  <Text style={estilos.opcaoCardTitulo}>{obj.label}</Text>
+                  <Text style={estilos.opcaoCardSub}>{obj.descricao}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </CardVidro>
           </View>
         )}
 
-        {/* ETAPA 4: Experiência e Frequência */}
+        {/* ETAPA 4: Nível e Frequência */}
         {etapa === 4 && (
           <View>
-            <Text style={estilos.tituloEtapa}>Rotina de treinos</Text>
-            <CardVidro estilo={estilos.cardStep}>
+            <Text style={estilos.tituloEtapa}>Seu histórico de treino</Text>
+            <CardVidro semBorda estilo={estilos.cardStep}>
               <Text style={estilos.label}>Nível de Experiência</Text>
-              <View style={estilos.opcoesCol}>
-                {['iniciante', 'intermediario', 'avancado'].map((niv) => (
+              <View style={estilos.opcoesRow}>
+                {[
+                  { id: 'iniciante', label: 'Iniciante' },
+                  { id: 'intermediario', label: 'Intermediário' },
+                  { id: 'avancado', label: 'Avançado' },
+                ].map((n) => (
                   <TouchableOpacity
-                    key={niv}
-                    style={[estilos.opcaoChip, nivelExperiencia === niv && estilos.opcaoChipSelecionada]}
-                    onPress={() => setNivelExperiencia(niv)}
+                    key={n.id}
+                    style={[
+                      estilos.opcaoChip,
+                      nivelExperiencia === n.id && estilos.opcaoChipSelecionada,
+                    ]}
+                    onPress={() => setNivelExperiencia(n.id)}
                   >
-                    <Text style={estilos.opcaoTexto}>
-                      {niv === 'iniciante' ? '🌱 Iniciante' : niv === 'intermediario' ? '🌿 Intermediário' : '🌳 Avançado'}
-                    </Text>
+                    <Text style={estilos.opcaoTexto}>{n.label}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <Text style={[estilos.label, { marginTop: Espacamento.lg }]}>Dias disponíveis por semana (2-6)</Text>
+              <Text style={[estilos.label, { marginTop: Espacamento.lg }]}>
+                Dias disponíveis por semana (1 a 7)
+              </Text>
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
@@ -259,42 +274,55 @@ export default function TelaQuestionario() {
         {etapa === 5 && (
           <View>
             <Text style={estilos.tituloEtapa}>Onde você vai treinar?</Text>
-            <View style={{ gap: Espacamento.md }}>
+            <CardVidro semBorda estilo={estilos.cardStep}>
               {[
-                { val: 'academia_completa', title: '🏋️ Academia Completa', desc: 'Acesso a barras, halteres e máquinas' },
-                { val: 'home_gym', title: '🏠 Home Gym', desc: 'Alguns halteres e elásticos em casa' },
-                { val: 'peso_corporal', title: '🤸 Peso Corporal', desc: 'Calistenia e exercícios sem equipamento' },
-              ].map((item) => (
-                <TouchableOpacity key={item.val} onPress={() => setEquipamentos(item.val)}>
-                  <CardVidro estilo={equipamentos === item.val ? estilos.cardObjetivoSelecionado : undefined}>
-                    <Text style={estilos.objetivoLabel}>{item.title}</Text>
-                    <Text style={estilos.objetivoDesc}>{item.desc}</Text>
-                  </CardVidro>
+                { id: 'academia_completa', label: '🏋️ Academia Completa', desc: 'Acesso a barras, halteres e máquinas' },
+                { id: 'halteres_home', label: '🏠 Em Casa (com Halteres)', desc: 'Halteres, elásticos e peso do corpo' },
+                { id: 'peso_corpo', label: '🤸 Apenas Peso do Corpo', desc: 'Calistenia e exercícios sem equipamento' },
+              ].map((eq) => (
+                <TouchableOpacity
+                  key={eq.id}
+                  style={[
+                    estilos.opcaoCard,
+                    equipamentos === eq.id && estilos.opcaoCardSelecionada,
+                  ]}
+                  onPress={() => setEquipamentos(eq.id)}
+                >
+                  <Text style={estilos.opcaoCardTitulo}>{eq.label}</Text>
+                  <Text style={estilos.opcaoCardSub}>{eq.desc}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </CardVidro>
           </View>
         )}
 
         {/* ETAPA 6: Restrições Alimentares */}
         {etapa === 6 && (
           <View>
-            <Text style={estilos.tituloEtapa}>Alguma restrição alimentar?</Text>
-            <CardVidro estilo={estilos.cardStep}>
+            <Text style={estilos.tituloEtapa}>Restrições Alimentares</Text>
+            <CardVidro semBorda estilo={estilos.cardStep}>
+              <Text style={estilos.subLabel}>Selecione todas que se aplicam (opcional):</Text>
               {[
-                { val: 'vegetariano', label: '🥗 Vegetariano' },
-                { val: 'vegano', label: '🌱 Vegano' },
-                { val: 'sem_lactose', label: '🥛 Intolerante a Lactose' },
-                { val: 'sem_gluten', label: '🌾 Sem Glúten' },
+                'Sem lactose',
+                'Sem glúten',
+                'Vegetariano',
+                'Vegano',
+                'Sem frutos do mar',
+                'Diabetes / Low Carb',
               ].map((item) => {
-                const checked = restricoes.includes(item.val);
+                const sel = restricoes.includes(item);
                 return (
                   <TouchableOpacity
-                    key={item.val}
-                    style={[estilos.opcaoChip, checked && estilos.opcaoChipSelecionada, { marginBottom: Espacamento.sm }]}
-                    onPress={() => alternarRestricao(item.val)}
+                    key={item}
+                    style={[estilos.checkboxRow, sel && estilos.checkboxRowSelecionada]}
+                    onPress={() => alternarRestricao(item)}
                   >
-                    <Text style={estilos.opcaoTexto}>{item.label}</Text>
+                    <SymbolView
+                      name={sel ? 'checkmark.square.fill' : 'square'}
+                      size={20}
+                      tintColor={sel ? Cores.accent : Cores.texto.desabilitado}
+                    />
+                    <Text style={estilos.checkboxLabel}>{item}</Text>
                   </TouchableOpacity>
                 );
               })}
@@ -302,16 +330,16 @@ export default function TelaQuestionario() {
           </View>
         )}
 
-        {/* Botões de Ação */}
-        <View style={estilos.acoes}>
+        {/* Botões de Navegação */}
+        <View style={estilos.acoesRow}>
           {etapa > 1 && (
-            <TouchableOpacity style={estilos.botaoVoltar} onPress={() => setEtapa(etapa - 1)}>
-              <Text style={estilos.textoVoltar}>Voltar</Text>
+            <TouchableOpacity style={estilos.btnVoltar} onPress={() => setEtapa(etapa - 1)}>
+              <Text style={estilos.txtVoltar}>Voltar</Text>
             </TouchableOpacity>
           )}
 
           <BotaoPrimario
-            texto={etapa === totalEtapas ? 'Gerar Meu Plano' : 'Avançar'}
+            texto={etapa === totalEtapas ? 'Gerar Plano com IA' : 'Próximo'}
             aoPresionar={proximaEtapa}
             estilo={{ flex: 1 }}
           />
@@ -329,114 +357,179 @@ const estilos = StyleSheet.create({
   centralizado: {
     justifyContent: 'center',
     alignItems: 'center',
-    padding: Espacamento.xxl,
+    padding: Espacamento.xl,
   },
-  textoCarregando: {
+  topoHeader: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 10,
+  },
+  btnSairQuestionario: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: Cores.fundo.elevada,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: Raio.full,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  txtSairQuestionario: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 13,
     color: Cores.texto.principal,
-    fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.bold,
-    marginTop: Espacamento.lg,
-    textAlign: 'center',
   },
-  subTextoCarregando: {
-    color: Cores.texto.secundario,
-    fontSize: Fonte.corpo,
-    marginTop: 4,
-    textAlign: 'center',
-  },
+
   barraProgressoContainer: {
     height: 4,
-    backgroundColor: Cores.vidro.fundo,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     width: '100%',
   },
   barraProgresso: {
     height: '100%',
-    backgroundColor: Cores.primaria.base,
+    backgroundColor: Cores.accent,
   },
   scrollContent: {
-    padding: Espacamento.xxl,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 60,
   },
   contadorEtapa: {
-    color: Cores.secundaria,
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.bold,
-    marginBottom: Espacamento.xs,
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.micro,
+    color: Cores.accent,
     textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
   },
   tituloEtapa: {
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.extrabold,
-    color: Cores.texto.principal,
-    marginBottom: Espacamento.xl,
-  },
-  cardStep: {
-    marginBottom: Espacamento.xl,
-  },
-  label: {
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.medio,
-    color: Cores.texto.secundario,
-    marginBottom: Espacamento.sm,
-  },
-  input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: Cores.vidro.borda,
-    borderRadius: Raio.md,
-    padding: Espacamento.md,
-    fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
-  },
-  opcoesRow: {
-    flexDirection: 'row',
-    gap: Espacamento.md,
-  },
-  opcoesCol: {
-    gap: Espacamento.sm,
-  },
-  opcaoChip: {
-    flex: 1,
-    padding: Espacamento.md,
-    borderRadius: Raio.md,
-    borderWidth: 1,
-    borderColor: Cores.vidro.borda,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    alignItems: 'center',
-  },
-  opcaoChipSelecionada: {
-    borderColor: Cores.primaria.base,
-    backgroundColor: Cores.primaria.suave,
-  },
-  opcaoTexto: {
-    color: Cores.texto.principal,
-    fontWeight: PesoFonte.medio,
-  },
-  objetivoLabel: {
+    fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
-    marginBottom: 4,
+    marginBottom: Espacamento.lg,
   },
-  objetivoDesc: {
+  cardStep: {
+    padding: Espacamento.lg,
+    marginBottom: Espacamento.xl,
+    marginHorizontal: -20,
+  },
+  label: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+    marginBottom: 8,
+  },
+  subLabel: {
+    fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
+    marginBottom: Espacamento.md,
   },
-  cardObjetivoSelecionado: {
-    borderColor: Cores.primaria.base,
+  input: {
+    backgroundColor: Cores.fundo.elevada,
     borderWidth: 1,
+    borderColor: Cores.borda.media,
+    borderRadius: Raio.md,
+    padding: 12,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
   },
-  acoes: {
+  opcoesRow: {
+    flexDirection: 'row',
+    gap: Espacamento.sm,
+    flexWrap: 'wrap',
+  },
+  opcaoChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: Raio.md,
+    backgroundColor: Cores.fundo.elevada,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  opcaoChipSelecionada: {
+    borderColor: Cores.accent,
+    backgroundColor: Cores.accentSuave,
+  },
+  opcaoTexto: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  opcaoCard: {
+    padding: Espacamento.md,
+    borderRadius: Raio.md,
+    backgroundColor: Cores.fundo.elevada,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+    marginBottom: Espacamento.sm,
+  },
+  opcaoCardSelecionada: {
+    borderColor: Cores.accent,
+    backgroundColor: Cores.accentSuave,
+  },
+  opcaoCardTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  opcaoCardSub: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.label,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Espacamento.md,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Cores.borda.sutil,
+  },
+  checkboxRowSelecionada: {
+    backgroundColor: Cores.accentSuave,
+    borderRadius: Raio.sm,
+    paddingHorizontal: 8,
+  },
+  checkboxLabel: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  acoesRow: {
     flexDirection: 'row',
     gap: Espacamento.md,
-    marginTop: Espacamento.xl,
+    alignItems: 'center',
   },
-  botaoVoltar: {
-    justifyContent: 'center',
-    paddingHorizontal: Espacamento.lg,
+  btnVoltar: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: Raio.md,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
   },
-  textoVoltar: {
-    color: Cores.texto.secundario,
+  txtVoltar: {
+    fontFamily: FamiliaFonte.semibold,
     fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
+    color: Cores.texto.secundario,
+  },
+  textoCarregando: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.subtitulo,
+    color: Cores.texto.principal,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  subTextoCarregando: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.label,
+    color: Cores.texto.secundario,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

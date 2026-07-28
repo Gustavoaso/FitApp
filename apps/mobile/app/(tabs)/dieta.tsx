@@ -1,11 +1,10 @@
 // ============================================================
 // TELA: Dieta / Nutrição (app/(tabs)/dieta.tsx)
 // ============================================================
-// Clean Dark UI — Ajuste 1: Botão flutuante abre menu com 3 opções:
-// 1. Criar nova refeição (do zero)
-// 2. Criar refeição personalizada (molde para reutilizar)
-// 3. Minhas refeições (lista de refeições salvas para adicionar ao dia)
-// Botão '+' nos cards continua adicionando alimentos avulsos.
+// Clean Dark UI.
+// Rodada 2 — Ajuste 4:
+// Criação de refeição personalizada em uma única tela/fluxo:
+// permite definir o nome da refeição E adicionar os alimentos em conjunto antes de salvar.
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -122,18 +121,22 @@ export default function TelaDieta() {
   const [refeicoes, setRefeicoes] = useState<Refeicao[]>(REFEICOES_INICIAIS_PADRAO);
   const [templates, setTemplates] = useState<RefeicaoPersonalizadaTemplate[]>(TEMPLATES_PADRAO);
 
-  // Modais do Ajuste 1
+  // Modais
   const [menuOpcoesVisivel, setMenuOpcoesVisivel] = useState(false);
   const [modalCriarTemplateVisivel, setModalCriarTemplateVisivel] = useState(false);
   const [modalMinhasRefeicoesVisivel, setModalMinhasRefeicoesVisivel] = useState(false);
 
-  // Modal para adicionar alimento avulso (botão '+' do card)
+  // Modal alimento avulso
   const [modalAlimentoVisivel, setModalAlimentoVisivel] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
   const [refeicaoAlvo, setRefeicaoAlvo] = useState<string | null>(null);
 
-  // Form do novo template personalizado
+  // Form do novo template personalizado (Rodada 2 — Ajuste 4: Nome + Alimentos no mesmo fluxo)
   const [nomeNovoTemplate, setNomeNovoTemplate] = useState('');
+  const [alimentosTemplateTemp, setAlimentosTemplateTemp] = useState<Alimento[]>([]);
+  const [inputNomeAlimentoTemp, setInputNomeAlimentoTemp] = useState('');
+  const [inputPorcaoTemp, setInputPorcaoTemp] = useState('100g');
+  const [inputCaloriasTemp, setInputCaloriasTemp] = useState('150');
 
   useEffect(() => {
     carregarHistoricoDoDia(diaSelecionado);
@@ -180,7 +183,7 @@ export default function TelaDieta() {
     await salvarHistoricoDieta(diaSelecionado, paraSalvar);
   };
 
-  // 1. Criar nova refeição do zero
+  // Criar nova refeição do zero
   const lidarComCriarNovaRefeicao = async () => {
     setMenuOpcoesVisivel(false);
     const numeroNovaRef = refeicoes.length + 1;
@@ -195,24 +198,41 @@ export default function TelaDieta() {
     await persistirRefeicoes(atualizadas);
   };
 
-  // 2. Criar molde de refeição personalizada
+  // Rodada 2 — Ajuste 4: Adiciona alimento temporário à refeição personalizada em construção
+  const adicionarAlimentoAoTemplateTemp = () => {
+    if (!inputNomeAlimentoTemp.trim()) return;
+    const novoAli: Alimento = {
+      id: `atemp-${Date.now()}`,
+      nome: inputNomeAlimentoTemp,
+      porcao: inputPorcaoTemp || '100g',
+      calorias: parseInt(inputCaloriasTemp, 10) || 100,
+      proteinas: 15,
+      carbos: 15,
+      gorduras: 3,
+    };
+    setAlimentosTemplateTemp(prev => [...prev, novoAli]);
+    setInputNomeAlimentoTemp('');
+  };
+
+  // Rodada 2 — Ajuste 4: Salva o molde personalizado completo (Nome + Alimentos) numa tela só
   const lidarComSalvarTemplatePersonalizado = async () => {
     if (!nomeNovoTemplate.trim()) return;
     const novoTemplate: RefeicaoPersonalizadaTemplate = {
       id: `tpl-${Date.now()}`,
       nome: nomeNovoTemplate,
-      alimentos: [
-        { id: `a-${Date.now()}`, nome: 'Item Base', porcao: '100g', calorias: 150, proteinas: 15, carbos: 15, gorduras: 3 },
+      alimentos: alimentosTemplateTemp.length > 0 ? alimentosTemplateTemp : [
+        { id: `a-${Date.now()}`, nome: 'Ovos Mexidos', porcao: '150g', calorias: 215, proteinas: 18, carbos: 2, gorduras: 15 }
       ],
     };
     const atualizados = [...templates, novoTemplate];
     setTemplates(atualizados);
     await AsyncStorage.setItem(CHAVE_TEMPLATES, JSON.stringify(atualizados));
     setNomeNovoTemplate('');
+    setAlimentosTemplateTemp([]);
     setModalCriarTemplateVisivel(false);
   };
 
-  // 3. Adicionar refeição da lista "Minhas Refeições" ao dia
+  // Adicionar refeição da lista "Minhas Refeições" ao dia
   const lidarComAdicionarTemplateAoDia = async (tpl: RefeicaoPersonalizadaTemplate) => {
     setModalMinhasRefeicoesVisivel(false);
     const nova: Refeicao = {
@@ -279,7 +299,7 @@ export default function TelaDieta() {
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
+        {/* ── Top Bar Limpa ────────────────────────────────────── */}
         <View style={estilos.topBar}>
           <Text style={estilos.topBarTitulo}>Refeições</Text>
 
@@ -382,7 +402,6 @@ export default function TelaDieta() {
                   <Text style={estilos.horarioRefeicao}>{calRef > 0 ? `${calRef} kcal` : ref.horario}</Text>
                 </View>
 
-                {/* Botão '+' do card: Adiciona alimento avulso a ESTA refeição específica */}
                 <TouchableOpacity
                   style={estilos.btnOpcoes}
                   onPress={() => {
@@ -419,7 +438,7 @@ export default function TelaDieta() {
         })}
       </ScrollView>
 
-      {/* ── FAB Primário Amarelo: Abre Menu Flutuante (Ajuste 1) ── */}
+      {/* ── FAB Primário Amarelo: Abre Menu Flutuante ── */}
       <TouchableOpacity
         style={estilos.fabAmarelo}
         onPress={() => setMenuOpcoesVisivel(true)}
@@ -430,7 +449,7 @@ export default function TelaDieta() {
         </View>
       </TouchableOpacity>
 
-      {/* ── Menu Flutuante (3 Opções do Ajuste 1) ─────────────── */}
+      {/* ── Menu Flutuante ───────────────────────────────────── */}
       <Modal visible={menuOpcoesVisivel} animationType="fade" transparent statusBarTranslucent>
         <TouchableOpacity
           style={estilos.modalOverlay}
@@ -441,12 +460,7 @@ export default function TelaDieta() {
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Adicionar Refeição</Text>
 
-          {/* Opção 1: Criar nova refeição */}
-          <TouchableOpacity
-            style={estilos.itemMenuOpcao}
-            onPress={lidarComCriarNovaRefeicao}
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={estilos.itemMenuOpcao} onPress={lidarComCriarNovaRefeicao} activeOpacity={0.7}>
             <View style={estilos.iconeMenuOpcao}>
               <SymbolView name="plus.circle.fill" size={22} tintColor={Cores.accent} />
             </View>
@@ -456,7 +470,6 @@ export default function TelaDieta() {
             </View>
           </TouchableOpacity>
 
-          {/* Opção 2: Criar refeição personalizada */}
           <TouchableOpacity
             style={estilos.itemMenuOpcao}
             onPress={() => {
@@ -470,11 +483,10 @@ export default function TelaDieta() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Criar refeição personalizada</Text>
-              <Text style={estilos.subtituloMenuOpcao}>Salvar um molde com itens para reutilizar</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Montar nome e alimentos numa única tela</Text>
             </View>
           </TouchableOpacity>
 
-          {/* Opção 3: Minhas refeições */}
           <TouchableOpacity
             style={estilos.itemMenuOpcao}
             onPress={() => {
@@ -494,43 +506,79 @@ export default function TelaDieta() {
         </BlurView>
       </Modal>
 
-      {/* ── Modal Criar Refeição Personalizada (Template) ────── */}
+      {/* ── Modal Criar Refeição Personalizada em ÚNICA TELA (Rodada 2 — Ajuste 4) ── */}
       <Modal visible={modalCriarTemplateVisivel} animationType="slide" transparent statusBarTranslucent>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalCriarTemplateVisivel(false)} />
           <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Criar Refeição Personalizada</Text>
-            <Text style={estilos.subtituloModal}>Defina o nome do molde para salvar no catálogo:</Text>
 
+            <Text style={estilos.labelForm}>Nome da Refeição:</Text>
             <TextInput
               style={estilos.inputBusca}
               placeholder="Ex: Almoço Low Carb, Shake Proteico..."
               placeholderTextColor={Cores.texto.desabilitado}
               value={nomeNovoTemplate}
               onChangeText={setNomeNovoTemplate}
-              autoFocus
             />
+
+            <Text style={estilos.labelForm}>Adicionar Alimento a este Molde:</Text>
+            <View style={estilos.rowAddAlimentoTemp}>
+              <TextInput
+                style={[estilos.inputBusca, { flex: 2, marginBottom: 0 }]}
+                placeholder="Alimento (ex: Ovos)"
+                placeholderTextColor={Cores.texto.desabilitado}
+                value={inputNomeAlimentoTemp}
+                onChangeText={setInputNomeAlimentoTemp}
+              />
+              <TextInput
+                style={[estilos.inputBusca, { flex: 1, marginBottom: 0 }]}
+                placeholder="Porção"
+                placeholderTextColor={Cores.texto.desabilitado}
+                value={inputPorcaoTemp}
+                onChangeText={setInputPorcaoTemp}
+              />
+              <TouchableOpacity style={estilos.btnAddTemp} onPress={adicionarAlimentoAoTemplateTemp}>
+                <SymbolView name="plus" size={16} tintColor="#080A0E" weight="bold" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Lista de Alimentos incluídos no Molde */}
+            {alimentosTemplateTemp.length > 0 ? (
+              <View style={estilos.boxAlimentosTemp}>
+                <Text style={estilos.txtItensAdicionadosHeader}>Itens incluídos ({alimentosTemplateTemp.length}):</Text>
+                {alimentosTemplateTemp.map((a) => (
+                  <View key={a.id} style={estilos.itemTempRow}>
+                    <Text style={estilos.itemTempNome}>{a.nome} ({a.porcao})</Text>
+                    <TouchableOpacity onPress={() => setAlimentosTemplateTemp(prev => prev.filter(i => i.id !== a.id))}>
+                      <SymbolView name="trash" size={12} tintColor={Cores.feedback.erro} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <Text style={estilos.txtSemItensTemp}>Nenhum alimento adicionado ainda ao molde.</Text>
+            )}
 
             <View style={estilos.modalAcoes}>
               <TouchableOpacity onPress={() => setModalCriarTemplateVisivel(false)} style={estilos.btnCancelar}>
                 <Text style={estilos.txtCancelar}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={lidarComSalvarTemplatePersonalizado} style={estilos.btnSalvar}>
-                <Text style={estilos.txtSalvar}>Salvar Molde</Text>
+                <Text style={estilos.txtSalvar}>Salvar Molde Completo</Text>
               </TouchableOpacity>
             </View>
           </BlurView>
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ── Modal Minhas Refeições (Lista de Templates) ───────── */}
+      {/* ── Modal Minhas Refeições ───────────────────────────── */}
       <Modal visible={modalMinhasRefeicoesVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMinhasRefeicoesVisivel(false)} />
         <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Minhas Refeições</Text>
-          <Text style={estilos.subtituloModal}>Selecione uma refeição salva para adicionar ao dia:</Text>
 
           {templates.map(tpl => {
             const cal = tpl.alimentos.reduce((s, a) => s + a.calorias, 0);
@@ -618,12 +666,6 @@ const estilos = StyleSheet.create({
     fontSize: 20,
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
-  },
-  topBarIcone: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   topBarDireita: {
     flexDirection: 'row',
@@ -786,11 +828,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Modais e Sheet
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
   modalHandle: {
     width: 36,
     height: 4,
@@ -827,10 +865,55 @@ const estilos = StyleSheet.create({
     color: Cores.texto.principal,
     marginBottom: 12,
   },
-  subtituloModal: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
+
+  labelForm: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 12,
     color: Cores.texto.secundario,
+    marginBottom: 6,
+    marginTop: 6,
+  },
+  rowAddAlimentoTemp: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  btnAddTemp: {
+    backgroundColor: Cores.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: Raio.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  boxAlimentosTemp: {
+    backgroundColor: Cores.fundo.elevada,
+    padding: 12,
+    borderRadius: Raio.md,
+    marginBottom: 16,
+  },
+  txtItensAdicionadosHeader: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 11,
+    color: Cores.accent,
+    marginBottom: 6,
+  },
+  itemTempRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  itemTempNome: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.principal,
+  },
+  txtSemItensTemp: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.texto.desabilitado,
     marginBottom: 16,
   },
 

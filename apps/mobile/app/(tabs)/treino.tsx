@@ -1,10 +1,12 @@
 // ============================================================
 // TELA: Módulo de Treino (app/(tabs)/treino.tsx)
 // ============================================================
-// Clean Dark UI — Ajuste 2:
-// - Definição de exercícios, séries e tempo de descanso entre séries (ex: 60s)
-// - Histórico da última carga/reps utilizada por exercício
-// - Botão para trocar o treino planejado da data por outro treino do catálogo
+// Clean Dark UI — Rodada 2: Ajuste 3
+// - Botão flutuante (FAB) que abre menu de opções:
+//   1. "Criar novo treino"
+//   2. "Meus treinos"
+//   3. "Definir treino da semana"
+// - Predefinição semanal com seleção automática ao abrir no dia seguinte.
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -26,11 +28,14 @@ import { CardVidro, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import {
   obterPlanoTreinoCustomizado,
+  salvarPlanoTreinoCustomizado,
   adicionarExercicioAoDia,
   atualizarExercicio,
   removerExercicio,
   definirTreinoEspecialParaData,
   obterTreinoEspecialParaData,
+  obterMapeamentoSemanal,
+  salvarMapeamentoSemanal,
   obterUltimaCargaExercicio,
   DiaTreinoCustomizado,
   ExercicioCustomizado,
@@ -50,19 +55,27 @@ export default function TelaTreino() {
   const router = useRouter();
   const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
   const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
+  const [mapeamentoSemanal, setMapeamentoSemanal] = useState<Record<string, string>>({});
   const [idTreinoEspecial, setIdTreinoEspecial] = useState<string | null>(null);
 
   // Histórico de últimas cargas
   const [ultimasCargas, setUltimasCargas] = useState<Record<string, { cargaKg: number; repeticoes: number }>>({});
 
-  // Modais
+  // Modais do Ajuste 3
+  const [menuTreinoVisivel, setMenuTreinoVisivel] = useState(false);
+  const [modalCriarNovoTreinoVisivel, setModalCriarNovoTreinoVisivel] = useState(false);
+  const [modalMeusTreinosVisivel, setModalMeusTreinosVisivel] = useState(false);
+  const [modalDefinirSemanaVisivel, setModalDefinirSemanaVisivel] = useState(false);
+
+  // Modais de exercícios
   const [modalAdicionarVisivel, setModalAdicionarVisivel] = useState(false);
   const [modalEditarVisivel, setModalEditarVisivel] = useState(false);
   const [modalTrocarTreinoVisivel, setModalTrocarTreinoVisivel] = useState(false);
 
   const [exercicioEmEdicao, setExercicioEmEdicao] = useState<ExercicioCustomizado | null>(null);
 
-  // Form de novo exercício
+  // Forms
+  const [novoFocoTreino, setNovoFocoTreino] = useState('');
   const [novoNome, setNovoNome] = useState('');
   const [novoGrupo, setNovoGrupo] = useState('Peito');
   const [novasSeries, setNovasSeries] = useState('4');
@@ -78,11 +91,12 @@ export default function TelaTreino() {
     const dados = await obterPlanoTreinoCustomizado();
     setPlanos(dados);
 
-    // Carrega se o usuário trocou o treino deste dia específico
+    const mapSemana = await obterMapeamentoSemanal();
+    setMapeamentoSemanal(mapSemana);
+
     const especial = await obterTreinoEspecialParaData(diaSelecionado);
     setIdTreinoEspecial(especial);
 
-    // Carrega últimas cargas dos exercícios
     const cargasMapa: Record<string, { cargaKg: number; repeticoes: number }> = {};
     for (const dia of dados) {
       for (const ex of dia.exercicios) {
@@ -95,12 +109,41 @@ export default function TelaTreino() {
     setUltimasCargas(cargasMapa);
   };
 
-  // Mapeia o dia selecionado (ou o treino trocado)
-  const diaIndexDefault = DIAS_SEMANA_CARROSSEL.findIndex(d => d.data === diaSelecionado);
-  const treinoDefault = planos[diaIndexDefault % (planos.length || 1)] || planos[0];
-  const diaAtual = idTreinoEspecial ? planos.find(p => p.id === idTreinoEspecial) || treinoDefault : treinoDefault;
+  // Identifica a abreviação do dia no carrossel (dom, seg, ter...)
+  const itemCarrossel = DIAS_SEMANA_CARROSSEL.find(d => d.data === diaSelecionado);
+  const abrevDia = itemCarrossel ? itemCarrossel.abrev : 'seg';
+
+  // Seleciona o treino pré-definido para aquele dia da semana (ou treino especial da data)
+  const idTreinoPredefinido = mapeamentoSemanal[abrevDia];
+  const treinoDefaultSemanal = planos.find(p => p.id === idTreinoPredefinido) || planos[0];
+  const diaAtual = idTreinoEspecial ? planos.find(p => p.id === idTreinoEspecial) || treinoDefaultSemanal : treinoDefaultSemanal;
 
   const temTreino = diaAtual && diaAtual.exercicios && diaAtual.exercicios.length > 0;
+
+  // 1. Criar novo treino (Rodada 2 — Ajuste 3)
+  const lidarComCriarNovoTreino = async () => {
+    if (!novoFocoTreino.trim()) return;
+    const novoTreino: DiaTreinoCustomizado = {
+      id: `dia-${Date.now()}`,
+      diaSemana: 'Personalizado',
+      foco: novoFocoTreino,
+      exercicios: [
+        { id: `ex-${Date.now()}`, nome: 'Exercício Base', grupoMuscular: 'Geral', series: 4, repeticoes: 10, cargaKg: 20, tempoDescansoSegundos: 60 },
+      ],
+    };
+    const atualizados = [...planos, novoTreino];
+    setPlanos(atualizados);
+    await salvarPlanoTreinoCustomizado(atualizados);
+    setNovoFocoTreino('');
+    setModalCriarNovoTreinoVisivel(false);
+  };
+
+  // 2. Definir treino para um dia da semana (Rodada 2 — Ajuste 3)
+  const lidarComDefinirDiaSemana = async (abrev: string, idTreino: string) => {
+    const novoMap = { ...mapeamentoSemanal, [abrev]: idTreino };
+    setMapeamentoSemanal(novoMap);
+    await salvarMapeamentoSemanal(novoMap);
+  };
 
   const lidarComSalvarNovoExercicio = async () => {
     if (!diaAtual) return;
@@ -143,7 +186,7 @@ export default function TelaTreino() {
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
+        {/* ── Top Bar Limpa ────────────────────────────────────── */}
         <View style={estilos.topBar}>
           <Text style={estilos.topBarTitulo}>Treino</Text>
 
@@ -177,7 +220,7 @@ export default function TelaTreino() {
           })}
         </View>
 
-        {/* ── Card do Foco do Dia + Botão de Trocar Treino ── */}
+        {/* ── Card do Foco do Dia ────────────────────────────── */}
         <CardVidro semBorda estilo={estilos.cardDiaHeader}>
           <View style={estilos.rowDiaHeader}>
             <View style={estilos.iconeFocoContainer}>
@@ -195,7 +238,6 @@ export default function TelaTreino() {
             </View>
 
             <View style={{ flexDirection: 'row', gap: 6 }}>
-              {/* Botão Trocar Treino do Dia (Ajuste 2) */}
               <TouchableOpacity
                 style={estilos.btnTrocarTreino}
                 onPress={() => setModalTrocarTreinoVisivel(true)}
@@ -240,7 +282,6 @@ export default function TelaTreino() {
                       <Text style={estilos.exSub}>
                         {ex.series} séries · {ex.repeticoes} reps · {ex.cargaKg}kg · {ex.tempoDescansoSegundos || 60}s descanso
                       </Text>
-                      {/* Histórico de última execução */}
                       <Text style={estilos.exUltimaExecucao}>
                         Última: {ultima ? `${ultima.cargaKg}kg x ${ultima.repeticoes} reps` : `${ex.cargaKg}kg (atual)`}
                       </Text>
@@ -268,13 +309,181 @@ export default function TelaTreino() {
         )}
       </ScrollView>
 
-      {/* ── Modal Trocar Treino do Dia (Ajuste 2) ───────────── */}
+      {/* ── FAB Primário Amarelo: Abre Menu Flutuante (Rodada 2 — Ajuste 3) ── */}
+      <TouchableOpacity
+        style={estilos.fabAmarelo}
+        onPress={() => setMenuTreinoVisivel(true)}
+        activeOpacity={0.85}
+      >
+        <View style={estilos.fabInnerAmarelo}>
+          <SymbolView name="plus" size={26} tintColor="#FFFFFF" weight="bold" />
+        </View>
+      </TouchableOpacity>
+
+      {/* ── Menu Flutuante de Opções de Treino (Rodada 2 — Ajuste 3) ── */}
+      <Modal visible={menuTreinoVisivel} animationType="fade" transparent statusBarTranslucent>
+        <TouchableOpacity
+          style={estilos.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setMenuTreinoVisivel(false)}
+        />
+        <BlurView intensity={90} tint="dark" style={estilos.menuSheetContainer}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Opções de Treino</Text>
+
+          {/* Opção 1: Criar novo treino */}
+          <TouchableOpacity
+            style={estilos.itemMenuOpcao}
+            onPress={() => {
+              setMenuTreinoVisivel(false);
+              setModalCriarNovoTreinoVisivel(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="plus.circle.fill" size={22} tintColor={Cores.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Criar novo treino</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Montar uma nova rotina (ex: Treino C)</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Opção 2: Meus treinos */}
+          <TouchableOpacity
+            style={estilos.itemMenuOpcao}
+            onPress={() => {
+              setMenuTreinoVisivel(false);
+              setModalMeusTreinosVisivel(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="dumbbell.fill" size={22} tintColor="#EAB308" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Meus treinos</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Lista de todos os treinos criados por você</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Opção 3: Definir treino da semana */}
+          <TouchableOpacity
+            style={estilos.itemMenuOpcao}
+            onPress={() => {
+              setMenuTreinoVisivel(false);
+              setModalDefinirSemanaVisivel(true);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={estilos.iconeMenuOpcao}>
+              <SymbolView name="calendar" size={22} tintColor="#3B82F6" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={estilos.tituloMenuOpcao}>Definir treino da semana</Text>
+              <Text style={estilos.subtituloMenuOpcao}>Predefinir treino para cada dia (Seg, Ter...)</Text>
+            </View>
+          </TouchableOpacity>
+        </BlurView>
+      </Modal>
+
+      {/* ── Modal Criar Novo Treino (Rodada 2 — Ajuste 3) ─────── */}
+      <Modal visible={modalCriarNovoTreinoVisivel} animationType="slide" transparent statusBarTranslucent>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalCriarNovoTreinoVisivel(false)} />
+          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <View style={estilos.modalHandle} />
+            <Text style={estilos.modalTitulo}>Criar Novo Treino</Text>
+
+            <TextInput
+              style={estilos.input}
+              placeholder="Foco do treino (ex: Ombros & Trapézio)"
+              placeholderTextColor={Cores.texto.desabilitado}
+              value={novoFocoTreino}
+              onChangeText={setNovoFocoTreino}
+              autoFocus
+            />
+
+            <View style={estilos.modalAcoes}>
+              <TouchableOpacity onPress={() => setModalCriarNovoTreinoVisivel(false)} style={estilos.btnCancelar}>
+                <Text style={estilos.txtCancelar}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={lidarComCriarNovoTreino} style={estilos.btnSalvar}>
+                <Text style={estilos.txtSalvar}>Criar Treino</Text>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Modal Meus Treinos (Rodada 2 — Ajuste 3) ─────────── */}
+      <Modal visible={modalMeusTreinosVisivel} animationType="slide" transparent statusBarTranslucent>
+        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMeusTreinosVisivel(false)} />
+        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Meus Treinos Criados</Text>
+
+          {planos.map(p => (
+            <View key={p.id} style={estilos.itemTrocaTreino}>
+              <View style={{ flex: 1 }}>
+                <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
+                <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios cadastrados</Text>
+              </View>
+            </View>
+          ))}
+
+          <View style={estilos.modalAcoes}>
+            <TouchableOpacity onPress={() => setModalMeusTreinosVisivel(false)} style={estilos.btnSalvar}>
+              <Text style={estilos.txtSalvar}>Concluído</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      </Modal>
+
+      {/* ── Modal Definir Treino da Semana (Rodada 2 — Ajuste 3) ── */}
+      <Modal visible={modalDefinirSemanaVisivel} animationType="slide" transparent statusBarTranslucent>
+        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalDefinirSemanaVisivel(false)} />
+        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <View style={estilos.modalHandle} />
+          <Text style={estilos.modalTitulo}>Definir Treino da Semana</Text>
+          <Text style={estilos.subtituloModal}>Escolha qual treino será feito em cada dia:</Text>
+
+          {['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'].map(abrev => {
+            const idAtual = mapeamentoSemanal[abrev];
+            const treinoAtualMap = planos.find(p => p.id === idAtual) || planos[0];
+
+            return (
+              <View key={abrev} style={estilos.rowSemanaConfig}>
+                <Text style={estilos.txtSemanaDia}>{abrev.toUpperCase()}</Text>
+
+                <TouchableOpacity
+                  style={estilos.btnSelectSemana}
+                  onPress={() => {
+                    const nextIndex = (planos.findIndex(p => p.id === idAtual) + 1) % planos.length;
+                    lidarComDefinirDiaSemana(abrev, planos[nextIndex].id);
+                  }}
+                >
+                  <Text style={estilos.txtSelectSemanaVal}>{treinoAtualMap ? treinoAtualMap.foco : 'Selecione'}</Text>
+                  <SymbolView name="chevron.right" size={12} tintColor={Cores.accent} />
+                </TouchableOpacity>
+              </View>
+            );
+          })}
+
+          <View style={estilos.modalAcoes}>
+            <TouchableOpacity onPress={() => setModalDefinirSemanaVisivel(false)} style={estilos.btnSalvar}>
+              <Text style={estilos.txtSalvar}>Salvar Predefinição</Text>
+            </TouchableOpacity>
+          </View>
+        </BlurView>
+      </Modal>
+
+      {/* ── Modal Trocar Treino do Dia ──────────────────────── */}
       <Modal visible={modalTrocarTreinoVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalTrocarTreinoVisivel(false)} />
         <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Trocar Treino para esta Data</Text>
-          <Text style={estilos.subtituloModal}>Selecione qual treino deseja realizar no dia {diaSelecionado}:</Text>
 
           {planos.map(p => (
             <TouchableOpacity
@@ -466,12 +675,6 @@ const estilos = StyleSheet.create({
     fontWeight: PesoFonte.bold,
     color: Cores.texto.principal,
   },
-  topBarIcone: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   topBarDireita: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -661,7 +864,30 @@ const estilos = StyleSheet.create({
     marginTop: 4,
   },
 
-  // Modal
+  // FAB Amarelo (Rodada 2 — Ajuste 3)
+  fabAmarelo: {
+    position: 'absolute',
+    bottom: 96,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    overflow: 'hidden',
+    shadowColor: Cores.amarelo,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  fabInnerAmarelo: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: Cores.amarelo,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Modais e Sheet
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
   modalHandle: {
     width: 36,
@@ -671,6 +897,46 @@ const estilos = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 16,
   },
+  menuSheetContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    backgroundColor: 'rgba(16,19,24,0.98)',
+    borderTopWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  itemMenuOpcao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  iconeMenuOpcao: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: Cores.fundo.elevada,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tituloMenuOpcao: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  subtituloMenuOpcao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+
   modalCard: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -690,6 +956,34 @@ const estilos = StyleSheet.create({
     fontSize: Fonte.label,
     color: Cores.texto.secundario,
     marginBottom: 16,
+  },
+
+  rowSemanaConfig: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  txtSemanaDia: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.corpo,
+    color: Cores.texto.principal,
+  },
+  btnSelectSemana: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Cores.fundo.elevada,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Raio.sm,
+  },
+  txtSelectSemanaVal: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 13,
+    color: Cores.accent,
   },
 
   itemTrocaTreino: {

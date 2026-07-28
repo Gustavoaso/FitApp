@@ -1,8 +1,9 @@
 // ============================================================
 // SERVIÇO: Gestão de Planos (servicos/planoGestaoServico.ts)
 // ============================================================
-// Gerencia treinos personalizados, tempo de descanso entre séries,
-// histórico da última carga/reps utilizada e troca de treino por dia.
+// Rodada 2 — Ajuste 3:
+// Suporte a criação de treinos personalizados, mapeamento de treino por dia da semana
+// e pré-seleção automática baseada no dia da semana atual do sistema.
 // ============================================================
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,7 +16,7 @@ export interface ExercicioCustomizado {
   series: number;
   repeticoes: number;
   cargaKg: number;
-  tempoDescansoSegundos: number; // Ajuste 2: Tempo de descanso em segundos (ex: 60)
+  tempoDescansoSegundos: number;
 }
 
 export interface DiaTreinoCustomizado {
@@ -27,6 +28,7 @@ export interface DiaTreinoCustomizado {
 
 const CHAVE_PLANO_TREINO = '@fitapp_plano_treino_custom_v1';
 const CHAVE_TROCAS_DIARIAS = '@fitapp_trocas_treino_diarias_v1';
+const CHAVE_MAPEAMENTO_SEMANAL = '@fitapp_mapeamento_semanal_v1';
 
 const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
   {
@@ -64,6 +66,16 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
   },
 ];
 
+const MAPEAMENTO_INICIAL_SEMANAL: Record<string, string> = {
+  dom: 'dia-3',
+  seg: 'dia-1',
+  ter: 'dia-2',
+  qua: 'dia-3',
+  qui: 'dia-1',
+  sex: 'dia-2',
+  sáb: 'dia-3',
+};
+
 /**
  * Obtém os dias de treino customizados.
  */
@@ -93,7 +105,34 @@ export async function salvarPlanoTreinoCustomizado(planos: DiaTreinoCustomizado[
 }
 
 /**
- * Ajuste 2: Permite trocar o treino planejado para uma data específica.
+ * Rodada 2 — Ajuste 3: Salva o mapeamento semanal de treinos (ex: seg -> dia-1).
+ */
+export async function salvarMapeamentoSemanal(mapeamento: Record<string, string>): Promise<void> {
+  try {
+    await AsyncStorage.setItem(CHAVE_MAPEAMENTO_SEMANAL, JSON.stringify(mapeamento));
+  } catch (erro) {
+    console.error('Erro ao salvar mapeamento semanal:', erro);
+  }
+}
+
+/**
+ * Rodada 2 — Ajuste 3: Obtém o mapeamento semanal de treinos.
+ */
+export async function obterMapeamentoSemanal(): Promise<Record<string, string>> {
+  try {
+    const json = await AsyncStorage.getItem(CHAVE_MAPEAMENTO_SEMANAL);
+    if (!json) {
+      await AsyncStorage.setItem(CHAVE_MAPEAMENTO_SEMANAL, JSON.stringify(MAPEAMENTO_INICIAL_SEMANAL));
+      return MAPEAMENTO_INICIAL_SEMANAL;
+    }
+    return JSON.parse(json);
+  } catch (erro) {
+    return MAPEAMENTO_INICIAL_SEMANAL;
+  }
+}
+
+/**
+ * Permite trocar o treino planejado para uma data específica.
  */
 export async function definirTreinoEspecialParaData(dataStr: string, idTreino: string): Promise<void> {
   try {
@@ -107,7 +146,7 @@ export async function definirTreinoEspecialParaData(dataStr: string, idTreino: s
 }
 
 /**
- * Ajuste 2: Obtém a troca de treino para uma data (se houver).
+ * Obtém a troca de treino para uma data (se houver).
  */
 export async function obterTreinoEspecialParaData(dataStr: string): Promise<string | null> {
   try {
@@ -121,7 +160,7 @@ export async function obterTreinoEspecialParaData(dataStr: string): Promise<stri
 }
 
 /**
- * Ajuste 2: Obtém a última carga e repetições utilizadas em um exercício.
+ * Obtém a última carga e repetições utilizadas em um exercício.
  */
 export async function obterUltimaCargaExercicio(idExercicio: string): Promise<{ cargaKg: number; repeticoes: number; data: string } | null> {
   try {

@@ -1,9 +1,9 @@
 // ============================================================
 // TELA: Dashboard / Início (app/(tabs)/inicio.tsx)
 // ============================================================
-// Clean Dark UI — Ajuste 3 & 4:
-// - Ajuste 3: Meta de água editável + incrementos de 250ml, 500ml e 1L.
-// - Ajuste 4: Limpeza de ícones da barra superior (lupa/engrenagem removidos).
+// Clean Dark UI.
+// Rodada 2 — Ajuste 1: Todos os cards são interativos e navegam para telas correspondentes.
+// Rodada 2 — Ajuste 2: Adicionadas opções inversas para remover água (-250ml, -500ml, -1L).
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -47,7 +47,7 @@ export default function TelaInicio() {
   const [gordura] = useState(52);
   const [gorduraMeta] = useState(72);
 
-  // Ajuste 3: Hidratação em ml com meta editável
+  // Hidratação
   const [aguaConsumidaMl, setAguaConsumidaMl] = useState(1250);
   const [metaAguaMl, setMetaAguaMl] = useState(2000);
   const [modalMetaAguaVisivel, setModalMetaAguaVisivel] = useState(false);
@@ -103,9 +103,14 @@ export default function TelaInicio() {
     setModalPesoVisivel(false);
   };
 
-  // Ajuste 3: Adicionar quantidade específica de água (250ml, 500ml, 1000ml)
+  // Adicionar consumo de água
   const adicionarAgua = (quantidadeMl: number) => {
-    setAguaConsumidaMl(prev => Math.min(prev + quantidadeMl, metaAguaMl + 2000));
+    setAguaConsumidaMl(prev => Math.min(prev + quantidadeMl, metaAguaMl + 3000));
+  };
+
+  // Rodada 2 — Ajuste 2: Remover consumo de água (função inversa)
+  const removerAgua = (quantidadeMl: number) => {
+    setAguaConsumidaMl(prev => Math.max(0, prev - quantidadeMl));
   };
 
   const salvarMetaAgua = () => {
@@ -120,7 +125,7 @@ export default function TelaInicio() {
     <View style={estilos.container}>
       <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ── Top Bar Limpa (Ajuste 4: sem ícones de busca/engrenagem) ── */}
+        {/* ── Top Bar ────────────────────────────────────────── */}
         <View style={estilos.topBar}>
           <View>
             <Text style={estilos.saudacao}>{saudacao}</Text>
@@ -135,64 +140,70 @@ export default function TelaInicio() {
           </View>
         </View>
 
-        {/* ── Card Principal: Calorias (compacto) ──────────── */}
-        <CardVidro semBorda estilo={estilos.cardCalorias}>
-          <View style={estilos.rowCalorias}>
-            <AnelProgresso
-              atual={caloriasConsumidas}
-              meta={caloriasMeta}
-              tamanho={88}
-              espessura={5}
-              mostrarValor={true}
-            />
+        {/* ── Card Principal: Calorias (Rodada 2 — Ajuste 1: Navega para Dieta) ── */}
+        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/dieta')}>
+          <CardVidro semBorda estilo={estilos.cardCalorias}>
+            <View style={estilos.rowCalorias}>
+              <AnelProgresso
+                atual={caloriasConsumidas}
+                meta={caloriasMeta}
+                tamanho={88}
+                espessura={5}
+                mostrarValor={true}
+              />
 
-            <View style={estilos.colInfoCalorias}>
-              <Text style={estilos.labelCalorias}>Calorias hoje</Text>
-              <Text style={estilos.valorCalorias}>{caloriasConsumidas.toLocaleString()}</Text>
-              <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
+              <View style={estilos.colInfoCalorias}>
+                <Text style={estilos.labelCalorias}>Calorias hoje</Text>
+                <Text style={estilos.valorCalorias}>{caloriasConsumidas.toLocaleString()}</Text>
+                <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
 
-              <View style={estilos.barraFundo}>
-                <View
-                  style={[
-                    estilos.barraProgresso,
-                    { width: `${porcentagemCalorias}%` },
-                  ]}
-                />
+                <View style={estilos.barraFundo}>
+                  <View
+                    style={[
+                      estilos.barraProgresso,
+                      { width: `${porcentagemCalorias}%` },
+                    ]}
+                  />
+                </View>
+                <Text style={estilos.textoPorcentagem}>{porcentagemCalorias}% concluído</Text>
               </View>
-              <Text style={estilos.textoPorcentagem}>{porcentagemCalorias}% concluído</Text>
             </View>
-          </View>
-        </CardVidro>
+          </CardVidro>
+        </TouchableOpacity>
 
-        {/* ── Macronutrientes ───────────────────────────────── */}
+        {/* ── Macronutrientes (Rodada 2 — Ajuste 1: Navega para Dieta) ── */}
         <Text style={estilos.secaoTitulo}>Macronutrientes</Text>
-        <View style={estilos.gridMacros}>
-          {[
-            { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
-            { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
-            { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
-          ].map((macro, i) => (
-            <CardVidro key={i} semBorda estilo={estilos.cardMacro}>
-              <View style={estilos.rowMacroTopo}>
-                {macro.icone}
-                <Text style={estilos.macroNome}>{macro.nome}</Text>
-              </View>
-              <Text style={estilos.macroValor}>{macro.atual}<Text style={estilos.macroUnidade}>g</Text></Text>
-              <View style={estilos.barraFundoMacro}>
-                <View
-                  style={[
-                    estilos.barraProgressoMacro,
-                    { width: `${Math.min((macro.atual / macro.meta) * 100, 100)}%` },
-                  ]}
-                />
-              </View>
-              <Text style={estilos.macroMeta}>/{macro.meta}g</Text>
-            </CardVidro>
-          ))}
-        </View>
+        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/dieta')}>
+          <View style={estilos.gridMacros}>
+            {[
+              { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
+              { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
+              { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
+            ].map((macro, i) => (
+              <CardVidro key={i} semBorda estilo={estilos.cardMacro}>
+                <View style={estilos.rowMacroTopo}>
+                  {macro.icone}
+                  <Text style={estilos.macroNome}>{macro.nome}</Text>
+                </View>
+                <Text style={estilos.macroValor}>{macro.atual}<Text style={estilos.macroUnidade}>g</Text></Text>
+                <View style={estilos.barraFundoMacro}>
+                  <View
+                    style={[
+                      estilos.barraProgressoMacro,
+                      { width: `${Math.min((macro.atual / macro.meta) * 100, 100)}%` },
+                    ]}
+                  />
+                </View>
+                <Text style={estilos.macroMeta}>/{macro.meta}g</Text>
+              </CardVidro>
+            ))}
+          </View>
+        </TouchableOpacity>
 
-        {/* ── Painel de Aderência Semanal Real ─────────────── */}
-        <CardAderencia estatisticas={estatisticas} />
+        {/* ── Painel de Aderência Semanal (Rodada 2 — Ajuste 1: Navega para Perfil) ── */}
+        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/perfil')}>
+          <CardAderencia estatisticas={estatisticas} />
+        </TouchableOpacity>
 
         {/* ── Gráfico de Evolução de Peso ───────────────────── */}
         <CardVidro semBorda estilo={estilos.cardEvolucao}>
@@ -206,7 +217,7 @@ export default function TelaInicio() {
           <GraficoEvolucao dados={dadosGraficoPeso} unidade="kg" altura={130} />
         </CardVidro>
 
-        {/* ── Hidratação Editável & Opções 250ml/500ml/1L (Ajuste 3) ── */}
+        {/* ── Hidratação Editável & Função Inversa de Remoção (Ajuste 2) ── */}
         <Text style={estilos.secaoTitulo}>Hidratação</Text>
         <CardVidro semBorda estilo={estilos.cardAgua}>
           <View style={estilos.rowAguaTopo}>
@@ -232,7 +243,8 @@ export default function TelaInicio() {
             />
           </View>
 
-          {/* Incrementos Rápidos de Água (Ajuste 3: +250ml, +500ml, +1L) */}
+          {/* Adicionar consumo (+250ml, +500ml, +1L) */}
+          <Text style={estilos.subtituloAguaAcao}>Adicionar consumo:</Text>
           <View style={estilos.rowIncrementosAgua}>
             <TouchableOpacity style={estilos.btnIncrementoAgua} onPress={() => adicionarAgua(250)}>
               <Text style={estilos.txtIncrementoAgua}>+ 250ml</Text>
@@ -247,31 +259,47 @@ export default function TelaInicio() {
               <Text style={estilos.txtEditarMetaAgua}>Meta</Text>
             </TouchableOpacity>
           </View>
-        </CardVidro>
 
-        {/* ── Próxima Sessão de Treino ──────────────────────── */}
-        <Text style={estilos.secaoTitulo}>Próxima Sessão</Text>
-        <CardVidro semBorda estilo={estilos.cardTreino}>
-          <View style={estilos.rowTreino}>
-            <View style={estilos.colTreino}>
-              <Text style={estilos.badgeTreino}>HOJE</Text>
-              <Text style={estilos.treinoTitulo}>Peito & Tríceps</Text>
-              <Text style={estilos.treinoSub}>4 exercícios · ~45 min</Text>
-            </View>
-            <View style={estilos.iconeTreinoContainer}>
-              <SymbolView name="bolt.fill" size={20} tintColor={Cores.accent} />
-            </View>
+          {/* Rodada 2 — Ajuste 2: Remover consumo (-250ml, -500ml, -1L) */}
+          <Text style={estilos.subtituloAguaAcaoRemover}>Retirar consumo (função inversa):</Text>
+          <View style={estilos.rowIncrementosAgua}>
+            <TouchableOpacity style={estilos.btnRemoverAgua} onPress={() => removerAgua(250)}>
+              <Text style={estilos.txtRemoverAgua}>- 250ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={estilos.btnRemoverAgua} onPress={() => removerAgua(500)}>
+              <Text style={estilos.txtRemoverAgua}>- 500ml</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={estilos.btnRemoverAgua} onPress={() => removerAgua(1000)}>
+              <Text style={estilos.txtRemoverAgua}>- 1L</Text>
+            </TouchableOpacity>
           </View>
-
-          <BotaoPrimario
-            texto="Iniciar Treino ao Vivo"
-            aoPresionar={() => router.push('/treino-ao-vivo')}
-            estilo={estilos.botaoIniciar}
-          />
         </CardVidro>
+
+        {/* ── Próxima Sessão de Treino (Rodada 2 — Ajuste 1: Navega para Treino) ── */}
+        <Text style={estilos.secaoTitulo}>Próxima Sessão</Text>
+        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/treino')}>
+          <CardVidro semBorda estilo={estilos.cardTreino}>
+            <View style={estilos.rowTreino}>
+              <View style={estilos.colTreino}>
+                <Text style={estilos.badgeTreino}>HOJE</Text>
+                <Text style={estilos.treinoTitulo}>Peito & Tríceps</Text>
+                <Text style={estilos.treinoSub}>4 exercícios · ~45 min</Text>
+              </View>
+              <View style={estilos.iconeTreinoContainer}>
+                <SymbolView name="bolt.fill" size={20} tintColor={Cores.accent} />
+              </View>
+            </View>
+
+            <BotaoPrimario
+              texto="Iniciar Treino ao Vivo"
+              aoPresionar={() => router.push('/treino-ao-vivo')}
+              estilo={estilos.botaoIniciar}
+            />
+          </CardVidro>
+        </TouchableOpacity>
       </ScrollView>
 
-      {/* ── Modal Editar Meta de Água (Ajuste 3) ─────────────── */}
+      {/* ── Modal Editar Meta de Água ─────────────────────── */}
       <Modal visible={modalMetaAguaVisivel} animationType="slide" transparent statusBarTranslucent>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMetaAguaVisivel(false)} />
@@ -572,6 +600,19 @@ const estilos = StyleSheet.create({
     backgroundColor: Cores.accent,
     borderRadius: 3,
   },
+  subtituloAguaAcao: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.texto.secundario,
+    marginBottom: 6,
+  },
+  subtituloAguaAcaoRemover: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.texto.secundario,
+    marginTop: 10,
+    marginBottom: 6,
+  },
   rowIncrementosAgua: {
     flexDirection: 'row',
     gap: 8,
@@ -589,6 +630,20 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
     color: Cores.accent,
+  },
+  btnRemoverAgua: {
+    flex: 1,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    paddingVertical: 8,
+    borderRadius: Raio.sm,
+    alignItems: 'center',
+  },
+  txtRemoverAgua: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 12,
+    color: '#EF4444',
   },
   btnEditarMetaAgua: {
     paddingHorizontal: 12,
