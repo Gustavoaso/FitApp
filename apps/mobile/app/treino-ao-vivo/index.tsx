@@ -2,7 +2,8 @@
 // TELA: Treino ao Vivo (app/treino-ao-vivo/index.tsx)
 // ============================================================
 // Modo de execução do treino em tempo real.
-// Ajuste 6: Botão 'Sair' estilo pílula amarela (#EAB308) no canto superior esquerdo.
+// Rodada 3 — Ajuste 1: Atualização automática de carga/reps por série no progressoServico.
+// Botão 'Sair' pílula amarela no canto superior esquerdo.
 // ============================================================
 
 import React, { useState, useEffect } from 'react';
@@ -21,11 +22,12 @@ import * as Haptics from 'expo-haptics';
 import { CardVidro, BotaoPrimario, AnelProgresso } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { formatarTempo } from '@fitapp/utilidades';
+import { registrarExecucaoSerie } from '../../servicos/progressoServico';
 
 const exercicios = [
-  { id: '1', nome: 'Supino Reto com Barra', series: 4, reps: 10, cargaSugerida: 60, descansoSegundos: 90 },
-  { id: '2', nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, cargaSugerida: 24, descansoSegundos: 60 },
-  { id: '3', nome: 'Tríceps Pulley com Corda', series: 4, reps: 12, cargaSugerida: 35, descansoSegundos: 60 },
+  { id: 'ex-1', nome: 'Supino Reto com Barra', series: 4, reps: 10, cargaSugerida: 60, descansoSegundos: 90 },
+  { id: 'ex-2', nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, cargaSugerida: 24, descansoSegundos: 60 },
+  { id: 'ex-4', nome: 'Tríceps Pulley com Corda', series: 4, reps: 12, cargaSugerida: 35, descansoSegundos: 60 },
 ];
 
 export default function TelaTreinoAoVivo() {
@@ -39,7 +41,6 @@ export default function TelaTreinoAoVivo() {
 
   const exAtual = exercicios[indexExercicio];
 
-  // Timer de descanso
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
     if (emDescanso && tempoRestante > 0) {
@@ -56,8 +57,20 @@ export default function TelaTreinoAoVivo() {
     };
   }, [emDescanso, tempoRestante]);
 
-  const concluirSerie = () => {
+  // Rodada 3 — Ajuste 1: Conclui a série e registra automaticamente no progressoServico
+  const concluirSerie = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    const cargaFinal = parseFloat(cargaUsada) || exAtual.cargaSugerida;
+
+    // Registra no histórico por série do exercício
+    await registrarExecucaoSerie(
+      exAtual.id,
+      exAtual.nome,
+      serieAtual,
+      cargaFinal,
+      exAtual.reps
+    );
 
     if (serieAtual < exAtual.series) {
       setSerieAtual(serieAtual + 1);
@@ -89,7 +102,7 @@ export default function TelaTreinoAoVivo() {
 
   return (
     <View style={estilos.container}>
-      {/* Topo / Progresso da Sessão (Ajuste 6: Botão Sair Amarelo no Canto Superior Esquerdo) */}
+      {/* Topo / Progresso da Sessão */}
       <View style={estilos.topo}>
         <TouchableOpacity
           style={estilos.btnSairAmarelo}
@@ -177,8 +190,6 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 24,
   },
-
-  // Ajuste 6: Estilo botão pílula amarela no canto superior esquerdo
   btnSairAmarelo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -199,7 +210,6 @@ const estilos = StyleSheet.create({
     fontWeight: PesoFonte.bold,
     color: '#FFFFFF',
   },
-
   tituloTreino: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,

@@ -1,7 +1,7 @@
 // ============================================================
 // SERVIÇO: Progresso & Estatísticas (servicos/progressoServico.ts)
 // ============================================================
-// Gerencia histórico de pesagens, progressão de carga por exercício
+// Gerencia histórico de pesagens, progressão de carga por exercício e por SÉRIE
 // e métricas de aderência semanal.
 // ============================================================
 
@@ -14,6 +14,13 @@ export interface EntradaPeso {
   pesoKg: number;
 }
 
+export interface RegistroSerie {
+  numeroSerie: number;
+  cargaKg: number;
+  repeticoes: number;
+  data: string;
+}
+
 export interface EvolucaoCargaExercicio {
   idExercicio: string;
   nomeExercicio: string;
@@ -22,6 +29,7 @@ export interface EvolucaoCargaExercicio {
     cargaKg: number;
     repeticoes: number;
   }>;
+  seriesUltimaExecucao?: Record<number, { cargaKg: number; repeticoes: number }>; // Rodada 3 — Ajuste 1: carga por série
 }
 
 export interface EstatisticasAderencia {
@@ -35,7 +43,6 @@ export interface EstatisticasAderencia {
 const CHAVE_PESO = '@fitapp_progresso_peso_v1';
 const CHAVE_CARGAS = '@fitapp_progresso_cargas_v1';
 
-// Dados iniciais padrão de demonstração para primeiro uso
 const PESOS_INICIAIS_PADRAO: EntradaPeso[] = [
   { id: 'p1', data: '2026-07-01', pesoKg: 87.5 },
   { id: 'p2', data: '2026-07-08', pesoKg: 86.8 },
@@ -44,9 +51,6 @@ const PESOS_INICIAIS_PADRAO: EntradaPeso[] = [
   { id: 'p5', data: '2026-07-27', pesoKg: 85.0 },
 ];
 
-/**
- * Obtém todo o histórico de pesagens registradas.
- */
 export async function obterHistoricoPeso(): Promise<EntradaPeso[]> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_PESO);
@@ -61,9 +65,6 @@ export async function obterHistoricoPeso(): Promise<EntradaPeso[]> {
   }
 }
 
-/**
- * Adiciona uma nova medição de peso.
- */
 export async function adicionarEntradaPeso(pesoKg: number, dataStr?: string): Promise<EntradaPeso[]> {
   try {
     const data = dataStr || new Date().toISOString().split('T')[0];
@@ -85,11 +86,12 @@ export async function adicionarEntradaPeso(pesoKg: number, dataStr?: string): Pr
 }
 
 /**
- * Registra a carga utilizada em um exercício.
+ * Rodada 3 — Ajuste 1: Registra a carga e repetições executadas em UMA SÉRIE ESPECÍFICA.
  */
-export async function registrarCargaExercicio(
+export async function registrarExecucaoSerie(
   idExercicio: string,
   nomeExercicio: string,
+  numeroSerie: number,
   cargaKg: number,
   repeticoes: number,
   dataStr?: string
@@ -104,19 +106,34 @@ export async function registrarCargaExercicio(
         idExercicio,
         nomeExercicio,
         historicoCargas: [],
+        seriesUltimaExecucao: {},
       };
     }
 
+    if (!mapa[idExercicio].seriesUltimaExecucao) {
+      mapa[idExercicio].seriesUltimaExecucao = {};
+    }
+
+    // Atualiza o registro da série específica
+    mapa[idExercicio].seriesUltimaExecucao![numeroSerie] = { cargaKg, repeticoes };
     mapa[idExercicio].historicoCargas.push({ data, cargaKg, repeticoes });
+
     await AsyncStorage.setItem(CHAVE_CARGAS, JSON.stringify(mapa));
   } catch (erro) {
-    console.error('Erro ao registrar carga do exercício:', erro);
+    console.error('Erro ao registrar série do exercício:', erro);
   }
 }
 
-/**
- * Obtém a evolução de cargas de todos os exercícios.
- */
+export async function registrarCargaExercicio(
+  idExercicio: string,
+  nomeExercicio: string,
+  cargaKg: number,
+  repeticoes: number,
+  dataStr?: string
+): Promise<void> {
+  return registrarExecucaoSerie(idExercicio, nomeExercicio, 1, cargaKg, repeticoes, dataStr);
+}
+
 export async function obterEvolucaoCargas(): Promise<EvolucaoCargaExercicio[]> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_CARGAS);
@@ -130,8 +147,21 @@ export async function obterEvolucaoCargas(): Promise<EvolucaoCargaExercicio[]> {
 }
 
 /**
- * Calcula estatísticas de aderência da última semana.
+ * Rodada 3 — Ajuste 1: Obtém o histórico por série de um exercício específico.
  */
+export async function obterSeriesUltimaExecucao(idExercicio: string): Promise<Record<number, { cargaKg: number; repeticoes: number }> | null> {
+  try {
+    const evolucoes = await obterEvolucaoCargas();
+    const ex = evolucoes.find(e => e.idExercicio === idExercicio);
+    if (ex && ex.seriesUltimaExecucao) {
+      return ex.seriesUltimaExecucao;
+    }
+    return null;
+  } catch (erro) {
+    return null;
+  }
+}
+
 export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia> {
   try {
     const historicoDieta = await obterHistoricoDietaCompleto();
@@ -150,7 +180,6 @@ export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia>
     });
 
     const diasTreinados = Object.values(historicoTreino).filter(t => t.concluido).length;
-
     const taxaRefeicoes = totalRefeicoes > 0 ? (refeicoesConcluidas / totalRefeicoes) * 100 : 85;
     const taxaTreino = (diasTreinados / 5) * 100;
     const porcentagemAderenciaGeral = Math.min(Math.round((taxaRefeicoes + taxaTreino) / 2), 100);
