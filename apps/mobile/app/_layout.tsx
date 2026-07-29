@@ -12,6 +12,9 @@ import { useFonts } from 'expo-font';
 import { AuthProvedor } from '../contextos/AuthContexto';
 import { Cores } from '../constantes/Cores';
 
+import { sincronizarAlimentosTaco } from '../servicos/tacoSincronizacaoServico';
+import { sincronizarExercicios } from '../servicos/exerciseDBSincronizacaoServico';
+
 // Polyfill para React Native / Hermes (impede crash de DOMException indefinido)
 if (typeof globalThis.DOMException === 'undefined') {
   (globalThis as any).DOMException = class DOMException extends Error {
@@ -37,6 +40,10 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
+
+      // Sincronização periódica em background (fire-and-forget, sem bloquear UI)
+      sincronizarAlimentosTaco().catch(err => console.log('Sync Taco error:', err));
+      sincronizarExercicios().catch(err => console.log('Sync ExerciseDB error:', err));
     }
   }, [fontsLoaded]);
 

@@ -3,7 +3,7 @@
 // ============================================================
 // Representam as respostas coletadas no fluxo de onboarding.
 // Esses dados alimentam as funções de cálculo (TMB, TDEE, macros)
-// e o prompt enviado à Claude API para gerar o plano.
+// e o prompt enviado à Gemini API para gerar o plano.
 // ============================================================
 
 import type { SexoBiologico, NivelExperiencia, NivelAtividade } from './usuario';
@@ -56,3 +56,66 @@ export interface RespostaQuestionario {
   // Restrições alimentares (pode ter mais de uma)
   restricoesAlimentares: RestricaoAlimentar[];
 }
+
+// ============================================================
+// TIPOS DO PLANO GERADO PELA IA (Gemini)
+// ============================================================
+
+/** Resumo nutricional calculado (parte determinística) */
+export interface ResumoNutricionalIA {
+  tmb: number;
+  tdee: number;
+  caloriasAlvo: number;
+  macros: {
+    proteinas: number;
+    carboidratos: number;
+    gorduras: number;
+  };
+  metaAguaMl: number;
+}
+
+/** Exercício dentro de um dia no plano gerado pela IA */
+export interface ExercicioPlanoIA {
+  nome: string;
+  series: number;
+  repeticoes: number;
+  descansoSegundos: number;
+  grupoMuscular?: string;
+}
+
+/** Dia de treino no plano gerado pela IA */
+export interface DiaTreinoIA {
+  diaSemana: number;
+  nome: string;
+  exercicios: ExercicioPlanoIA[];
+}
+
+/** Alimento dentro de uma refeição no plano gerado pela IA */
+export interface AlimentoPlanoIA {
+  nome: string;
+  porcao: string;
+  calorias: number;
+  proteinas?: number;
+  carboidratos?: number;
+  gorduras?: number;
+}
+
+/** Refeição no plano gerado pela IA */
+export interface RefeicaoPlanoIA {
+  nome: string;
+  horario: string;
+  alimentos: AlimentoPlanoIA[];
+}
+
+/** Estrutura completa do plano gerado pela IA (Gemini) */
+export interface PlanoIAGerado {
+  resumo: ResumoNutricionalIA;
+  treino: {
+    nomeDivisao: string;
+    dias: DiaTreinoIA[];
+  };
+  dieta: {
+    refeicoes: RefeicaoPlanoIA[];
+  };
+}
+

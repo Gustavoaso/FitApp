@@ -19,6 +19,12 @@ export type {
   PreferenciaTreino,
   EquipamentosDisponiveis,
   RespostaQuestionario,
+  ResumoNutricionalIA,
+  ExercicioPlanoIA,
+  DiaTreinoIA,
+  AlimentoPlanoIA,
+  RefeicaoPlanoIA,
+  PlanoIAGerado,
 } from './questionario';
 
 export type {

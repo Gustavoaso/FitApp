@@ -157,12 +157,42 @@ Formato JSON esperado de saída:
   }
 }`;
 
+    const apiKeyGemini = Deno.env.get('GEMINI_API_KEY');
     const apiKeyClaude = Deno.env.get('CLAUDE_API_KEY');
 
     let planoGerado;
 
-    if (apiKeyClaude) {
-      // Chamada real para a API Anthropic Claude
+    if (apiKeyGemini) {
+      // Chamada real para a API do Google Gemini
+      const responseGemini = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKeyGemini}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: promptSystem }],
+            },
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: promptUser }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 4096,
+              responseMimeType: 'application/json',
+            },
+          }),
+        }
+      );
+
+      const resJson = await responseGemini.json();
+      const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+      planoGerado = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
+    } else if (apiKeyClaude) {
+      // Chamada fallback para a API Anthropic Claude se configurada
       const responseClaude = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -182,7 +212,7 @@ Formato JSON esperado de saída:
       const rawText = resJson.content?.[0]?.text || '{}';
       planoGerado = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
     } else {
-      // Fallback determinístico seguro caso a chave da API ainda não tenha sido configurada no ambiente
+      // Fallback determinístico seguro caso nenhuma chave de API esteja configurada
       planoGerado = {
         resumo: { tmb, tdee, caloriasAlvo, macros, metaAguaMl },
         treino: {

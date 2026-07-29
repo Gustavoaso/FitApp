@@ -30,6 +30,7 @@ import {
   validarAltura,
   validarFrequenciaSemanal,
 } from '@fitapp/utilidades';
+import { gerarPlanoComIA, DadosQuestionario } from '../../servicos/geminiServico';
 
 export default function TelaQuestionario() {
   const router = useRouter();
@@ -83,13 +84,13 @@ export default function TelaQuestionario() {
   const finalizarQuestionario = async () => {
     setCarregando(true);
     try {
-      const payload = {
+      const payload: DadosQuestionario = {
         nome: 'Atleta',
         idade: Number(idade),
         sexo,
         pesoKg: Number(peso),
         alturaCm: Number(altura),
-        objetivo,
+        objetivo: objetivo as any,
         nivelExperiencia,
         nivelAtividade: 'moderado',
         frequenciaSemanal: Number(frequencia),
@@ -97,18 +98,13 @@ export default function TelaQuestionario() {
         restricoesAlimentares: restricoes,
       };
 
-      const { data, error } = await supabase.functions.invoke('gerar-plano', {
-        body: payload,
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
+      // Gera o plano utilizando o serviço do Gemini (com fallback determinístico resiliente)
+      const planoGerado = await gerarPlanoComIA(payload);
 
       setCarregando(false);
       router.replace({
         pathname: '/questionario/resultado',
-        params: { plano: JSON.stringify(data) },
+        params: { plano: JSON.stringify(planoGerado) },
       });
     } catch (err: unknown) {
       setCarregando(false);
