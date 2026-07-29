@@ -136,11 +136,35 @@ function mapearParaBaseAlimentos(item: AlimentoTaco, index: number) {
   };
 }
 
+async function precisaSincronizar(): Promise<boolean> {
+  try {
+    const { count } = await supabase
+      .from('base_alimentos')
+      .select('*', { count: 'exact', head: true });
+
+    if (!count || count < 15) return true;
+
+    const ultimaSync = await AsyncStorage.getItem(CHAVE_ULTIMA_SYNC_TACO);
+    if (!ultimaSync) return true;
+
+    const diferenca = Date.now() - Number(ultimaSync);
+    return diferenca > INTERVALO_SYNC_MS;
+  } catch {
+    return true;
+  }
+}
+
 /**
  * Executa a sincronização completa: busca da API → upsert no Supabase.
  */
 export async function sincronizarAlimentosTaco(): Promise<void> {
   try {
+    const necessario = await precisaSincronizar();
+    if (!necessario) {
+      console.log('✅ TacoAPI: Base populada e cache válido.');
+      return;
+    }
+
     const alimentos = await buscarAlimentosTacoAPI();
     if (!alimentos || alimentos.length === 0) return;
 
