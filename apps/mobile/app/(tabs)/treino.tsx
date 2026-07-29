@@ -19,12 +19,14 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
+import { supabase } from '../../servicos/supabase';
 import {
   obterPlanoTreinoCustomizado,
   salvarPlanoTreinoCustomizado,
@@ -82,6 +84,29 @@ export default function TelaTreino() {
   const [repsExTemp, setRepsExTemp] = useState('10');
   const [cargaExTemp, setCargaExTemp] = useState('60');
   const [descansoExTemp, setDescansoExTemp] = useState('60');
+
+  // Autocomplete ExerciseDB & Navegação por Grupo Muscular (Rodada 5 — Ajuste 5)
+  const [sugestoesExercicios, setSugestoesExercicios] = useState<any[]>([]);
+  const [grupoMuscularFiltro, setGrupoMuscularFiltro] = useState<string>('Todos');
+  const GRUPOS_MUSCULARES = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Braços', 'Core', 'Cardio'];
+
+  useEffect(() => {
+    async function buscarExerciciosBase() {
+      try {
+        let query = supabase.from('base_exercicios').select('*');
+        if (nomeExTemp && nomeExTemp.trim().length >= 2) {
+          query = query.ilike('nome', `%${nomeExTemp.trim()}%`);
+        } else if (grupoMuscularFiltro !== 'Todos') {
+          query = query.ilike('grupo_primario', `%${grupoMuscularFiltro}%`);
+        }
+        const { data } = await query.limit(10);
+        setSugestoesExercicios(data || []);
+      } catch (err) {
+        console.warn('Erro ao buscar exercicios:', err);
+      }
+    }
+    buscarExerciciosBase();
+  }, [nomeExTemp, grupoMuscularFiltro]);
 
   // Form de edição/adição avulsa
   const [novoNome, setNovoNome] = useState('');
@@ -432,14 +457,73 @@ export default function TelaTreino() {
               onChangeText={setNovoFocoTreino}
             />
 
-            <Text style={estilos.labelForm}>Adicionar Exercício ao Treino:</Text>
+            <Text style={estilos.labelForm}>Buscar por Grupo Muscular ou Nome (ExerciseDB):</Text>
+            {/* Carrossel de Grupos Musculares */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                {GRUPOS_MUSCULARES.map(grupo => (
+                  <TouchableOpacity
+                    key={grupo}
+                    onPress={() => setGrupoMuscularFiltro(grupo)}
+                    style={[
+                      { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)' },
+                      grupoMuscularFiltro === grupo && { backgroundColor: Cores.accent },
+                    ]}
+                  >
+                    <Text style={[{ fontSize: 12, color: Cores.texto.secundario, fontFamily: FamiliaFonte.bold }, grupoMuscularFiltro === grupo && { color: '#080A0E' }]}>
+                      {grupo}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+
             <TextInput
               style={estilos.input}
-              placeholder="Nome do exercício (ex: Supino Inclinado)"
+              placeholder="Digite o nome do exercício (ex: Supino, Rosca...)"
               placeholderTextColor={Cores.texto.desabilitado}
               value={nomeExTemp}
               onChangeText={setNomeExTemp}
             />
+
+            {/* Sugestões de Exercícios com Imagem / GIF do ExerciseDB */}
+            {sugestoesExercicios.length > 0 && (
+              <ScrollView style={{ maxHeight: 160, marginBottom: 12 }}>
+                {sugestoesExercicios.map(ex => (
+                  <TouchableOpacity
+                    key={ex.id || ex.id_externo || ex.nome}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: 8,
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      borderRadius: 10,
+                      marginBottom: 6,
+                    }}
+                    onPress={() => {
+                      setNomeExTemp(ex.nome);
+                      setGrupoExTemp(ex.grupo_primario || 'Geral');
+                    }}
+                  >
+                    {ex.gif_url ? (
+                      <Image source={{ uri: ex.gif_url }} style={{ width: 36, height: 36, borderRadius: 6 }} />
+                    ) : (
+                      <View style={{ width: 36, height: 36, borderRadius: 6, backgroundColor: Cores.accentSuave, alignItems: 'center', justifyContent: 'center' }}>
+                        <SymbolView name="figure.cross.training" size={18} tintColor={Cores.accent} />
+                      </View>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 13, color: Cores.texto.principal }}>{ex.nome}</Text>
+                      <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario }}>
+                        {ex.grupo_primario} · {ex.equipamento || 'Livre'}
+                      </Text>
+                    </View>
+                    <SymbolView name="plus.circle.fill" size={18} tintColor={Cores.accent} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
 
             <View style={estilos.rowInputs}>
               <TextInput

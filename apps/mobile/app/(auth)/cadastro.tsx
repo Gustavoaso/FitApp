@@ -18,10 +18,11 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { useAuth } from '../../contextos/AuthContexto';
-import { validarEmail, validarNome } from '@fitapp/utilidades';
+import { validarEmail } from '@fitapp/utilidades';
 
 export default function TelaCadastro() {
   const [nome, setNome] = useState('');
@@ -32,9 +33,8 @@ export default function TelaCadastro() {
   const router = useRouter();
 
   const lidarComCadastro = async () => {
-    const valNome = validarNome(nome);
-    if (!valNome.valido) {
-      Alert.alert('Aviso', valNome.mensagem);
+    if (!nome || nome.trim().length < 2) {
+      Alert.alert('Aviso', 'Por favor, digite seu nome.');
       return;
     }
     const valEmail = validarEmail(email);
@@ -51,11 +51,16 @@ export default function TelaCadastro() {
     const { erro } = await cadastrarComEmail(nome, email, senha);
     setCarregando(false);
 
-    if (erro) {
+    if (erro === 'CONFIRMACAO_PENDENTE') {
+      Alert.alert(
+        'Conta Criada!',
+        'Sua conta foi criada no Supabase.\n\nPara entrar sem precisar abrir o e-mail, desative a opção "Confirm email" no seu painel do Supabase (Authentication > Providers > Email).\n\nOu acesse sua caixa de entrada e clique no link de confirmação.',
+        [{ text: 'Entendido', onPress: () => router.replace('/(auth)/login') }]
+      );
+    } else if (erro) {
       Alert.alert('Erro ao cadastrar', erro);
     } else {
-      Alert.alert('Sucesso!', 'Sua conta foi criada. Vamos personalizar seu plano!');
-      router.replace('/questionario');
+      router.replace('/');
     }
   };
 
@@ -66,7 +71,7 @@ export default function TelaCadastro() {
     >
       <ScrollView contentContainerStyle={estilos.scrollContent}>
         <View style={estilos.cabecalho}>
-          <Text style={estilos.logoEmoji}>🚀</Text>
+          <SymbolView name="paperplane.fill" size={36} tintColor={Cores.accent} weight="bold" />
           <Text style={estilos.titulo}>Crie sua conta</Text>
           <Text style={estilos.subtitulo}>Comece sua jornada de evolução</Text>
         </View>

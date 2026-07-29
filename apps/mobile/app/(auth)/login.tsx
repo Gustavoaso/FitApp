@@ -18,6 +18,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { useAuth } from '../../contextos/AuthContexto';
@@ -48,7 +49,7 @@ export default function TelaLogin() {
     if (erro) {
       Alert.alert('Erro ao entrar', erro);
     } else {
-      router.replace('/(tabs)/inicio');
+      router.replace('/');
     }
   };
 
@@ -60,7 +61,7 @@ export default function TelaLogin() {
       <ScrollView contentContainerStyle={estilos.scrollContent}>
         {/* Cabeçalho / Branding */}
         <View style={estilos.cabecalho}>
-          <Text style={estilos.logoEmoji}>⚡</Text>
+          <SymbolView name="bolt.fill" size={36} tintColor={Cores.accent} weight="bold" />
           <Text style={estilos.titulo}>FitApp</Text>
           <Text style={estilos.subtitulo}>Seu treino e dieta sob medida</Text>
         </View>

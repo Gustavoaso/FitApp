@@ -54,8 +54,23 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
 
   /** Realiza o login com e-mail e senha */
   const entrarComEmail = async (email: string, senha: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
-    return { erro: error ? error.message : null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+
+    if (error) {
+      if (error.message.includes('Email not confirmed')) {
+        return {
+          erro: 'Confirmação de e-mail pendente no Supabase. Verifique seu e-mail ou desative "Confirm email" no painel do Supabase (Authentication > Providers > Email).',
+        };
+      }
+      return { erro: error.message };
+    }
+
+    if (data.session) {
+      setSessao(data.session);
+      setUsuario(data.user);
+    }
+
+    return { erro: null };
   };
 
   /** Cadastra um novo usuário */
@@ -70,18 +85,31 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
 
     if (error) return { erro: error.message };
 
-    // Cria o perfil inicial na tabela `perfis` se o cadastro deu certo
-    if (data.user) {
-      await supabase.from('perfis').insert({
+    // Se o Supabase retornou sessão ativa (confirmação de e-mail desativada)
+    if (data.user && data.session) {
+      setSessao(data.session);
+      setUsuario(data.user);
+
+      // Cria o perfil inicial com a sessão ativa (passa pela política RLS)
+      await supabase.from('perfis').upsert([{
         usuario_id: data.user.id,
         nome,
-        idade: 25,          // Valores padrão (serão atualizados no questionário)
+        idade: 25,
         sexo: 'masculino',
         peso_kg: 70,
         altura_cm: 175,
         nivel_experiencia: 'iniciante',
         nivel_atividade: 'moderado',
-      });
+      }], { onConflict: 'usuario_id' });
+
+      return { erro: null };
+    }
+
+    // Se o Supabase requer confirmação de e-mail (session null)
+    if (data.user && !data.session) {
+      return {
+        erro: 'CONFIRMACAO_PENDENTE',
+      };
     }
 
     return { erro: null };

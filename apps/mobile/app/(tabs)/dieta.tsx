@@ -30,6 +30,7 @@ import {
   salvarHistoricoDieta,
   RegistroRefeicaoDiaria,
 } from '../../servicos/historicoServico';
+import { supabase } from '../../servicos/supabase';
 
 interface Alimento {
   id: string;
@@ -246,16 +247,46 @@ export default function TelaDieta() {
     await persistirRefeicoes(atualizadas);
   };
 
-  // Adicionar alimento avulso (botão '+' do card)
-  const adicionarAlimentoAvulso = async () => {
+  // Autocomplete TacoAPI (Rodada 5 — Ajuste 5)
+  const [sugestoesAlimentos, setSugestoesAlimentos] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function buscarSugestoesTaco() {
+      if (!termoBusca || termoBusca.length < 2) {
+        setSugestoesAlimentos([]);
+        return;
+      }
+      try {
+        const { data } = await supabase
+          .from('base_alimentos')
+          .select('*')
+          .ilike('nome', `%${termoBusca}%`)
+          .limit(8);
+        setSugestoesAlimentos(data || []);
+      } catch (err) {
+        console.warn('Erro ao buscar alimentos:', err);
+      }
+    }
+    buscarSugestoesTaco();
+  }, [termoBusca]);
+
+  // Adicionar alimento avulso ou selecionado da TacoAPI
+  const adicionarAlimentoAvulso = async (alimentoSelecionado?: any) => {
+    const nome = alimentoSelecionado?.nome || termoBusca || 'Iogurte Grego Natural';
+    const calorias = alimentoSelecionado ? Number(alimentoSelecionado.calorias_100g) : 90;
+    const proteinas = alimentoSelecionado ? Number(alimentoSelecionado.proteinas_100g) : 10;
+    const carbos = alimentoSelecionado ? Number(alimentoSelecionado.carboidratos_100g) : 4;
+    const gorduras = alimentoSelecionado ? Number(alimentoSelecionado.gorduras_100g) : 4;
+    const porcao = alimentoSelecionado?.porcao_descricao || '100g';
+
     const novo: Alimento = {
-      id: `a-${Date.now()}`,
-      nome: termoBusca || 'Iogurte Grego Natural',
-      porcao: '100g',
-      calorias: 90,
-      proteinas: 10,
-      carbos: 4,
-      gorduras: 4,
+      id: `a-${Date.now()}-${Math.random()}`,
+      nome,
+      porcao,
+      calorias,
+      proteinas,
+      carbos,
+      gorduras,
     };
 
     const atualizadas = refeicoes.map(r =>
@@ -264,6 +295,7 @@ export default function TelaDieta() {
 
     await persistirRefeicoes(atualizadas);
     setTermoBusca('');
+    setSugestoesAlimentos([]);
     setModalAlimentoVisivel(false);
   };
 
@@ -624,13 +656,32 @@ export default function TelaDieta() {
               returnKeyType="search"
             />
 
-            <TouchableOpacity style={estilos.resultadoItem} onPress={adicionarAlimentoAvulso} activeOpacity={0.7}>
-              <View style={{ flex: 1 }}>
-                <Text style={estilos.resultadoNome}>{termoBusca || 'Iogurte Grego Natural'}</Text>
-                <Text style={estilos.resultadoSub}>100g · Tabela TACO</Text>
-              </View>
-              <Text style={estilos.resultadoCal}>90 kcal</Text>
-            </TouchableOpacity>
+            {sugestoesAlimentos.length > 0 ? (
+              <ScrollView style={{ maxHeight: 200, marginBottom: 12 }}>
+                {sugestoesAlimentos.map((item) => (
+                  <TouchableOpacity
+                    key={item.id || item.id_externo || item.nome}
+                    style={estilos.resultadoItem}
+                    onPress={() => adicionarAlimentoAvulso(item)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flex: 1 }}>
+                      <Text style={estilos.resultadoNome}>{item.nome}</Text>
+                      <Text style={estilos.resultadoSub}>100g · {item.categoria || 'Tabela TACO'}</Text>
+                    </View>
+                    <Text style={estilos.resultadoCal}>{item.calorias_100g} kcal</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (
+              <TouchableOpacity style={estilos.resultadoItem} onPress={() => adicionarAlimentoAvulso()} activeOpacity={0.7}>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.resultadoNome}>{termoBusca || 'Iogurte Grego Natural'}</Text>
+                  <Text style={estilos.resultadoSub}>100g · Tabela TACO</Text>
+                </View>
+                <Text style={estilos.resultadoCal}>90 kcal</Text>
+              </TouchableOpacity>
+            )}
 
             <View style={estilos.modalAcoes}>
               <TouchableOpacity onPress={() => setModalAlimentoVisivel(false)} style={estilos.btnCancelar}>

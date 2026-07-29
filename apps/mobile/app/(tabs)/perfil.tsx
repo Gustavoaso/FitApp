@@ -27,6 +27,7 @@ import { BlurView } from 'expo-blur';
 import { CardVidro } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { useAuth } from '../../contextos/AuthContexto';
+import { repositorioPlano } from '../../servicos/repositorio';
 
 export default function TelaPerfil() {
   const router = useRouter();
@@ -69,18 +70,12 @@ export default function TelaPerfil() {
   const nome = (usuario?.user_metadata?.nome as string | undefined) || 'Atleta';
   const email = usuario?.email || 'atleta@fitapp.com';
 
-  const lidarComRecalcularPlano = () => {
-    Alert.alert(
-      'Recalcular Plano com IA',
-      'Deseja refazer o questionário com seus dados atuais para que o Claude recalcule sua dieta e treino?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Recalcular Agora',
-          onPress: () => router.push('/questionario'),
-        },
-      ]
-    );
+  const lidarComRecalcularPlano = async () => {
+    const respostasSalvas = await repositorioPlano.obterUltimasRespostasQuestionario();
+    router.push({
+      pathname: '/questionario',
+      params: respostasSalvas ? { dadosFormulario: JSON.stringify(respostasSalvas) } : undefined,
+    });
   };
 
   return (

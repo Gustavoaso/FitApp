@@ -117,5 +117,6 @@ export interface PlanoIAGerado {
   dieta: {
     refeicoes: RefeicaoPlanoIA[];
   };
+  comentarios?: string[];
 }
 

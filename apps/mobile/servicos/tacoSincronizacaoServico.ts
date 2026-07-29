@@ -41,23 +41,25 @@ async function precisaSincronizar(): Promise<boolean> {
  * A TacoAPI retorna uma lista de alimentos com dados nutricionais por 100g.
  */
 async function buscarAlimentosTacoAPI(): Promise<AlimentoTaco[]> {
-  const apiKey = process.env.EXPO_PUBLIC_TACO_API_KEY;
+  const apiKey = process.env.EXPO_PUBLIC_TACO_API_KEY || '';
 
-  if (!apiKey || apiKey === 'SUA_CHAVE_TACO_AQUI') {
-    console.log('⏭️ TacoAPI: Chave não configurada, pulando sincronização.');
+  if (!apiKey || apiKey === 'SUA_CHAVE_TACO_AQUI' || apiKey.trim() === '') {
+    console.log('⏭️ TacoAPI: Chave não configurada no .env, pulando sincronização.');
     return [];
   }
 
   try {
     const resposta = await fetch(`${TACO_API_BASE}/alimentos?limit=600`, {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey.trim()}`,
+        'x-api-key': apiKey.trim(),
+        'api-key': apiKey.trim(),
         'Content-Type': 'application/json',
       },
     });
 
     if (!resposta.ok) {
-      console.error(`❌ TacoAPI: Erro HTTP ${resposta.status}`);
+      console.log(`ℹ️ TacoAPI HTTP ${resposta.status}: Sincronização ignorada.`);
       return [];
     }
 
@@ -67,7 +69,7 @@ async function buscarAlimentosTacoAPI(): Promise<AlimentoTaco[]> {
     const lista = Array.isArray(dados) ? dados : (dados.data || []);
     return lista;
   } catch (erro) {
-    console.error('❌ TacoAPI: Erro de rede na busca:', erro);
+    console.log('ℹ️ TacoAPI: Servidor indisponível ou offline. Sincronização ignorada.');
     return [];
   }
 }

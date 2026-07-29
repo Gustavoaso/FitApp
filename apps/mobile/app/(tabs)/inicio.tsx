@@ -140,8 +140,8 @@ export default function TelaInicio() {
           </View>
         </View>
 
-        {/* ── Card Principal: Calorias (Rodada 2 — Ajuste 1: Navega para Dieta) ── */}
-        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/dieta')}>
+        {/* ── Card Principal: Calorias (Rodada 5 — Ajuste 3: Somente visualização) ── */}
+        <View>
           <CardVidro semBorda estilo={estilos.cardCalorias}>
             <View style={estilos.rowCalorias}>
               <AnelProgresso
@@ -169,11 +169,11 @@ export default function TelaInicio() {
               </View>
             </View>
           </CardVidro>
-        </TouchableOpacity>
+        </View>
 
-        {/* ── Macronutrientes (Rodada 2 — Ajuste 1: Navega para Dieta) ── */}
+        {/* ── Macronutrientes (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <Text style={estilos.secaoTitulo}>Macronutrientes</Text>
-        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/dieta')}>
+        <View>
           <View style={estilos.gridMacros}>
             {[
               { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
@@ -198,12 +198,12 @@ export default function TelaInicio() {
               </CardVidro>
             ))}
           </View>
-        </TouchableOpacity>
+        </View>
 
-        {/* ── Painel de Aderência Semanal (Rodada 2 — Ajuste 1: Navega para Perfil) ── */}
-        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/perfil')}>
+        {/* ── Painel de Aderência Semanal (Rodada 5 — Ajuste 3: Somente visualização) ── */}
+        <View>
           <CardAderencia estatisticas={estatisticas} />
-        </TouchableOpacity>
+        </View>
 
         {/* ── Gráfico de Evolução de Peso ───────────────────── */}
         <CardVidro semBorda estilo={estilos.cardEvolucao}>
@@ -225,11 +225,12 @@ export default function TelaInicio() {
               <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
               <Text style={estilos.aguaLabel}>Meta de Água</Text>
             </View>
-            <TouchableOpacity onPress={() => setModalMetaAguaVisivel(true)}>
+            <TouchableOpacity onPress={() => setModalMetaAguaVisivel(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Text style={estilos.aguaValor}>
                 {aguaConsumidaMl}
-                <Text style={estilos.aguaUnidade}> / {metaAguaMl}ml ✏️</Text>
+                <Text style={estilos.aguaUnidade}> / {metaAguaMl}ml</Text>
               </Text>
+              <SymbolView name="pencil" size={12} tintColor={Cores.texto.secundario} />
             </TouchableOpacity>
           </View>
 
@@ -275,9 +276,9 @@ export default function TelaInicio() {
           </View>
         </CardVidro>
 
-        {/* ── Próxima Sessão de Treino (Rodada 2 — Ajuste 1: Navega para Treino) ── */}
+        {/* ── Próxima Sessão de Treino (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <Text style={estilos.secaoTitulo}>Próxima Sessão</Text>
-        <TouchableOpacity activeOpacity={0.85} onPress={() => router.push('/(tabs)/treino')}>
+        <View>
           <CardVidro semBorda estilo={estilos.cardTreino}>
             <View style={estilos.rowTreino}>
               <View style={estilos.colTreino}>
@@ -296,7 +297,7 @@ export default function TelaInicio() {
               estilo={estilos.botaoIniciar}
             />
           </CardVidro>
-        </TouchableOpacity>
+        </View>
       </ScrollView>
 
       {/* ── Modal Editar Meta de Água ─────────────────────── */}

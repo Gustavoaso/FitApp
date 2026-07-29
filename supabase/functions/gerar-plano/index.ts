@@ -163,34 +163,41 @@ Formato JSON esperado de saída:
     let planoGerado;
 
     if (apiKeyGemini) {
-      // Chamada real para a API do Google Gemini
+      // Chamada real para a API do Google Gemini (Interactions API)
       const responseGemini = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKeyGemini}`,
+        `https://generativelanguage.googleapis.com/v1beta/interactions`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKeyGemini,
+          },
           body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: promptSystem }],
-            },
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: promptUser }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 4096,
-              responseMimeType: 'application/json',
+            model: 'gemini-3.5-flash',
+            input: promptUser,
+            system_instruction: promptSystem,
+            response_format: {
+              type: 'text',
+              mime_type: 'application/json',
             },
           }),
         }
       );
 
+      if (!responseGemini.ok) {
+        const errTxt = await responseGemini.text();
+        throw new Error(`HTTP ${responseGemini.status}: ${errTxt}`);
+      }
+
       const resJson = await responseGemini.json();
-      const rawText = resJson.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-      planoGerado = JSON.parse(rawText.replace(/```json/g, '').replace(/```/g, '').trim());
+      if (resJson.status !== 'completed') {
+        throw new Error(`Interactions API respondeu com status ${resJson.status}`);
+      }
+
+      const modelStep = resJson.steps?.find((step: any) => step.type === 'model_output');
+      const textContent = modelStep?.content?.find((item: any) => item.type === 'text');
+      const rawText = textContent?.text || '{}';
+      planoGerado = JSON.parse(rawText.replace(/```json/gi, '').replace(/```/g, '').trim());
     } else if (apiKeyClaude) {
       // Chamada fallback para a API Anthropic Claude se configurada
       const responseClaude = await fetch('https://api.anthropic.com/v1/messages', {

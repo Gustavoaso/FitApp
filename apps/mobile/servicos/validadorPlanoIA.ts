@@ -275,6 +275,9 @@ export function sanitizarPlanoIA(plano: unknown): PlanoIAGerado | null {
           })) : [],
         })) : [],
       },
+      comentarios: Array.isArray(p.comentarios)
+        ? p.comentarios.map((c: unknown) => String(c))
+        : undefined,
     };
   } catch {
     return null;

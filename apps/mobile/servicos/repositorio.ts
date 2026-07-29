@@ -289,3 +289,125 @@ export const repositorioAgua = {
     }
   },
 };
+
+// ------------------------------------------------------------
+// 5. REPOSITÓRIO DE PLANOS ATIVOS (ONBOARDING & ACEITE)
+// ------------------------------------------------------------
+export const repositorioPlano = {
+  /**
+   * Verifica se o usuário logado já possui algum planejamento ativo salvo.
+   */
+  async verificarUsuarioPossuiPlanoAtivo(): Promise<boolean> {
+    try {
+      const userRes = await supabase.auth.getUser();
+      const userId = userRes.data.user?.id;
+
+      if (!userId) return false;
+
+      // Verifica se existe registro na tabela planos_ia_gerados ou planos_dieta
+      const { data: planosIA } = await supabase
+        .from('planos_ia_gerados')
+        .select('id')
+        .eq('usuario_id', userId)
+        .limit(1);
+
+      if (planosIA && planosIA.length > 0) return true;
+
+      const { data: planosDieta } = await supabase
+        .from('planos_dieta')
+        .select('id')
+        .eq('usuario_id', userId)
+        .eq('ativo', true)
+        .limit(1);
+
+      return Boolean(planosDieta && planosDieta.length > 0);
+    } catch (erro) {
+      console.error('Erro ao verificar plano ativo:', erro);
+      return false;
+    }
+  },
+
+  /**
+   * Obtém as últimas respostas salvas do questionário para recálculo pré-preenchido.
+   */
+  async obterUltimasRespostasQuestionario(): Promise<any | null> {
+    try {
+      const userRes = await supabase.auth.getUser();
+      const userId = userRes.data.user?.id;
+      if (!userId) return null;
+
+      const { data } = await supabase
+        .from('planos_ia_gerados')
+        .select('respostas_questionario')
+        .eq('usuario_id', userId)
+        .order('criado_em', { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0 && data[0].respostas_questionario) {
+        return data[0].respostas_questionario;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Salva o plano aceito pelo usuário como PLANO ATIVO no Supabase.
+   * Atualiza perfis, planos_dieta e planos_treino.
+   */
+  async salvarPlanoComoAtivo(plano: any, respostas: any): Promise<void> {
+    try {
+      const userRes = await supabase.auth.getUser();
+      const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
+
+      // 1. Atualiza Perfil do usuário
+      if (respostas) {
+        await supabase
+          .from('perfis')
+          .upsert([{
+            usuario_id: userId,
+            nome: respostas.nome || 'Atleta',
+            idade: respostas.idade || 25,
+            sexo: respostas.sexo || 'masculino',
+            peso_kg: respostas.pesoKg || 70,
+            altura_cm: respostas.alturaCm || 175,
+            nivel_experiencia: respostas.nivelExperiencia || 'iniciante',
+            nivel_atividade: respostas.nivelAtividade || 'moderado',
+          }], { onConflict: 'usuario_id' });
+      }
+
+      // 2. Salva Plano de Dieta
+      if (plano.resumo) {
+        await supabase
+          .from('planos_dieta')
+          .insert([{
+            usuario_id: userId,
+            calorias_alvo: plano.resumo.caloriasAlvo,
+            proteinas_alvo_g: plano.resumo.macros.proteinas,
+            carboidratos_alvo_g: plano.resumo.macros.carboidratos,
+            gorduras_alvo_g: plano.resumo.macros.gorduras,
+            meta_agua_ml: plano.resumo.metaAguaMl,
+            ativo: true,
+          }]);
+      }
+
+      // 3. Salva Plano de Treino
+      if (plano.treino && Array.isArray(plano.treino.dias)) {
+        const payloadTreinos = plano.treino.dias.map((d: any, index: number) => ({
+          usuario_id: userId,
+          dia_semana: d.nome || `Dia ${index + 1}`,
+          foco: d.nome || 'Geral',
+          exercicios: d.exercicios || [],
+        }));
+
+        await supabase
+          .from('planos_treino')
+          .insert(payloadTreinos);
+      }
+    } catch (erro) {
+      console.error('Erro ao salvar plano ativo:', erro);
+    }
+  },
+};
+

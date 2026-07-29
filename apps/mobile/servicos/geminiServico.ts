@@ -35,7 +35,7 @@ import { buscarAlimentosParaPrompt } from './tacoSincronizacaoServico';
 import { buscarExerciciosParaPrompt } from './exerciseDBSincronizacaoServico';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-const MODELO_PADRAO = 'gemini-2.0-flash';
+const MODELO_PADRAO = 'gemini-3.5-flash';
 const MAX_TENTATIVAS = 2;
 
 /**
@@ -184,8 +184,101 @@ FORMATO JSON DE SAÍDA (siga exatamente esta estrutura):
 }
 
 /**
- * Chama a Gemini API com retry e backoff exponencial.
- * Usa response_mime_type para forçar resposta em JSON.
+ * Schema JSON estrito do plano para validação nativa da Interactions API.
+ */
+const SCHEMA_PLANO_JSON = {
+  type: 'object',
+  properties: {
+    resumo: {
+      type: 'object',
+      properties: {
+        tmb: { type: 'number' },
+        tdee: { type: 'number' },
+        caloriasAlvo: { type: 'number' },
+        macros: {
+          type: 'object',
+          properties: {
+            proteinas: { type: 'number' },
+            carboidratos: { type: 'number' },
+            gorduras: { type: 'number' },
+          },
+          required: ['proteinas', 'carboidratos', 'gorduras'],
+        },
+        metaAguaMl: { type: 'number' },
+      },
+      required: ['tmb', 'tdee', 'caloriasAlvo', 'macros', 'metaAguaMl'],
+    },
+    treino: {
+      type: 'object',
+      properties: {
+        nomeDivisao: { type: 'string' },
+        dias: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              diaSemana: { type: 'number' },
+              nome: { type: 'string' },
+              exercicios: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    nome: { type: 'string' },
+                    series: { type: 'number' },
+                    repeticoes: { type: 'number' },
+                    descansoSegundos: { type: 'number' },
+                  },
+                  required: ['nome', 'series', 'repeticoes', 'descansoSegundos'],
+                },
+              },
+            },
+            required: ['diaSemana', 'nome', 'exercicios'],
+          },
+        },
+      },
+      required: ['nomeDivisao', 'dias'],
+    },
+    dieta: {
+      type: 'object',
+      properties: {
+        refeicoes: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              nome: { type: 'string' },
+              horario: { type: 'string' },
+              alimentos: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    nome: { type: 'string' },
+                    porcao: { type: 'string' },
+                    calorias: { type: 'number' },
+                  },
+                  required: ['nome', 'porcao', 'calorias'],
+                },
+              },
+            },
+            required: ['nome', 'horario', 'alimentos'],
+          },
+        },
+      },
+      required: ['refeicoes'],
+    },
+    comentarios: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+  },
+  required: ['resumo', 'treino', 'dieta'],
+};
+
+/**
+ * Chama a Gemini Interactions API com formato oficial de saída estruturada.
+ * Realiza parse estrito do nó steps -> model_output -> content -> text.
  */
 async function chamarGeminiAPI(
   promptSistema: string,
@@ -198,32 +291,28 @@ async function chamarGeminiAPI(
     throw new Error('Chave da Gemini API não configurada. Insira em .env (EXPO_PUBLIC_GEMINI_API_KEY).');
   }
 
-  const url = `${GEMINI_BASE_URL}/models/${MODELO_PADRAO}:generateContent?key=${apiKey}`;
-
-  const corpo = {
-    systemInstruction: {
-      parts: [{ text: promptSistema }],
-    },
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: promptUsuario }],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 4096,
-      responseMimeType: 'application/json',
+  const urlInteractions = `${GEMINI_BASE_URL}/interactions`;
+  const corpoInteractions = {
+    model: MODELO_PADRAO,
+    input: promptUsuario,
+    system_instruction: promptSistema,
+    response_format: {
+      type: 'text',
+      mime_type: 'application/json',
+      schema: SCHEMA_PLANO_JSON,
     },
   };
 
   try {
-    console.log(`🤖 Gemini: Chamando API (tentativa ${tentativa}/${MAX_TENTATIVAS})...`);
+    console.log(`🤖 Gemini: Chamando Interactions API (tentativa ${tentativa}/${MAX_TENTATIVAS})...`);
 
-    const resposta = await fetch(url, {
+    const resposta = await fetch(urlInteractions, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(corpo),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify(corpoInteractions),
     });
 
     if (!resposta.ok) {
@@ -233,21 +322,28 @@ async function chamarGeminiAPI(
 
     const json = await resposta.json();
 
-    // Extrai o texto da resposta do Gemini
-    const textoResposta = json.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!textoResposta) {
-      throw new Error('Resposta da Gemini sem conteúdo válido.');
+    // Validar status da resposta
+    if (json.status !== 'completed') {
+      throw new Error(`Interactions API respondeu com status não concluído: ${json.status || 'desconhecido'}`);
     }
 
-    // Faz parse do JSON retornado
-    const planoRaw = JSON.parse(textoResposta);
-    return planoRaw;
+    // Extração do conteúdo gerado seguindo a especificação estrita da Interactions API:
+    // json.steps -> item com type === "model_output" -> content -> item com type === "text" -> text
+    const modelStep = json.steps?.find((step: any) => step.type === 'model_output');
+    const textContent = modelStep?.content?.find((item: any) => item.type === 'text');
+    const texto = textContent?.text;
+
+    if (!texto) {
+      throw new Error('Resposta da Interactions API não contém texto válido em steps -> model_output -> content.');
+    }
+
+    // Limpeza secundária de segurança caso venha encapsulado em markdown
+    const limpo = texto.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(limpo);
   } catch (erro) {
     if (tentativa < MAX_TENTATIVAS) {
-      // Backoff exponencial: espera 2s na primeira retry, 4s na segunda, etc.
       const espera = Math.pow(2, tentativa) * 1000;
-      console.log(`⏳ Gemini: Erro na tentativa ${tentativa}, aguardando ${espera / 1000}s...`);
+      console.log(`⏳ Gemini: Tentativa ${tentativa} falhou. Aguardando ${espera / 1000}s para tentar novamente... Erro:`, erro);
       await new Promise(resolve => setTimeout(resolve, espera));
       return chamarGeminiAPI(promptSistema, promptUsuario, tentativa + 1);
     }

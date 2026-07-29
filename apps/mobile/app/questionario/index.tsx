@@ -18,12 +18,11 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { OBJETIVOS } from '@fitapp/constantes';
-import { supabase } from '../../servicos/supabase';
 import {
   validarIdade,
   validarPeso,
@@ -34,6 +33,8 @@ import { gerarPlanoComIA, DadosQuestionario } from '../../servicos/geminiServico
 
 export default function TelaQuestionario() {
   const router = useRouter();
+  const { dadosFormulario } = useLocalSearchParams<{ dadosFormulario?: string }>();
+
   const [etapa, setEtapa] = useState(1);
   const [carregando, setCarregando] = useState(false);
 
@@ -47,6 +48,26 @@ export default function TelaQuestionario() {
   const [frequencia, setFrequencia] = useState('4');
   const [equipamentos, setEquipamentos] = useState('academia_completa');
   const [restricoes, setRestricoes] = useState<string[]>([]);
+
+  // Carrega respostas salvas se o usuário veio de "Ajustar respostas"
+  React.useEffect(() => {
+    if (dadosFormulario) {
+      try {
+        const parsed = JSON.parse(dadosFormulario);
+        if (parsed.sexo) setSexo(parsed.sexo);
+        if (parsed.idade) setIdade(String(parsed.idade));
+        if (parsed.pesoKg) setPeso(String(parsed.pesoKg));
+        if (parsed.alturaCm) setAltura(String(parsed.alturaCm));
+        if (parsed.objetivo) setObjetivo(parsed.objetivo);
+        if (parsed.nivelExperiencia) setNivelExperiencia(parsed.nivelExperiencia);
+        if (parsed.frequenciaSemanal) setFrequencia(String(parsed.frequenciaSemanal));
+        if (parsed.equipamentos) setEquipamentos(parsed.equipamentos);
+        if (parsed.restricoesAlimentares) setRestricoes(parsed.restricoesAlimentares);
+      } catch (err) {
+        console.warn('Erro ao carregar formulário salvo:', err);
+      }
+    }
+  }, [dadosFormulario]);
 
   const totalEtapas = 6;
 
@@ -98,13 +119,16 @@ export default function TelaQuestionario() {
         restricoesAlimentares: restricoes,
       };
 
-      // Gera o plano utilizando o serviço do Gemini (com fallback determinístico resiliente)
+      // Gera o plano utilizando o serviço do Gemini
       const planoGerado = await gerarPlanoComIA(payload);
 
       setCarregando(false);
       router.replace({
         pathname: '/questionario/resultado',
-        params: { plano: JSON.stringify(planoGerado) },
+        params: {
+          plano: JSON.stringify(planoGerado),
+          respostas: JSON.stringify(payload),
+        },
       });
     } catch (err: unknown) {
       setCarregando(false);
@@ -161,13 +185,13 @@ export default function TelaQuestionario() {
                   style={[estilos.opcaoChip, sexo === 'masculino' && estilos.opcaoChipSelecionada]}
                   onPress={() => setSexo('masculino')}
                 >
-                  <Text style={estilos.opcaoTexto}>👨 Masculino</Text>
+                  <Text style={estilos.opcaoTexto}>Masculino</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[estilos.opcaoChip, sexo === 'feminino' && estilos.opcaoChipSelecionada]}
                   onPress={() => setSexo('feminino')}
                 >
-                  <Text style={estilos.opcaoTexto}>👩 Feminino</Text>
+                  <Text style={estilos.opcaoTexto}>Feminino</Text>
                 </TouchableOpacity>
               </View>
 
@@ -272,9 +296,9 @@ export default function TelaQuestionario() {
             <Text style={estilos.tituloEtapa}>Onde você vai treinar?</Text>
             <CardVidro semBorda estilo={estilos.cardStep}>
               {[
-                { id: 'academia_completa', label: '🏋️ Academia Completa', desc: 'Acesso a barras, halteres e máquinas' },
-                { id: 'halteres_home', label: '🏠 Em Casa (com Halteres)', desc: 'Halteres, elásticos e peso do corpo' },
-                { id: 'peso_corpo', label: '🤸 Apenas Peso do Corpo', desc: 'Calistenia e exercícios sem equipamento' },
+                { id: 'academia_completa', label: 'Academia Completa', desc: 'Acesso a barras, halteres e máquinas' },
+                { id: 'halteres_home', label: 'Em Casa (com Halteres)', desc: 'Halteres, elásticos e peso do corpo' },
+                { id: 'peso_corpo', label: 'Apenas Peso do Corpo', desc: 'Calistenia e exercícios sem equipamento' },
               ].map((eq) => (
                 <TouchableOpacity
                   key={eq.id}
