@@ -31,21 +31,22 @@ import {
   calcularAderenciaSemanal,
   EstatisticasAderencia,
 } from '../../servicos/progressoServico';
+import { repositorioPlano } from '../../servicos/repositorio';
 
 export default function TelaInicio() {
   const router = useRouter();
 
   const [caloriasConsumidas] = useState(1847);
-  const [caloriasMeta] = useState(2400);
+  const [caloriasMeta, setCaloriasMeta] = useState(2400);
 
   const [proteina] = useState(124);
-  const [proteinaMeta] = useState(160);
+  const [proteinaMeta, setProteinaMeta] = useState(160);
 
   const [carboidrato] = useState(198);
-  const [carboidratoMeta] = useState(280);
+  const [carboidratoMeta, setCarboidratoMeta] = useState(280);
 
   const [gordura] = useState(52);
-  const [gorduraMeta] = useState(72);
+  const [gorduraMeta, setGorduraMeta] = useState(72);
 
   // Hidratação
   const [aguaConsumidaMl, setAguaConsumidaMl] = useState(1250);
@@ -79,6 +80,15 @@ export default function TelaInicio() {
   }, []);
 
   const carregarDadosProgresso = async () => {
+    const metas = await repositorioPlano.obterMetasAtivasUsuario();
+    if (metas) {
+      if (metas.caloriasMeta) setCaloriasMeta(metas.caloriasMeta);
+      if (metas.proteinaMeta) setProteinaMeta(metas.proteinaMeta);
+      if (metas.carboidratoMeta) setCarboidratoMeta(metas.carboidratoMeta);
+      if (metas.gorduraMeta) setGorduraMeta(metas.gorduraMeta);
+      if (metas.metaAguaMl) setMetaAguaMl(metas.metaAguaMl);
+    }
+
     const historicoPesos = await obterHistoricoPeso();
     const pontos: PontoGrafico[] = historicoPesos.map(p => ({
       label: p.data.slice(8, 10) + '/' + p.data.slice(5, 7),

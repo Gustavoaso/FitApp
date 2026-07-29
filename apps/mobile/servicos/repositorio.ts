@@ -7,6 +7,7 @@
 // ============================================================
 
 import { supabase } from './supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RegistroRefeicaoDiaria } from './historicoServico';
 import { DiaTreinoCustomizado } from './planoGestaoServico';
 import { EntradaPeso } from './progressoServico';
@@ -353,8 +354,25 @@ export const repositorioPlano = {
   },
 
   /**
-   * Salva o plano aceito pelo usuário como PLANO ATIVO no Supabase.
-   * Atualiza perfis, planos_dieta e planos_treino.
+   * Obtém as metas ativas salvas (calorias, macros, água).
+   */
+  async obterMetasAtivasUsuario() {
+    try {
+      const json = await AsyncStorage.getItem('@fitapp_metas_ativas_v1');
+      if (json) return JSON.parse(json);
+    } catch {}
+    return {
+      caloriasMeta: 2400,
+      proteinaMeta: 160,
+      carboidratoMeta: 280,
+      gorduraMeta: 72,
+      metaAguaMl: 2000,
+    };
+  },
+
+  /**
+   * Salva o plano aceito pelo usuário como PLANO ATIVO no Supabase e no AsyncStorage.
+   * Atualiza perfis, planos_dieta, planos_treino e reflete imediatamente no app.
    */
   async salvarPlanoComoAtivo(plano: any, respostas: any): Promise<void> {
     try {
@@ -377,8 +395,13 @@ export const repositorioPlano = {
           }], { onConflict: 'usuario_id' });
       }
 
-      // 2. Salva Plano de Dieta
+      // 2. Salva Plano de Dieta no Supabase e Localmente
       if (plano.resumo) {
+        await supabase
+          .from('planos_dieta')
+          .update({ ativo: false })
+          .eq('usuario_id', userId);
+
         await supabase
           .from('planos_dieta')
           .insert([{
@@ -390,10 +413,23 @@ export const repositorioPlano = {
             meta_agua_ml: plano.resumo.metaAguaMl,
             ativo: true,
           }]);
+
+        await AsyncStorage.setItem('@fitapp_metas_ativas_v1', JSON.stringify({
+          caloriasMeta: plano.resumo.caloriasAlvo,
+          proteinaMeta: plano.resumo.macros.proteinas,
+          carboidratoMeta: plano.resumo.macros.carboidratos,
+          gorduraMeta: plano.resumo.macros.gorduras,
+          metaAguaMl: plano.resumo.metaAguaMl,
+        }));
       }
 
-      // 3. Salva Plano de Treino
+      // 3. Salva Plano de Treino no Supabase e Localmente
       if (plano.treino && Array.isArray(plano.treino.dias)) {
+        await supabase
+          .from('planos_treino')
+          .delete()
+          .eq('usuario_id', userId);
+
         const payloadTreinos = plano.treino.dias.map((d: any, index: number) => ({
           usuario_id: userId,
           dia_semana: d.nome || `Dia ${index + 1}`,
@@ -401,9 +437,53 @@ export const repositorioPlano = {
           exercicios: d.exercicios || [],
         }));
 
-        await supabase
-          .from('planos_treino')
-          .insert(payloadTreinos);
+        await supabase.from('planos_treino').insert(payloadTreinos);
+
+        const treinosLocais = plano.treino.dias.map((d: any, idx: number) => ({
+          id: `dia-${Date.now()}-${idx}`,
+          diaSemana: d.nome || `Dia ${idx + 1}`,
+          foco: d.nome || 'Treino Especial',
+          exercicios: (d.exercicios || []).map((ex: any, exIdx: number) => ({
+            id: `ex-${Date.now()}-${exIdx}`,
+            nome: ex.nome,
+            grupoMuscular: 'Geral',
+            series: ex.series || 4,
+            repeticoes: ex.repeticoes || 10,
+            cargaKg: 20,
+            tempoDescansoSegundos: ex.descansoSegundos || 60,
+          })),
+        }));
+
+        await AsyncStorage.setItem('@fitapp_plano_treino_custom_v1', JSON.stringify(treinosLocais));
+      }
+
+      // 4. Salva Dieta localmente para consumo imediato
+      if (plano.dieta && Array.isArray(plano.dieta.refeicoes)) {
+        const refeicoesLocais = plano.dieta.refeicoes.map((r: any, idx: number) => ({
+          id: `ref-${Date.now()}-${idx}`,
+          nome: r.nome || `Refeição ${idx + 1}`,
+          horario: r.horario || '08:00',
+          concluida: false,
+          alimentos: (r.alimentos || []).map((a: any, aIdx: number) => ({
+            id: `ali-${Date.now()}-${aIdx}`,
+            nome: a.nome,
+            porcao: a.porcao || '100g',
+            calorias: a.calorias || 100,
+            proteinas: a.proteinas || 10,
+            carbos: a.carbos || 15,
+            gorduras: a.gorduras || 3,
+          })),
+        }));
+
+        const hojeStr = new Date().toISOString().split('T')[0];
+        const paraSalvar = refeicoesLocais.map((ref: any) => ({
+          idRefeicao: ref.nome,
+          data: hojeStr,
+          concluida: false,
+          alimentos: ref.alimentos,
+        }));
+
+        await AsyncStorage.setItem(`@fitapp_historico_dieta_${hojeStr}`, JSON.stringify(paraSalvar));
       }
     } catch (erro) {
       console.error('Erro ao salvar plano ativo:', erro);

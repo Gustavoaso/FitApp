@@ -31,6 +31,7 @@ import {
   RegistroRefeicaoDiaria,
 } from '../../servicos/historicoServico';
 import { supabase } from '../../servicos/supabase';
+import { repositorioPlano } from '../../servicos/repositorio';
 
 interface Alimento {
   id: string;
@@ -114,10 +115,10 @@ const CHAVE_TEMPLATES = '@fitapp_refeicoes_personalizadas_v1';
 export default function TelaDieta() {
   const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
 
-  const metaCalorias = 2200;
-  const metaProteinas = 160;
-  const metaCarbos = 260;
-  const metaGorduras = 65;
+  const [metaCalorias, setMetaCalorias] = useState(2200);
+  const [metaProteinas, setMetaProteinas] = useState(160);
+  const [metaCarbos, setMetaCarbos] = useState(260);
+  const [metaGorduras, setMetaGorduras] = useState(65);
 
   const [refeicoes, setRefeicoes] = useState<Refeicao[]>(REFEICOES_INICIAIS_PADRAO);
   const [templates, setTemplates] = useState<RefeicaoPersonalizadaTemplate[]>(TEMPLATES_PADRAO);
@@ -142,7 +143,18 @@ export default function TelaDieta() {
   useEffect(() => {
     carregarHistoricoDoDia(diaSelecionado);
     carregarTemplates();
+    carregarMetas();
   }, [diaSelecionado]);
+
+  const carregarMetas = async () => {
+    const metas = await repositorioPlano.obterMetasAtivasUsuario();
+    if (metas) {
+      if (metas.caloriasMeta) setMetaCalorias(metas.caloriasMeta);
+      if (metas.proteinaMeta) setMetaProteinas(metas.proteinaMeta);
+      if (metas.carboidratoMeta) setMetaCarbos(metas.carboidratoMeta);
+      if (metas.gorduraMeta) setMetaGorduras(metas.gorduraMeta);
+    }
+  };
 
   const carregarTemplates = async () => {
     try {
@@ -314,6 +326,11 @@ export default function TelaDieta() {
     await persistirRefeicoes(atualizadas);
   };
 
+  const lidarComExcluirRefeicaoCompleta = async (idRefeicao: string) => {
+    const atualizadas = refeicoes.filter(r => r.id !== idRefeicao);
+    await persistirRefeicoes(atualizadas);
+  };
+
   const totais = refeicoes.reduce(
     (acc, ref) => {
       if (!ref.concluida) return acc;
@@ -442,6 +459,13 @@ export default function TelaDieta() {
                   }}
                 >
                   <SymbolView name="plus" size={16} tintColor={Cores.accent} weight="bold" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={estilos.btnOpcoes}
+                  onPress={() => lidarComExcluirRefeicaoCompleta(ref.id)}
+                >
+                  <SymbolView name="trash" size={14} tintColor={Cores.feedback.erro} />
                 </TouchableOpacity>
               </View>
 

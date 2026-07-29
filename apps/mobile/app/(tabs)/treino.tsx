@@ -80,10 +80,12 @@ export default function TelaTreino() {
   const [exerciciosTempNovoTreino, setExerciciosTempNovoTreino] = useState<ExercicioCustomizado[]>([]);
   const [nomeExTemp, setNomeExTemp] = useState('');
   const [grupoExTemp, setGrupoExTemp] = useState('Peito');
-  const [seriesExTemp, setSeriesExTemp] = useState('4');
-  const [repsExTemp, setRepsExTemp] = useState('10');
-  const [cargaExTemp, setCargaExTemp] = useState('60');
-  const [descansoExTemp, setDescansoExTemp] = useState('60');
+  const [seriesExTemp, setSeriesExTemp] = useState('');
+  const [repsExTemp, setRepsExTemp] = useState('');
+  const [cargaExTemp, setCargaExTemp] = useState('');
+  const [descansoExTemp, setDescansoExTemp] = useState('');
+  const [diaEmTrocaConfig, setDiaEmTrocaConfig] = useState<string | null>(null);
+  const [modalSeletorTreinoVisivel, setModalSeletorTreinoVisivel] = useState(false);
 
   // Autocomplete ExerciseDB & Navegação por Grupo Muscular (Rodada 5 — Ajuste 5)
   const [sugestoesExercicios, setSugestoesExercicios] = useState<any[]>([]);
@@ -526,34 +528,53 @@ export default function TelaTreino() {
             )}
 
             <View style={estilos.rowInputs}>
-              <TextInput
-                style={[estilos.input, { flex: 1 }]}
-                placeholder="Séries"
-                keyboardType="numeric"
-                value={seriesExTemp}
-                onChangeText={setSeriesExTemp}
-              />
-              <TextInput
-                style={[estilos.input, { flex: 1 }]}
-                placeholder="Reps"
-                keyboardType="numeric"
-                value={repsExTemp}
-                onChangeText={setRepsExTemp}
-              />
-              <TextInput
-                style={[estilos.input, { flex: 1 }]}
-                placeholder="Carga (kg)"
-                keyboardType="numeric"
-                value={cargaExTemp}
-                onChangeText={setCargaExTemp}
-              />
-              <TextInput
-                style={[estilos.input, { flex: 1 }]}
-                placeholder="Descanso(s)"
-                keyboardType="numeric"
-                value={descansoExTemp}
-                onChangeText={setDescansoExTemp}
-              />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Séries</Text>
+                <TextInput
+                  style={estilos.input}
+                  placeholder="ex: 4"
+                  placeholderTextColor={Cores.texto.desabilitado}
+                  keyboardType="numeric"
+                  value={seriesExTemp}
+                  onChangeText={setSeriesExTemp}
+                />
+              </View>
+
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Reps</Text>
+                <TextInput
+                  style={estilos.input}
+                  placeholder="ex: 10"
+                  placeholderTextColor={Cores.texto.desabilitado}
+                  keyboardType="numeric"
+                  value={repsExTemp}
+                  onChangeText={setRepsExTemp}
+                />
+              </View>
+
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Carga (kg)</Text>
+                <TextInput
+                  style={estilos.input}
+                  placeholder="ex: 20"
+                  placeholderTextColor={Cores.texto.desabilitado}
+                  keyboardType="numeric"
+                  value={cargaExTemp}
+                  onChangeText={setCargaExTemp}
+                />
+              </View>
+
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Descanso (s)</Text>
+                <TextInput
+                  style={estilos.input}
+                  placeholder="ex: 60"
+                  placeholderTextColor={Cores.texto.desabilitado}
+                  keyboardType="numeric"
+                  value={descansoExTemp}
+                  onChangeText={setDescansoExTemp}
+                />
+              </View>
             </View>
 
             <TouchableOpacity style={estilos.btnAddExTemp} onPress={adicionarExercicioTempAoNovoTreino}>
@@ -587,7 +608,7 @@ export default function TelaTreino() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* ── Modal Meus Treinos ───────────────────────────────── */}
+      {/* ── Modal Meus Treinos (Permite Excluir Treinos Criados) ── */}
       <Modal visible={modalMeusTreinosVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMeusTreinosVisivel(false)} />
         <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
@@ -600,6 +621,17 @@ export default function TelaTreino() {
                 <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
                 <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios cadastrados</Text>
               </View>
+
+              <TouchableOpacity
+                style={{ padding: 8 }}
+                onPress={async () => {
+                  const novos = planos.filter(item => item.id !== p.id);
+                  setPlanos(novos);
+                  await salvarPlanoTreinoCustomizado(novos);
+                }}
+              >
+                <SymbolView name="trash" size={16} tintColor={Cores.feedback.erro} />
+              </TouchableOpacity>
             </View>
           ))}
 
@@ -621,7 +653,7 @@ export default function TelaTreino() {
 
           {['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'].map(abrev => {
             const idAtual = mapeamentoSemanal[abrev];
-            const treinoAtualMap = planos.find(p => p.id === idAtual) || planos[0];
+            const treinoAtualMap = idAtual === 'descanso' ? null : planos.find(p => p.id === idAtual);
 
             return (
               <View key={abrev} style={estilos.rowSemanaConfig}>
@@ -630,11 +662,13 @@ export default function TelaTreino() {
                 <TouchableOpacity
                   style={estilos.btnSelectSemana}
                   onPress={() => {
-                    const nextIndex = (planos.findIndex(p => p.id === idAtual) + 1) % planos.length;
-                    lidarComDefinirDiaSemana(abrev, planos[nextIndex].id);
+                    setDiaEmTrocaConfig(abrev);
+                    setModalSeletorTreinoVisivel(true);
                   }}
                 >
-                  <Text style={estilos.txtSelectSemanaVal}>{treinoAtualMap ? treinoAtualMap.foco : 'Selecione'}</Text>
+                  <Text style={estilos.txtSelectSemanaVal}>
+                    {idAtual === 'descanso' ? 'Descanso (Sem Treino)' : (treinoAtualMap ? treinoAtualMap.foco : 'Selecione')}
+                  </Text>
                   <SymbolView name="chevron.right" size={12} tintColor={Cores.accent} />
                 </TouchableOpacity>
               </View>
@@ -649,31 +683,61 @@ export default function TelaTreino() {
         </BlurView>
       </Modal>
 
-      {/* ── Modal Trocar Treino do Dia ──────────────────────── */}
-      <Modal visible={modalTrocarTreinoVisivel} animationType="slide" transparent statusBarTranslucent>
-        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalTrocarTreinoVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+      {/* ── Card/Menu Flutuante para Seleção de Treino (Ajuste 3) ── */}
+      <Modal visible={modalSeletorTreinoVisivel} animationType="fade" transparent statusBarTranslucent>
+        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalSeletorTreinoVisivel(false)} />
+        <BlurView intensity={90} tint="dark" style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
-          <Text style={estilos.modalTitulo}>Trocar Treino para esta Data</Text>
+          <Text style={estilos.modalTitulo}>
+            Selecione o Treino para {diaEmTrocaConfig ? diaEmTrocaConfig.toUpperCase() : 'este dia'}
+          </Text>
 
-          {planos.map(p => (
+          <ScrollView style={{ maxHeight: 320, width: '100%', marginVertical: 12 }}>
+            {/* Opção 1: Descanso (Dia Sem Treino) */}
             <TouchableOpacity
-              key={p.id}
-              style={[estilos.itemTrocaTreino, diaAtual.id === p.id && estilos.itemTrocaTreinoAtivo]}
-              onPress={() => lidarComTrocarTreinoData(p.id)}
+              style={[estilos.itemTrocaTreino, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}
+              onPress={() => {
+                if (diaEmTrocaConfig) {
+                  lidarComDefinirDiaSemana(diaEmTrocaConfig, 'descanso');
+                }
+                setModalSeletorTreinoVisivel(false);
+              }}
             >
+              <SymbolView name="bed.double.fill" size={20} tintColor={Cores.texto.secundario} style={{ marginRight: 12 }} />
               <View style={{ flex: 1 }}>
-                <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
-                <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios</Text>
+                <Text style={estilos.nomeTrocaTreino}>Descanso (Dia Sem Treino)</Text>
+                <Text style={estilos.subTrocaTreino}>Dia reservado para recuperação muscular</Text>
               </View>
-              {diaAtual.id === p.id && (
-                <SymbolView name="checkmark.circle.fill" size={20} tintColor={Cores.accent} />
-              )}
             </TouchableOpacity>
-          ))}
+
+            {/* Opção 2: Treinos Gerados e Personalizados */}
+            <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 12, color: Cores.accent, marginTop: 12, marginBottom: 6 }}>
+              TREINOS DISPONÍVEIS:
+            </Text>
+            {planos.map(p => (
+              <TouchableOpacity
+                key={p.id}
+                style={estilos.itemTrocaTreino}
+                onPress={() => {
+                  if (diaEmTrocaConfig) {
+                    lidarComDefinirDiaSemana(diaEmTrocaConfig, p.id);
+                  } else {
+                    lidarComTrocarTreinoData(p.id);
+                  }
+                  setModalSeletorTreinoVisivel(false);
+                }}
+              >
+                <SymbolView name="dumbbell.fill" size={18} tintColor={Cores.accent} style={{ marginRight: 12 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
+                  <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
           <View style={estilos.modalAcoes}>
-            <TouchableOpacity onPress={() => setModalTrocarTreinoVisivel(false)} style={estilos.btnCancelar}>
+            <TouchableOpacity onPress={() => setModalSeletorTreinoVisivel(false)} style={estilos.btnCancelar}>
               <Text style={estilos.txtCancelar}>Fechar</Text>
             </TouchableOpacity>
           </View>
