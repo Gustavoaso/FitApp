@@ -27,27 +27,27 @@
 ## Fase 2: Backend Core (NestJS)
 
 ### Batch 3: Auth & Profile API
-- [ ] Configurar iron-session no NestJS e middlewares globais.
-- [ ] Configurar Supabase Auth (Client SDK no NestJS) para validação.
-- [ ] Criar guard (`AuthGuard`) e decorator (`@UserId()`) customizados.
-- [ ] Implementar `AuthController`: registro, login, logout, get me.
-- [ ] Implementar `UserProfileController`: POST, GET, PATCH do perfil.
-- [ ] Escrever DTOs com `class-validator` para Auth e UserProfile.
-- [ ] Testar rotas de Auth e Profile via Swagger (auto-gerado).
+- [x] Configurar iron-session no NestJS e middlewares globais.
+- [x] Configurar Supabase Auth (Client SDK no NestJS) para validação.
+- [x] Criar guard (`AuthGuard`) e decorator (`@UserId()`) customizados.
+- [x] Implementar `AuthController`: registro, login, logout, get me.
+- [x] Implementar `UserProfileController`: POST, GET, PATCH do perfil.
+- [x] Escrever DTOs com `class-validator` para Auth e UserProfile.
+- [x] Testar rotas de Auth e Profile via Swagger (auto-gerado).
 
 ### Batch 4: API de Planos e Tarefas
-- [ ] Implementar CRUD de `DietPlans` (Controller, Service, DTOs).
-- [ ] Implementar CRUD de `WorkoutPlans` (Controller, Service, DTOs).
-- [ ] Implementar geração e listagem de `DailyTasks`.
-- [ ] Implementar rotas para completar/desmarcar tarefas (`PATCH`).
-- [ ] Implementar `CalendarController` para endpoints de sincronização nativa.
+- [x] Implementar CRUD de `DietPlans` (Controller, Service, DTOs).
+- [x] Implementar CRUD de `WorkoutPlans` (Controller, Service, DTOs).
+- [x] Implementar geração e listagem de `DailyTasks`.
+- [x] Implementar rotas para completar/desmarcar tarefas (`PATCH`).
+- [x] Implementar `CalendarController` para endpoints de sincronização nativa.
 
 ### Batch 5: Billing & Stripe Webhook
-- [ ] Configurar SDK do Stripe no NestJS.
-- [ ] Implementar endpoint de Checkout Pro e Checkout Customização.
-- [ ] Implementar endpoint para cancelar assinatura.
-- [ ] Configurar Stripe Webhook Controller com raw parser para validação de assinatura.
-- [ ] Implementar lógica de ativação de Pro baseada nos eventos do webhook.
+- [x] Configurar SDK do Stripe no NestJS.
+- [x] Implementar endpoint de Checkout Pro e Checkout Customização.
+- [x] Implementar endpoint para cancelar assinatura.
+- [x] Configurar Stripe Webhook Controller com raw parser para validação de assinatura.
+- [x] Implementar lógica de ativação de Pro baseada nos eventos do webhook.
 
 ## Fase 3: AI Service (LangGraph & Python)
 
