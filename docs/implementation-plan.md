@@ -5,24 +5,24 @@
 ## Fase 1: Infraestrutura e Banco de Dados
 
 ### Batch 1: Setup Inicial (Infraestrutura)
-- [ ] Inicializar o Monorepo com Turborepo (apps: backend, ai-service, mobile).
-- [ ] Configurar o `pnpm` workspace e regras globais do ESLint/Prettier.
-- [ ] Inicializar projeto NestJS em `apps/backend`.
-- [ ] Inicializar ambiente Python (FastAPI + LangGraph) em `apps/ai-service`.
-- [ ] Inicializar projeto Expo (React Native) em `apps/mobile`.
-- [ ] Criar projeto Supabase no dashboard web (ou local via CLI) e obter credenciais.
-- [ ] Criar `.env.example` e `.env` no backend e ai-service.
+- [x] Inicializar o Monorepo com Turborepo (apps: backend, ai-service, mobile).
+- [x] Configurar o `pnpm` workspace e regras globais do ESLint/Prettier.
+- [x] Inicializar projeto NestJS em `apps/backend`.
+- [x] Inicializar ambiente Python (FastAPI + LangGraph) em `apps/ai-service`.
+- [x] Inicializar projeto Expo (React Native) em `apps/mobile`.
+- [x] Criar projeto Supabase no dashboard web (ou local via CLI) e obter credenciais.
+- [x] Criar `.env.example` e `.env` no backend e ai-service.
 
 ### Batch 2: Database Modeling (Prisma & Supabase)
-- [ ] Configurar Prisma no NestJS e conectar ao Supabase (PostgreSQL).
-- [ ] Criar schema Prisma para `user_profiles`, `diet_plans`, e `diet_plan_meals`.
-- [ ] Criar schema Prisma para `workout_plans` e `workout_plan_exercises`.
-- [ ] Criar schema Prisma para `daily_tasks`, `chat_conversations`, e `chat_messages`.
-- [ ] Criar schema Prisma para `subscriptions`, `plan_customizations`, e `calendar_events`.
-- [ ] Executar migration inicial (`npx prisma migrate dev`).
-- [ ] Executar script SQL no Supabase para habilitar RLS em todas as tabelas.
-- [ ] Executar script SQL no Supabase para criar políticas RLS por `user_id`.
-- [ ] Executar script SQL no Supabase para criar trigger de `auto_create_subscription`.
+- [x] Configurar Prisma no NestJS e conectar ao Supabase (PostgreSQL).
+- [x] Criar schema Prisma para `user_profiles`, `diet_plans`, e `diet_plan_meals`.
+- [x] Criar schema Prisma para `workout_plans` e `workout_plan_exercises`.
+- [x] Criar schema Prisma para `daily_tasks`, `chat_conversations`, e `chat_messages`.
+- [x] Criar schema Prisma para `subscriptions`, `plan_customizations`, e `calendar_events`.
+- [x] Executar migration inicial (`npx prisma migrate dev`).
+- [x] Executar script SQL no Supabase para habilitar RLS em todas as tabelas.
+- [x] Executar script SQL no Supabase para criar políticas RLS por `user_id`.
+- [x] Executar script SQL no Supabase para criar trigger de `auto_create_subscription`.
 
 ## Fase 2: Backend Core (NestJS)
 

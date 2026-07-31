@@ -1,0 +1,186 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model UserProfile {
+  id        String   @id @default(uuid())
+  user_id   String   @unique
+  name      String?
+  email     String   @unique
+  goal      String?
+  body_type String?
+  activity  String?
+  diet_pref String?
+  schedule  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  diet_plans         DietPlan[]
+  workout_plans      WorkoutPlan[]
+  daily_tasks        DailyTask[]
+  chat_conversations ChatConversation[]
+  subscriptions      Subscription[]
+  plan_customizations PlanCustomization[]
+  calendar_events    CalendarEvent[]
+  diet_plan_meals    DietPlanMeal[]
+  workout_plan_exercises WorkoutPlanExercise[]
+  chat_messages      ChatMessage[]
+
+  @@map("user_profiles")
+}
+
+model DietPlan {
+  id          String   @id @default(uuid())
+  user_id     String
+  name        String
+  description String?
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  UserProfile     @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  meals DietPlanMeal[]
+
+  @@map("diet_plans")
+}
+
+model DietPlanMeal {
+  id           String   @id @default(uuid())
+  user_id      String
+  diet_plan_id String
+  name         String
+  time         String
+  foods        String
+  calories     Int
+  macros       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  diet_plan DietPlan    @relation(fields: [diet_plan_id], references: [id], onDelete: Cascade)
+  user      UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("diet_plan_meals")
+}
+
+model WorkoutPlan {
+  id          String   @id @default(uuid())
+  user_id     String
+  name        String
+  description String?
+  is_active   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user      UserProfile           @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  exercises WorkoutPlanExercise[]
+
+  @@map("workout_plans")
+}
+
+model WorkoutPlanExercise {
+  id              String   @id @default(uuid())
+  user_id         String
+  workout_plan_id String
+  name            String
+  sets            Int
+  reps            String
+  rest            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workout_plan WorkoutPlan @relation(fields: [workout_plan_id], references: [id], onDelete: Cascade)
+  user         UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("workout_plan_exercises")
+}
+
+model DailyTask {
+  id          String   @id @default(uuid())
+  user_id     String
+  title       String
+  description String?
+  type        String   // e.g., 'diet', 'workout', 'custom'
+  is_done     Boolean  @default(false)
+  date        DateTime @db.Date
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("daily_tasks")
+}
+
+model ChatConversation {
+  id        String   @id @default(uuid())
+  user_id   String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     UserProfile   @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id               String   @id @default(uuid())
+  user_id          String
+  conversation_id  String
+  role             String   // 'user', 'assistant'
+  content          String
+  createdAt        DateTime @default(now())
+
+  conversation ChatConversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  user         UserProfile      @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  user_id              String
+  stripe_customer_id   String?
+  stripe_subscription_id String?
+  status               String   @default("inactive")
+  plan_type            String   @default("free") // 'free', 'pro'
+  current_period_end   DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model PlanCustomization {
+  id          String   @id @default(uuid())
+  user_id     String
+  type        String   // 'diet', 'workout'
+  prompt      String
+  status      String   @default("pending") // 'pending', 'completed'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("plan_customizations")
+}
+
+model CalendarEvent {
+  id          String   @id @default(uuid())
+  user_id     String
+  title       String
+  date        DateTime @db.Date
+  time        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user UserProfile @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@map("calendar_events")
+}

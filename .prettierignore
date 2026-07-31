@@ -1,0 +1,7 @@
+.turbo
+.next
+dist
+node_modules
+apps/mobile/.expo
+apps/ai-service/venv
+apps/ai-service/__pycache__
