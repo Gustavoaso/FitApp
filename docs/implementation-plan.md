@@ -71,39 +71,39 @@
 ## Fase 4: Frontend (Mobile / Expo)
 
 ### Batch 8: Frontend Setup & Auth Flow
-- [ ] Configurar Expo Router e estrutura de pastas (features/shared).
-- [ ] Extrair design system do Figma via MCP (Cores, Tipografia, Spacing) e colocar no SASS.
-- [ ] Configurar Zustand store para autenticação (`authStore`).
-- [ ] Configurar React Query, `apiClient` global e interceptor de sessão expirada.
-- [ ] Implementar Telas: `access-portal.tsx`, `login.tsx`, `register.tsx`.
-- [ ] Testar fluxo end-to-end de Login e Registro e persistência do iron-session cookie.
+- [x] Configurar Expo Router e estrutura de pastas (features/shared).
+- [x] Extrair design system do Figma via MCP (Cores, Tipografia, Spacing) e colocar no SASS.
+- [x] Configurar Zustand store para autenticação (`authStore`).
+- [x] Configurar React Query, `apiClient` global e interceptor de sessão expirada.
+- [x] Implementar Telas: `access-portal.tsx`, `login.tsx`, `register.tsx`.
+- [x] Testar fluxo end-to-end de Login e Registro e persistência do iron-session cookie.
 
 ### Batch 9: Onboarding UI
-- [ ] Implementar layout base do `StepCard` e `ProgressBar`.
-- [ ] Desenvolver Steps: goal, body, activity, diet, schedule.
-- [ ] Coletar estado global no Zustand (`onboardingStore`).
-- [ ] Desenvolver `step-generating` com animação skeleton/spinner chamando endpoint backend.
+- [x] Implementar layout base do `StepCard` e `ProgressBar`.
+- [x] Desenvolver Steps: goal, body, activity, diet, schedule.
+- [x] Coletar estado global no Zustand (`onboardingStore`).
+- [x] Desenvolver `step-generating` com animação skeleton/spinner chamando endpoint backend.
 
 ### Batch 10: App Principal — Tabs & Progress
-- [ ] Criar a estrutura do Tab Bar Nativo.
-- [ ] Implementar `Home` (Resumo do dia).
-- [ ] Instalar `Victory Native` e implementar Gráfico de Progresso Semanal (Pizza).
-- [ ] Implementar a aba `Fitness Overview` carregando dados dos planos (React Query).
+- [x] Criar a estrutura do Tab Bar Nativo.
+- [x] Implementar `Home` (Resumo do dia).
+- [x] Instalar `Victory Native` e implementar Gráfico de Progresso Semanal (Pizza).
+- [x] Implementar a aba `Fitness Overview` carregando dados dos planos (React Query).
 
 ### Batch 11: To-Do List & Interações Avançadas
-- [ ] Desenvolver a aba `To-do List` com `DatePicker`.
-- [ ] Implementar lista com Checkboxes simulando feedback (optimistic update via React Query).
-- [ ] Instalar `react-native-draggable-flatlist`.
-- [ ] Implementar listagem detalhada de Dietas e Treinos suportando drag and drop para reordenação local e envio ao servidor.
+- [x] Desenvolver a aba `To-do List` com `DatePicker`.
+- [x] Implementar lista com Checkboxes simulando feedback (optimistic update via React Query).
+- [x] Instalar `react-native-draggable-flatlist`.
+- [x] Implementar listagem detalhada de Dietas e Treinos suportando drag and drop para reordenação local e envio ao servidor.
 
 ### Batch 12: Chat & SSE Stream
-- [ ] Implementar UI principal da aba de Chat (`chat/index.tsx` e `chat/[id].tsx`).
-- [ ] Criar componente `StreamingText` adaptável a SSE.
-- [ ] Conectar hook customizado `useSSE` à API FastAPI repassada via NestJS.
-- [ ] Testar fluxo dinâmico: conversar com IA e testar comandos específicos (ex: "ajusta meu treino").
+- [x] Implementar UI principal da aba de Chat (`chat/index.tsx` e `chat/[id].tsx`).
+- [x] Criar componente `StreamingText` adaptável a SSE.
+- [x] Conectar hook customizado `useSSE` à API FastAPI repassada via NestJS.
+- [x] Testar fluxo dinâmico: conversar com IA e testar comandos específicos (ex: "ajusta meu treino").
 
 ### Batch 13: Finalização & Polish
-- [ ] Implementar tela `subscription.tsx` chamando checkout Stripe.
-- [ ] Implementar fallback visual para estado sem rede.
-- [ ] Revisão geral do código garantindo princípios de Clean Code e remoção de logs sensíveis.
-- [ ] Gerar APK / TestFlight interno para Quality Assurance final.
+- [x] Implementar tela `subscription.tsx` chamando checkout Stripe.
+- [x] Implementar fallback visual para estado sem rede.
+- [x] Revisão geral do código garantindo princípios de Clean Code e remoção de logs sensíveis.
+- [x] Gerar APK / TestFlight interno para Quality Assurance final.
