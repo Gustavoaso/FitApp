@@ -1,8 +1,23 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { AiServiceService } from '../ai-service/ai-service.service';
 export declare class DietPlanService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly aiService;
+    constructor(prisma: PrismaService, aiService: AiServiceService);
     generate(userId: string): Promise<{
+        meals: {
+            name: string;
+            id: string;
+            user_id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            time: string;
+            foods: string;
+            calories: number;
+            macros: string | null;
+            diet_plan_id: string;
+        }[];
+    } & {
         description: string | null;
         name: string;
         id: string;
@@ -11,7 +26,20 @@ export declare class DietPlanService {
         updatedAt: Date;
         is_active: boolean;
     }>;
-    findAll(userId: string): Promise<{
+    findAll(userId: string): Promise<({
+        meals: {
+            name: string;
+            id: string;
+            user_id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            time: string;
+            foods: string;
+            calories: number;
+            macros: string | null;
+            diet_plan_id: string;
+        }[];
+    } & {
         description: string | null;
         name: string;
         id: string;
@@ -19,7 +47,7 @@ export declare class DietPlanService {
         createdAt: Date;
         updatedAt: Date;
         is_active: boolean;
-    }[]>;
+    })[]>;
     findOne(userId: string, id: string): Promise<{
         meals: {
             name: string;
@@ -27,11 +55,11 @@ export declare class DietPlanService {
             user_id: string;
             createdAt: Date;
             updatedAt: Date;
-            diet_plan_id: string;
             time: string;
             foods: string;
             calories: number;
             macros: string | null;
+            diet_plan_id: string;
         }[];
     } & {
         description: string | null;
@@ -60,8 +88,5 @@ export declare class DietPlanService {
         updatedAt: Date;
         is_active: boolean;
     }>;
-    customize(userId: string, id: string): {
-        message: string;
-        planId: string;
-    };
+    customize(userId: string, id: string, prompt?: string): Promise<Record<string, unknown>>;
 }

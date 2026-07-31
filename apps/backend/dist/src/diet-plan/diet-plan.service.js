@@ -12,22 +12,42 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DietPlanService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const ai_service_service_1 = require("../ai-service/ai-service.service");
 let DietPlanService = class DietPlanService {
     prisma;
-    constructor(prisma) {
+    aiService;
+    constructor(prisma, aiService) {
         this.prisma = prisma;
+        this.aiService = aiService;
     }
     async generate(userId) {
+        const response = await this.aiService.generatePlan(userId, 'diet');
+        const planData = (response.data || {});
+        const meals = planData.meals || [];
         return this.prisma.dietPlan.create({
             data: {
                 user_id: userId,
-                name: 'Plano Gerado por IA (Mock)',
-                description: 'Mock para integração futura',
+                name: planData.name || 'Plano Gerado por IA',
+                description: planData.description || 'Plano alimentador personalizado',
+                meals: {
+                    create: meals.map((m) => ({
+                        user_id: userId,
+                        name: m.name,
+                        time: m.time,
+                        foods: m.foods,
+                        calories: m.calories,
+                        macros: m.macros,
+                    })),
+                },
             },
+            include: { meals: true },
         });
     }
     async findAll(userId) {
-        return this.prisma.dietPlan.findMany({ where: { user_id: userId } });
+        return this.prisma.dietPlan.findMany({
+            where: { user_id: userId },
+            include: { meals: true },
+        });
     }
     async findOne(userId, id) {
         const plan = await this.prisma.dietPlan.findUnique({
@@ -50,13 +70,14 @@ let DietPlanService = class DietPlanService {
             data: { is_active: false },
         });
     }
-    customize(userId, id) {
-        return { message: 'Customization triggered', planId: id };
+    async customize(userId, id, prompt) {
+        return this.aiService.customizePlan(userId, id, 'diet', prompt || 'Personalizar plano');
     }
 };
 exports.DietPlanService = DietPlanService;
 exports.DietPlanService = DietPlanService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        ai_service_service_1.AiServiceService])
 ], DietPlanService);
 //# sourceMappingURL=diet-plan.service.js.map

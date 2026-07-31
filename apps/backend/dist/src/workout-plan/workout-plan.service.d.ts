@@ -1,8 +1,22 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { AiServiceService } from '../ai-service/ai-service.service';
 export declare class WorkoutPlanService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly aiService;
+    constructor(prisma: PrismaService, aiService: AiServiceService);
     generate(userId: string): Promise<{
+        exercises: {
+            name: string;
+            id: string;
+            user_id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            sets: number;
+            reps: string;
+            rest: string | null;
+            workout_plan_id: string;
+        }[];
+    } & {
         description: string | null;
         name: string;
         id: string;
@@ -11,7 +25,19 @@ export declare class WorkoutPlanService {
         updatedAt: Date;
         is_active: boolean;
     }>;
-    findAll(userId: string): Promise<{
+    findAll(userId: string): Promise<({
+        exercises: {
+            name: string;
+            id: string;
+            user_id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            sets: number;
+            reps: string;
+            rest: string | null;
+            workout_plan_id: string;
+        }[];
+    } & {
         description: string | null;
         name: string;
         id: string;
@@ -19,7 +45,7 @@ export declare class WorkoutPlanService {
         createdAt: Date;
         updatedAt: Date;
         is_active: boolean;
-    }[]>;
+    })[]>;
     findOne(userId: string, id: string): Promise<{
         exercises: {
             name: string;
@@ -27,10 +53,10 @@ export declare class WorkoutPlanService {
             user_id: string;
             createdAt: Date;
             updatedAt: Date;
-            workout_plan_id: string;
             sets: number;
             reps: string;
             rest: string | null;
+            workout_plan_id: string;
         }[];
     } & {
         description: string | null;
@@ -59,8 +85,5 @@ export declare class WorkoutPlanService {
         updatedAt: Date;
         is_active: boolean;
     }>;
-    customize(userId: string, id: string): {
-        message: string;
-        planId: string;
-    };
+    customize(userId: string, id: string, prompt?: string): Promise<Record<string, unknown>>;
 }

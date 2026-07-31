@@ -52,21 +52,21 @@
 ## Fase 3: AI Service (LangGraph & Python)
 
 ### Batch 6: AI Foundation & Tools
-- [ ] Configurar FastAPI com injetor de dependências para validar header `X-User-Id`.
-- [ ] Configurar LangChain com Google GenAI (Gemini) no ambiente Python.
-- [ ] Implementar a Tool `get_user_context` (busca perfil e planos via banco).
-- [ ] Implementar a Tool `generate_diet_plan` e `generate_workout_plan`.
-- [ ] Implementar a Tool `analyze_user_progress` (avalia histórico de tarefas diárias).
-- [ ] Implementar a Tool `customize_plan` (permite refinamento de um plano).
-- [ ] Configurar os `.md` dos prompts do sistema (Nutricionista, Treinador, Coach).
+- [x] Configurar FastAPI com injetor de dependências para validar header `X-User-Id`.
+- [x] Configurar LangChain com Google GenAI (Gemini) no ambiente Python.
+- [x] Implementar a Tool `get_user_context` (busca perfil e planos via banco).
+- [x] Implementar a Tool `generate_diet_plan` e `generate_workout_plan`.
+- [x] Implementar a Tool `analyze_user_progress` (avalia histórico de tarefas diárias).
+- [x] Implementar a Tool `customize_plan` (permite refinamento de um plano).
+- [x] Configurar os `.md` dos prompts do sistema (Nutricionista, Treinador, Coach).
 
 ### Batch 7: Agent Graph e SSE
-- [ ] Configurar o State do agente (user_id, history, intent).
-- [ ] Construir os nós do LangGraph: Router, Chat Reply, e roteadores pras Tools.
-- [ ] Compilar o Graph.
-- [ ] Implementar Rota do FastAPI `/chat` encapsulada com StreamingResponse (SSE).
-- [ ] Implementar Rota `/plans/generate` (FastAPI) retornando estruturado via Pydantic.
-- [ ] Conectar o NestJS ao FastAPI: NestJS repassa requests `/generate` para o AI Service.
+- [x] Configurar o State do agente (user_id, history, intent).
+- [x] Construir os nós do LangGraph: Router, Chat Reply, e roteadores pras Tools.
+- [x] Compilar o Graph.
+- [x] Implementar Rota do FastAPI `/chat` encapsulada com StreamingResponse (SSE).
+- [x] Implementar Rota `/plans/generate` (FastAPI) retornando estruturado via Pydantic.
+- [x] Conectar o NestJS ao FastAPI: NestJS repassa requests `/generate` para o AI Service.
 
 ## Fase 4: Frontend (Mobile / Expo)
 

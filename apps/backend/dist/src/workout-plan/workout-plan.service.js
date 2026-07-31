@@ -12,22 +12,41 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WorkoutPlanService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const ai_service_service_1 = require("../ai-service/ai-service.service");
 let WorkoutPlanService = class WorkoutPlanService {
     prisma;
-    constructor(prisma) {
+    aiService;
+    constructor(prisma, aiService) {
         this.prisma = prisma;
+        this.aiService = aiService;
     }
     async generate(userId) {
+        const response = await this.aiService.generatePlan(userId, 'workout');
+        const planData = (response.data || {});
+        const exercises = planData.exercises || [];
         return this.prisma.workoutPlan.create({
             data: {
                 user_id: userId,
-                name: 'Treino Gerado por IA (Mock)',
-                description: 'Mock para integração futura',
+                name: planData.name || 'Treino Gerado por IA',
+                description: planData.description || 'Plano de treino personalizado',
+                exercises: {
+                    create: exercises.map((e) => ({
+                        user_id: userId,
+                        name: e.name,
+                        sets: e.sets,
+                        reps: e.reps,
+                        rest: e.rest,
+                    })),
+                },
             },
+            include: { exercises: true },
         });
     }
     async findAll(userId) {
-        return this.prisma.workoutPlan.findMany({ where: { user_id: userId } });
+        return this.prisma.workoutPlan.findMany({
+            where: { user_id: userId },
+            include: { exercises: true },
+        });
     }
     async findOne(userId, id) {
         const plan = await this.prisma.workoutPlan.findUnique({
@@ -50,13 +69,14 @@ let WorkoutPlanService = class WorkoutPlanService {
             data: { is_active: false },
         });
     }
-    customize(userId, id) {
-        return { message: 'Customization triggered', planId: id };
+    async customize(userId, id, prompt) {
+        return this.aiService.customizePlan(userId, id, 'workout', prompt || 'Personalizar treino');
     }
 };
 exports.WorkoutPlanService = WorkoutPlanService;
 exports.WorkoutPlanService = WorkoutPlanService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        ai_service_service_1.AiServiceService])
 ], WorkoutPlanService);
 //# sourceMappingURL=workout-plan.service.js.map

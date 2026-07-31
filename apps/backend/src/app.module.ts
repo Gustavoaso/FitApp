@@ -9,6 +9,7 @@ import { WorkoutPlanModule } from './workout-plan/workout-plan.module';
 import { DailyTaskModule } from './daily-task/daily-task.module';
 import { BillingModule } from './billing/billing.module';
 import { CalendarModule } from './calendar/calendar.module';
+import { AiServiceModule } from './ai-service/ai-service.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CalendarModule } from './calendar/calendar.module';
     DailyTaskModule,
     BillingModule,
     CalendarModule,
+    AiServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,6 +18,7 @@ const workout_plan_module_1 = require("./workout-plan/workout-plan.module");
 const daily_task_module_1 = require("./daily-task/daily-task.module");
 const billing_module_1 = require("./billing/billing.module");
 const calendar_module_1 = require("./calendar/calendar.module");
+const ai_service_module_1 = require("./ai-service/ai-service.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -32,6 +33,7 @@ exports.AppModule = AppModule = __decorate([
             daily_task_module_1.DailyTaskModule,
             billing_module_1.BillingModule,
             calendar_module_1.CalendarModule,
+            ai_service_module_1.AiServiceModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [app_service_1.AppService],
