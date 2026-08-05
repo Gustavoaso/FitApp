@@ -8,3 +8,6 @@
 export { CardVidro } from './CardVidro';
 export { BotaoPrimario } from './BotaoPrimario';
 export { AnelProgresso } from './AnelProgresso';
+export { CardRefeicao } from './CardRefeicao';
+export { BuscaAlimentosModal } from './BuscaAlimentosModal';
+export { GraficoDonutMacros } from './GraficoDonutMacros';

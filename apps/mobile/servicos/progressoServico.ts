@@ -1,12 +1,12 @@
 // ============================================================
 // SERVIÇO: Progresso & Estatísticas (servicos/progressoServico.ts)
 // ============================================================
-// Gerencia histórico de pesagens, progressão de carga por exercício e por SÉRIE
-// e métricas de aderência semanal.
+// Gerencia histórico de pesagens, progressão de carga por exercício
+// e a METROLOGIA REAL de metas x progresso semanal (Treinos, Exercícios e Refeições).
 // ============================================================
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { obterHistoricoDietaCompleto, obterHistoricoTreinoCompleto } from './historicoServico';
+import { obterPlanoTreinoCustomizado } from './planoGestaoServico';
 
 export interface EntradaPeso {
   id: string;
@@ -29,12 +29,30 @@ export interface EvolucaoCargaExercicio {
     cargaKg: number;
     repeticoes: number;
   }>;
-  seriesUltimaExecucao?: Record<number, { cargaKg: number; repeticoes: number }>; // Rodada 3 — Ajuste 1: carga por série
+  seriesUltimaExecucao?: Record<number, { cargaKg: number; repeticoes: number }>;
+}
+
+export interface MetaSemanal {
+  inicioSemana: string; // YYYY-MM-DD da Segunda-feira da semana
+  treinosPlanejados: number;
+  exerciciosPlanejados: number;
+  refeicoesPlanejadas: number;
+  origem: 'auto' | 'manual';
+}
+
+export interface ProgressoSemanalReal {
+  inicioSemana: string;
+  treinosRealizados: number;
+  exerciciosRealizados: number;
+  refeicoesRealizadas: number;
+  refeicoesContabilizadasPorDia: Record<string, string[]>; // { '2026-07-27': ['Refeição 1', 'Almoço'] }
 }
 
 export interface EstatisticasAderencia {
   diasTreinados: number;
   metaDiasTreino: number;
+  exerciciosRealizados: number;
+  metaExercicios: number;
   refeicoesConcluidas: number;
   totalRefeicoesPrevistas: number;
   porcentagemAderenciaGeral: number;
@@ -42,26 +60,291 @@ export interface EstatisticasAderencia {
 
 const CHAVE_PESO = '@fitapp_progresso_peso_v1';
 const CHAVE_CARGAS = '@fitapp_progresso_cargas_v1';
+const CHAVE_METAS_SEMANAIS = '@fitapp_metas_semanais_v2';
+const CHAVE_PROGRESSO_SEMANAL = '@fitapp_progresso_semanal_v2';
 
-const PESOS_INICIAIS_PADRAO: EntradaPeso[] = [
-  { id: 'p1', data: '2026-07-01', pesoKg: 87.5 },
-  { id: 'p2', data: '2026-07-08', pesoKg: 86.8 },
-  { id: 'p3', data: '2026-07-15', pesoKg: 86.2 },
-  { id: 'p4', data: '2026-07-22', pesoKg: 85.5 },
-  { id: 'p5', data: '2026-07-27', pesoKg: 85.0 },
-];
+/**
+ * Retorna a data (YYYY-MM-DD) da segunda-feira correspondente a qualquer data informada.
+ */
+export function obterInicioSemanaAtual(dataRef?: string | Date): string {
+  const d = dataRef ? new Date(dataRef) : new Date();
+  const diaSemana = d.getDay(); // 0 = Dom, 1 = Seg, ...
+  const diff = d.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1); // Ajusta para Segunda
+  const segunda = new Date(d.setDate(diff));
+  return segunda.toISOString().split('T')[0];
+}
+
+// ------------------------------------------------------------
+// 1. GESTÃO DE METAS SEMANAIS (AUTOMÁTICA E MANUAL)
+// ------------------------------------------------------------
+
+export async function obterMetasSemanaisTodas(): Promise<Record<string, MetaSemanal>> {
+  try {
+    const json = await AsyncStorage.getItem(CHAVE_METAS_SEMANAIS);
+    return json ? JSON.parse(json) : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Calcula automaticamente a meta com base no cronograma semanal vigente.
+ */
+export async function calcularMetaDoCronograma(inicioSemana: string): Promise<MetaSemanal> {
+  const treinos = await obterPlanoTreinoCustomizado();
+  const { obterMapeamentoSemanal } = await import('./planoGestaoServico');
+  const mapSemana = await obterMapeamentoSemanal();
+
+  const diasAbrev = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
+  let treinosPlanejados = 0;
+  let exerciciosPlanejados = 0;
+
+  for (const abrev of diasAbrev) {
+    const idTreinoAlocado = mapSemana[abrev];
+    if (idTreinoAlocado && idTreinoAlocado !== 'descanso') {
+      const tObj = treinos.find(p => p.id === idTreinoAlocado);
+      if (tObj && tObj.foco && !tObj.foco.toLowerCase().includes('descanso')) {
+        treinosPlanejados++;
+        if (Array.isArray(tObj.exercicios)) {
+          exerciciosPlanejados += tObj.exercicios.length;
+        }
+      }
+    }
+  }
+
+  let refeicoesPlanejadas = 20;
+  try {
+    const jsonQtd = await AsyncStorage.getItem('@fitapp_cronograma_refeicoes_v1');
+    if (jsonQtd) {
+      const mapaRef = JSON.parse(jsonQtd);
+      refeicoesPlanejadas = Object.values(mapaRef).reduce((acc: number, v: any) => acc + Number(v || 0), 0);
+    }
+  } catch {
+    refeicoesPlanejadas = 20;
+  }
+
+  return {
+    inicioSemana,
+    treinosPlanejados,
+    exerciciosPlanejados,
+    refeicoesPlanejadas,
+    origem: 'auto',
+  };
+}
+
+/**
+ * Obtém ou gera o snapshot da meta da semana informada.
+ */
+export async function obterOuGerarMetaSemanal(inicioSemanaStr?: string): Promise<MetaSemanal> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todasMetas = await obterMetasSemanaisTodas();
+
+  if (todasMetas[inicioSemana]) {
+    return todasMetas[inicioSemana];
+  }
+
+  const novaMeta = await calcularMetaDoCronograma(inicioSemana);
+  todasMetas[inicioSemana] = novaMeta;
+  await AsyncStorage.setItem(CHAVE_METAS_SEMANAIS, JSON.stringify(todasMetas));
+  return novaMeta;
+}
+
+/**
+ * Recalcula e atualiza a meta da semana a partir do cronograma modificado.
+ */
+export async function recalcularMetaSemanalAuto(
+  inicioSemanaStr?: string,
+  forcarRecalculo: boolean = false
+): Promise<MetaSemanal> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todasMetas = await obterMetasSemanaisTodas();
+
+  const metaAtual = todasMetas[inicioSemana];
+  if (metaAtual && metaAtual.origem === 'manual' && !forcarRecalculo) {
+    return metaAtual;
+  }
+
+  const novaMeta = await calcularMetaDoCronograma(inicioSemana);
+  todasMetas[inicioSemana] = novaMeta;
+  await AsyncStorage.setItem(CHAVE_METAS_SEMANAIS, JSON.stringify(todasMetas));
+  return novaMeta;
+}
+
+/**
+ * Sobrescreve manualmente a meta da semana atual.
+ */
+export async function salvarMetaSemanalManual(
+  inicioSemanaStr: string,
+  treinos: number,
+  exercicios: number,
+  refeicoes: number
+): Promise<MetaSemanal> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todasMetas = await obterMetasSemanaisTodas();
+
+  const metaAtualizada: MetaSemanal = {
+    inicioSemana,
+    treinosPlanejados: Math.max(1, treinos),
+    exerciciosPlanejados: Math.max(1, exercicios),
+    refeicoesPlanejadas: Math.max(1, refeicoes),
+    origem: 'manual',
+  };
+
+  todasMetas[inicioSemana] = metaAtualizada;
+  await AsyncStorage.setItem(CHAVE_METAS_SEMANAIS, JSON.stringify(todasMetas));
+  return metaAtualizada;
+}
+
+// ------------------------------------------------------------
+// 2. GESTÃO DE PROGRESSO SEMANAL REAL (INCREMENTAL)
+// ------------------------------------------------------------
+
+export async function obterProgressoSemanalTodos(): Promise<Record<string, ProgressoSemanalReal>> {
+  try {
+    const json = await AsyncStorage.getItem(CHAVE_PROGRESSO_SEMANAL);
+    return json ? JSON.parse(json) : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function obterProgressoSemanal(inicioSemanaStr?: string): Promise<ProgressoSemanalReal> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todos = await obterProgressoSemanalTodos();
+
+  if (todos[inicioSemana]) {
+    return todos[inicioSemana];
+  }
+
+  const inicial: ProgressoSemanalReal = {
+    inicioSemana,
+    treinosRealizados: 0,
+    exerciciosRealizados: 0,
+    refeicoesRealizadas: 0,
+    refeicoesContabilizadasPorDia: {},
+  };
+
+  todos[inicioSemana] = inicial;
+  await AsyncStorage.setItem(CHAVE_PROGRESSO_SEMANAL, JSON.stringify(todos));
+  return inicial;
+}
+
+/**
+ * Incrementa a contagem de treinos concluídos na semana.
+ */
+export async function incrementarTreinoRealizado(inicioSemanaStr?: string): Promise<void> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todos = await obterProgressoSemanalTodos();
+  const progresso = todos[inicioSemana] || (await obterProgressoSemanal(inicioSemana));
+
+  progresso.treinosRealizados += 1;
+  todos[inicioSemana] = progresso;
+  await AsyncStorage.setItem(CHAVE_PROGRESSO_SEMANAL, JSON.stringify(todos));
+}
+
+/**
+ * Incrementa a contagem de exercícios concluídos na semana.
+ */
+export async function incrementarExercicioRealizado(inicioSemanaStr?: string): Promise<void> {
+  const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
+  const todos = await obterProgressoSemanalTodos();
+  const progresso = todos[inicioSemana] || (await obterProgressoSemanal(inicioSemana));
+
+  progresso.exerciciosRealizados += 1;
+  todos[inicioSemana] = progresso;
+  await AsyncStorage.setItem(CHAVE_PROGRESSO_SEMANAL, JSON.stringify(todos));
+}
+
+/**
+ * Atualiza o progresso de refeições com contagem estrita por refeição com alimentos.
+ */
+export async function atualizarContagemRefeicao(
+  dataStr: string,
+  nomeRefeicao: string,
+  possuiAlimentos: boolean
+): Promise<void> {
+  const inicioSemana = obterInicioSemanaAtual(dataStr);
+  const todos = await obterProgressoSemanalTodos();
+  const progresso = todos[inicioSemana] || (await obterProgressoSemanal(inicioSemana));
+
+  if (!progresso.refeicoesContabilizadasPorDia) {
+    progresso.refeicoesContabilizadasPorDia = {};
+  }
+
+  const refeicoesDoDia = progresso.refeicoesContabilizadasPorDia[dataStr] || [];
+  const jaContada = refeicoesDoDia.includes(nomeRefeicao);
+
+  if (possuiAlimentos && !jaContada) {
+    progresso.refeicoesContabilizadasPorDia[dataStr] = [...refeicoesDoDia, nomeRefeicao];
+    progresso.refeicoesRealizadas += 1;
+  } else if (!possuiAlimentos && jaContada) {
+    progresso.refeicoesContabilizadasPorDia[dataStr] = refeicoesDoDia.filter(r => r !== nomeRefeicao);
+    progresso.refeicoesRealizadas = Math.max(0, progresso.refeicoesRealizadas - 1);
+  }
+
+  todos[inicioSemana] = progresso;
+  await AsyncStorage.setItem(CHAVE_PROGRESSO_SEMANAL, JSON.stringify(todos));
+}
+
+// ------------------------------------------------------------
+// 3. CÁLCULO E CONEXÃO COM O CARD DE ADERÊNCIA SEMANAL
+// ------------------------------------------------------------
+
+export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia> {
+  try {
+    const inicioSemana = obterInicioSemanaAtual();
+    const meta = await obterOuGerarMetaSemanal(inicioSemana);
+    const progresso = await obterProgressoSemanal(inicioSemana);
+
+    const treinosRealizados = progresso.treinosRealizados || 0;
+    const metaTreinos = meta.treinosPlanejados || 5;
+
+    const exerciciosRealizados = progresso.exerciciosRealizados || 0;
+    const metaExercicios = meta.exerciciosPlanejados || 25;
+
+    const refeicoesRealizadas = progresso.refeicoesRealizadas || 0;
+    const metaRefeicoes = meta.refeicoesPlanejadas || 20;
+
+    // Cálculo estrito das porcentagens (sem inflar números fictícios)
+    const pctTreino = Math.min(100, (treinosRealizados / metaTreinos) * 100);
+    const pctExercicios = Math.min(100, (exerciciosRealizados / metaExercicios) * 100);
+    const pctRefeicoes = Math.min(100, (refeicoesRealizadas / metaRefeicoes) * 100);
+
+    const porcentagemAderenciaGeral = Math.round((pctTreino + pctExercicios + pctRefeicoes) / 3);
+
+    return {
+      diasTreinados: treinosRealizados,
+      metaDiasTreino: metaTreinos,
+      exerciciosRealizados,
+      metaExercicios,
+      refeicoesConcluidas: refeicoesRealizadas,
+      totalRefeicoesPrevistas: metaRefeicoes,
+      porcentagemAderenciaGeral,
+    };
+  } catch (erro) {
+    console.error('Erro ao calcular aderência semanal:', erro);
+    return {
+      diasTreinados: 0,
+      metaDiasTreino: 0,
+      exerciciosRealizados: 0,
+      metaExercicios: 0,
+      refeicoesConcluidas: 0,
+      totalRefeicoesPrevistas: 0,
+      porcentagemAderenciaGeral: 0,
+    };
+  }
+}
+
+// ------------------------------------------------------------
+// 4. HISTÓRICO DE PESO E SÉRIES (MANTIDOS DA ESTRUTURA EXISTENTE)
+// ------------------------------------------------------------
 
 export async function obterHistoricoPeso(): Promise<EntradaPeso[]> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_PESO);
-    if (!json) {
-      await AsyncStorage.setItem(CHAVE_PESO, JSON.stringify(PESOS_INICIAIS_PADRAO));
-      return PESOS_INICIAIS_PADRAO;
-    }
-    return JSON.parse(json);
-  } catch (erro) {
-    console.error('Erro ao obter histórico de peso:', erro);
-    return PESOS_INICIAIS_PADRAO;
+    return json ? JSON.parse(json) : [];
+  } catch {
+    return [];
   }
 }
 
@@ -85,9 +368,6 @@ export async function adicionarEntradaPeso(pesoKg: number, dataStr?: string): Pr
   }
 }
 
-/**
- * Rodada 3 — Ajuste 1: Registra a carga e repetições executadas em UMA SÉRIE ESPECÍFICA.
- */
 export async function registrarExecucaoSerie(
   idExercicio: string,
   nomeExercicio: string,
@@ -114,11 +394,13 @@ export async function registrarExecucaoSerie(
       mapa[idExercicio].seriesUltimaExecucao = {};
     }
 
-    // Atualiza o registro da série específica
     mapa[idExercicio].seriesUltimaExecucao![numeroSerie] = { cargaKg, repeticoes };
     mapa[idExercicio].historicoCargas.push({ data, cargaKg, repeticoes });
 
     await AsyncStorage.setItem(CHAVE_CARGAS, JSON.stringify(mapa));
+
+    // Incrementa contagem de exercícios realizados no progresso semanal
+    await incrementarExercicioRealizado();
   } catch (erro) {
     console.error('Erro ao registrar série do exercício:', erro);
   }
@@ -146,9 +428,6 @@ export async function obterEvolucaoCargas(): Promise<EvolucaoCargaExercicio[]> {
   }
 }
 
-/**
- * Rodada 3 — Ajuste 1: Obtém o histórico por série de um exercício específico.
- */
 export async function obterSeriesUltimaExecucao(idExercicio: string): Promise<Record<number, { cargaKg: number; repeticoes: number }> | null> {
   try {
     const evolucoes = await obterEvolucaoCargas();
@@ -157,48 +436,7 @@ export async function obterSeriesUltimaExecucao(idExercicio: string): Promise<Re
       return ex.seriesUltimaExecucao;
     }
     return null;
-  } catch (erro) {
+  } catch {
     return null;
-  }
-}
-
-export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia> {
-  try {
-    const historicoDieta = await obterHistoricoDietaCompleto();
-    const historicoTreino = await obterHistoricoTreinoCompleto();
-
-    const dias = Object.keys(historicoDieta);
-    let totalRefeicoes = 0;
-    let refeicoesConcluidas = 0;
-
-    dias.forEach(d => {
-      const lista = historicoDieta[d];
-      if (Array.isArray(lista)) {
-        totalRefeicoes += lista.length;
-        refeicoesConcluidas += lista.filter(r => r.concluida).length;
-      }
-    });
-
-    const diasTreinados = Object.values(historicoTreino).filter(t => t.concluido).length;
-    const taxaRefeicoes = totalRefeicoes > 0 ? (refeicoesConcluidas / totalRefeicoes) * 100 : 85;
-    const taxaTreino = (diasTreinados / 5) * 100;
-    const porcentagemAderenciaGeral = Math.min(Math.round((taxaRefeicoes + taxaTreino) / 2), 100);
-
-    return {
-      diasTreinados: Math.max(diasTreinados, 4),
-      metaDiasTreino: 5,
-      refeicoesConcluidas: Math.max(refeicoesConcluidas, 18),
-      totalRefeicoesPrevistas: Math.max(totalRefeicoes, 21),
-      porcentagemAderenciaGeral: porcentagemAderenciaGeral > 0 ? porcentagemAderenciaGeral : 88,
-    };
-  } catch (erro) {
-    console.error('Erro ao calcular aderência:', erro);
-    return {
-      diasTreinados: 4,
-      metaDiasTreino: 5,
-      refeicoesConcluidas: 18,
-      totalRefeicoesPrevistas: 21,
-      porcentagemAderenciaGeral: 88,
-    };
   }
 }

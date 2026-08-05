@@ -49,6 +49,7 @@ export default function TelaLogin() {
     if (erro) {
       Alert.alert('Erro ao entrar', erro);
     } else {
+      // A rota raiz decide entre questionário e dashboard conforme o plano ativo.
       router.replace('/');
     }
   };

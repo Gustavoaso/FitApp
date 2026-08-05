@@ -27,16 +27,48 @@ interface AuthContextoTipo {
 
 const AuthContexto = createContext<AuthContextoTipo | undefined>(undefined);
 
+function traduzirErroAuth(erro: { message?: string } | null): string | null {
+  if (!erro) return null;
+  const mensagem = erro.message || 'Não foi possível concluir a autenticação.';
+  if (/network request failed|failed to fetch|network error/i.test(mensagem)) {
+    return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
+  }
+  return mensagem;
+}
+
 export function AuthProvedor({ children }: { children: React.ReactNode }) {
   const [sessao, setSessao] = useState<Session | null>(null);
   const [usuario, setUsuario] = useState<User | null>(null);
   const [carregando, setCarregando] = useState(true);
 
   useEffect(() => {
-    // 1. Busca a sessão salva no armazenamento local
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // 1. Busca a sessão local e confirma que o usuário ainda existe no Auth.
+    // Remover um usuário pelo painel não limpa o AsyncStorage do aparelho.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        setSessao(null);
+        setUsuario(null);
+        setCarregando(false);
+        return;
+      }
+
+      const { data: usuarioAtual, error } = await supabase.auth.getUser(session.access_token);
+      const usuarioValido = !error && usuarioAtual.user;
+
+      if (!usuarioValido) {
+        await supabase.auth.signOut({ scope: 'local' });
+        setSessao(null);
+        setUsuario(null);
+        setCarregando(false);
+        return;
+      }
+
       setSessao(session);
-      setUsuario(session?.user ?? null);
+      setUsuario(usuarioAtual.user);
+      setCarregando(false);
+    }).catch(() => {
+      setSessao(null);
+      setUsuario(null);
       setCarregando(false);
     });
 
@@ -62,7 +94,7 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
           erro: 'Confirmação de e-mail pendente no Supabase. Verifique seu e-mail ou desative "Confirm email" no painel do Supabase (Authentication > Providers > Email).',
         };
       }
-      return { erro: error.message };
+      return { erro: traduzirErroAuth(error) };
     }
 
     if (data.session) {
@@ -83,7 +115,7 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
       },
     });
 
-    if (error) return { erro: error.message };
+    if (error) return { erro: traduzirErroAuth(error) };
 
     // Se o Supabase retornou sessão ativa (confirmação de e-mail desativada)
     if (data.user && data.session) {

@@ -31,29 +31,40 @@ import { calcularTudo } from '@fitapp/utilidades';
 import type { PlanoIAGerado, ObjetivoTreino, NivelAtividade, SexoBiologico } from '@fitapp/tipos';
 import { supabase } from './supabase';
 import { validarPlanoIA, sanitizarPlanoIA } from './validadorPlanoIA';
-import { buscarAlimentosParaPrompt } from './tacoSincronizacaoServico';
-import { buscarExerciciosParaPrompt } from './exerciseDBSincronizacaoServico';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
-const MODELO_PADRAO = 'gemini-3.5-flash';
-const MAX_TENTATIVAS = 2;
+const MODELO_PADRAO = process.env.EXPO_PUBLIC_GEMINI_MODEL || 'gemini-3.5-flash';
+const MODELO_RESERVA = 'gemini-3.5-flash-lite';
+const MAX_TENTATIVAS = 3;
 
 /**
  * Dados de entrada do questionário para geração do plano.
  * Espelha os campos coletados na tela do questionário.
  */
 export interface DadosQuestionario {
-  nome: string;
-  idade: number;
-  sexo: SexoBiologico;
-  pesoKg: number;
-  alturaCm: number;
-  objetivo: ObjetivoTreino;
-  nivelExperiencia: string;
-  nivelAtividade: NivelAtividade;
-  frequenciaSemanal: number;
-  equipamentos: string;
-  restricoesAlimentares: string[];
+  perfil: {
+    nome: string;
+    sexo_biologico: string;
+    idade: number;
+    peso_atual: number;
+    altura: number;
+  };
+  objetivo: {
+    objetivo_principal: string;
+    atividade_fora_treino: string;
+    nivel_experiencia: string;
+  };
+  treino: {
+    dias_disponiveis_semana: number;
+    local_treino: string;
+    tempo_sessao: string;
+    divisao_preferida: string;
+    restricao_fisica: string[];
+  };
+  dieta: {
+    restricao_alimentar: string[];
+    refeicoes_por_dia: number;
+  };
 }
 
 /**
@@ -66,101 +77,77 @@ Sua tarefa é montar um plano de treino semanal e plano alimentar diário person
 
 REGRAS OBRIGATÓRIAS:
 1. Responda EXCLUSIVAMENTE em JSON válido, sem markdown, sem backticks, sem texto fora do JSON.
-2. Use APENAS alimentos brasileiros comuns (arroz, feijão, frango, etc.) e exercícios reais de academia.
-3. Respeite as restrições alimentares do usuário (se houver).
-4. Os exercícios devem ser compatíveis com os equipamentos disponíveis.
-5. Os macronutrientes do plano alimentar devem somar aproximadamente as calorias-alvo fornecidas.
-6. Inclua de 3 a 6 exercícios por dia de treino.
-7. Inclua de 4 a 6 refeições no plano alimentar.
-8. Cada refeição deve ter de 2 a 5 alimentos.`;
+2. Os exercícios devem ser compatíveis com os equipamentos e local disponíveis.
+3. Os macronutrientes do plano alimentar devem somar aproximadamente as calorias-alvo fornecidas.
+4. OBRIGATÓRIO: O array "dias" deve conter exatamente 7 posições, uma para cada dia da semana ("diaSemana" de 0 a 6, onde 0 = segunda-feira e 6 = domingo), mesmo nos dias sem treino (marcados com "tipo": "descanso" e "exercicios": []).
+5. Nos dias de treino, detalhe todos os exercícios, séries, repetições, descanso e grupo muscular.
+6. OBRIGATÓRIO: Retorne exatamente a quantidade de refeições solicitada em "refeicoes_por_dia", com alimentos, porções e macros.
+7. Antes de montar o plano, avalie se a combinação de Frequência, Tempo Disponível por Sessão e Divisão de Treino Preferida é viável e eficaz. Se não for (ex: divisão inadequada para o tempo/dias disponíveis), gere ainda assim um plano ajustado à realidade informada, mas registre um alerta claro e específico no array "comentarios" explicando o motivo e, se fizer sentido, sugerindo um ajuste. Não invente restrições — o alerta deve ser sobre a viabilidade prática, não uma opinião genérica.
+8. Aja como consultoria: explique decisões, alertas de coerência e adaptações no campo comentarios.
+9. O plano é educacional e não substitui avaliação de profissional de saúde.`;
 }
 
 /**
- * Monta o prompt do usuário com todos os dados do questionário,
- * cálculos determinísticos e exemplos de alimentos/exercícios reais.
+ * Monta o prompt do usuário com todos os dados do questionário e
+ * cálculos determinísticos.
  */
 function montarPromptUsuario(
   dados: DadosQuestionario,
-  calculo: ReturnType<typeof calcularTudo>,
-  alimentosCache: string[],
-  exerciciosCache: string[],
+  calculo: ReturnType<typeof calcularTudo>
 ): string {
-  const restricoesTexto = dados.restricoesAlimentares.length > 0
-    ? dados.restricoesAlimentares.join(', ')
+  const restricoesTexto = dados.dieta.restricao_alimentar.length > 0 
+    ? dados.dieta.restricao_alimentar.join(', ') 
     : 'Nenhuma';
 
-  const equipamentoTexto = {
-    academia_completa: 'Academia completa (barras, halteres, máquinas, cabos)',
-    halteres_home: 'Em casa com halteres e elásticos',
-    peso_corpo: 'Apenas peso do corpo (calistenia)',
-  }[dados.equipamentos] || dados.equipamentos;
+  const restricoesFisicasTexto = dados.treino.restricao_fisica.length > 0
+    ? dados.treino.restricao_fisica.join(', ')
+    : 'Nenhuma';
 
-  let promptContexto = '';
+  const qtdRefeicoes = Math.max(2, dados.dieta.refeicoes_por_dia || 4);
 
-  // Enriquece com alimentos reais do cache (se disponíveis)
-  if (alimentosCache.length > 0) {
-    promptContexto += `\n\nALIMENTOS DISPONÍVEIS NA BASE (use preferencialmente estes):\n${alimentosCache.join('\n')}`;
-  }
-
-  // Enriquece com exercícios reais do cache (se disponíveis)
-  if (exerciciosCache.length > 0) {
-    promptContexto += `\n\nEXERCÍCIOS DISPONÍVEIS NA BASE (use preferencialmente estes):\n${exerciciosCache.join('\n')}`;
-  }
-
-  return `Gere o plano fitness completo para este perfil:
+  return `Gere o plano de treino e dieta em JSON para este perfil:
 
 DADOS DO USUÁRIO:
-- Nome: ${dados.nome}
-- Idade: ${dados.idade} anos
-- Sexo: ${dados.sexo}
-- Peso: ${dados.pesoKg}kg
-- Altura: ${dados.alturaCm}cm
-- Objetivo: ${dados.objetivo}
-- Nível de experiência: ${dados.nivelExperiencia}
-- Equipamentos: ${equipamentoTexto}
-- Frequência de treino: ${dados.frequenciaSemanal}x por semana
-- Restrições alimentares: ${restricoesTexto}
+- Nome: ${dados.perfil.nome}
+- Idade: ${dados.perfil.idade} anos
+- Sexo: ${dados.perfil.sexo_biologico}
+- Peso: ${dados.perfil.peso_atual}kg
+- Altura: ${dados.perfil.altura}cm
+- Objetivo: ${dados.objetivo.objetivo_principal}
+- Nível de experiência: ${dados.objetivo.nivel_experiencia}
+- Frequência de treino: ${dados.treino.dias_disponiveis_semana}x por semana
+- Tempo Disponível por Sessão: ${dados.treino.tempo_sessao}
+- Local de treino: ${dados.treino.local_treino}
+- Divisão de Treino Preferida: ${dados.treino.divisao_preferida} (se "deixar a IA decidir", escolher a divisão mais adequada com base em Frequência e Tempo Disponível)
+- Restrições Físicas/Lesões: ${restricoesFisicasTexto}
+- Restrições Alimentares: ${restricoesTexto}
+- Quantidade de refeições por dia OBRIGATÓRIA: ${qtdRefeicoes} (Gere exatamente ${qtdRefeicoes} refeições distintas no JSON)
 
-CÁLCULOS NUTRICIONAIS (já calculados — use estes valores exatos no resumo):
-- TMB: ${calculo.tmb} kcal
-- TDEE: ${calculo.tdee} kcal
-- Calorias-alvo: ${calculo.caloriasAlvo} kcal
-- Proteínas: ${calculo.macros.proteinas}g
-- Carboidratos: ${calculo.macros.carboidratos}g
-- Gorduras: ${calculo.macros.gorduras}g
-- Meta de água: ${calculo.metaAguaMl}ml
-${promptContexto}
-
-FORMATO JSON DE SAÍDA (siga exatamente esta estrutura):
+ESTRUTURA JSON EXIGIDA (retorne apenas este JSON com exatamente ${qtdRefeicoes} refeições):
 {
-  "resumo": {
-    "tmb": ${calculo.tmb},
-    "tdee": ${calculo.tdee},
-    "caloriasAlvo": ${calculo.caloriasAlvo},
-    "macros": {
-      "proteinas": ${calculo.macros.proteinas},
-      "carboidratos": ${calculo.macros.carboidratos},
-      "gorduras": ${calculo.macros.gorduras}
-    },
-    "metaAguaMl": ${calculo.metaAguaMl}
-  },
   "treino": {
     "nomeDivisao": "string descritiva (ex: Push Pull Legs 4x)",
     "dias": [
-      {
-        "diaSemana": 1,
-        "nome": "Peito + Tríceps",
-        "exercicios": [
-          {
-            "nome": "Supino Reto com Barra",
-            "series": 4,
-            "repeticoes": 10,
-            "descansoSegundos": 90,
-            "grupoMuscular": "Peito"
-          }
-        ]
-      }
-    ]
+        {
+          "diaSemana": 0,
+          "nome": "Treino A - Superiores",
+          "tipo": "treino",
+          "exercicios": [
+            {
+              "nome": "Supino reto com barra",
+              "series": 4,
+              "repeticoes": "8-10",
+              "descansoSegundos": 90
+            }
+          ]
+        },
+        {
+          "diaSemana": 1,
+          "nome": "Descanso",
+          "tipo": "descanso",
+          "exercicios": []
+        }
+      ]
   },
   "dieta": {
     "refeicoes": [
@@ -169,8 +156,8 @@ FORMATO JSON DE SAÍDA (siga exatamente esta estrutura):
         "horario": "07:30",
         "alimentos": [
           {
-            "nome": "Ovos mexidos",
-            "porcao": "3 unidades (150g)",
+            "nome": "Ovos",
+            "porcao": "3 unidades",
             "calorias": 219,
             "proteinas": 18,
             "carboidratos": 2,
@@ -219,6 +206,7 @@ const SCHEMA_PLANO_JSON = {
             properties: {
               diaSemana: { type: 'number' },
               nome: { type: 'string' },
+              tipo: { type: 'string', enum: ['treino', 'descanso'] },
               exercicios: {
                 type: 'array',
                 items: {
@@ -226,8 +214,8 @@ const SCHEMA_PLANO_JSON = {
                   properties: {
                     nome: { type: 'string' },
                     series: { type: 'number' },
-                    repeticoes: { type: 'number' },
-                    descansoSegundos: { type: 'number' },
+                  repeticoes: { type: 'string' },
+                  descansoSegundos: { type: 'number' },
                   },
                   required: ['nome', 'series', 'repeticoes', 'descansoSegundos'],
                 },
@@ -257,8 +245,11 @@ const SCHEMA_PLANO_JSON = {
                     nome: { type: 'string' },
                     porcao: { type: 'string' },
                     calorias: { type: 'number' },
+                    proteinas: { type: 'number' },
+                    carboidratos: { type: 'number' },
+                    gorduras: { type: 'number' },
                   },
-                  required: ['nome', 'porcao', 'calorias'],
+                  required: ['nome', 'porcao', 'calorias', 'proteinas', 'carboidratos', 'gorduras'],
                 },
               },
             },
@@ -284,6 +275,7 @@ async function chamarGeminiAPI(
   promptSistema: string,
   promptUsuario: string,
   tentativa: number = 1,
+  modelo: string = MODELO_PADRAO,
 ): Promise<unknown> {
   const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
@@ -293,7 +285,7 @@ async function chamarGeminiAPI(
 
   const urlInteractions = `${GEMINI_BASE_URL}/interactions`;
   const corpoInteractions = {
-    model: MODELO_PADRAO,
+    model: modelo,
     input: promptUsuario,
     system_instruction: promptSistema,
     response_format: {
@@ -304,7 +296,7 @@ async function chamarGeminiAPI(
   };
 
   try {
-    console.log(`🤖 Gemini: Chamando Interactions API (tentativa ${tentativa}/${MAX_TENTATIVAS})...`);
+    console.log(`🤖 Gemini: ${modelo} (tentativa ${tentativa}/${MAX_TENTATIVAS})...`);
 
     const resposta = await fetch(urlInteractions, {
       method: 'POST',
@@ -322,205 +314,137 @@ async function chamarGeminiAPI(
 
     const json = await resposta.json();
 
-    // Validar status da resposta
     if (json.status !== 'completed') {
       throw new Error(`Interactions API respondeu com status não concluído: ${json.status || 'desconhecido'}`);
     }
 
-    // Extração do conteúdo gerado seguindo a especificação estrita da Interactions API:
-    // json.steps -> item com type === "model_output" -> content -> item com type === "text" -> text
     const modelStep = json.steps?.find((step: any) => step.type === 'model_output');
     const textContent = modelStep?.content?.find((item: any) => item.type === 'text');
     const texto = textContent?.text;
 
     if (!texto) {
-      throw new Error('Resposta da Interactions API não contém texto válido em steps -> model_output -> content.');
+      throw new Error('Resposta da Interactions API não contém texto válido.');
     }
 
-    // Limpeza secundária de segurança caso venha encapsulado em markdown
     const limpo = texto.replace(/```json/gi, '').replace(/```/g, '').trim();
     return JSON.parse(limpo);
   } catch (erro) {
-    if (tentativa < MAX_TENTATIVAS) {
-      const espera = Math.pow(2, tentativa) * 1000;
-      console.log(`⏳ Gemini: Tentativa ${tentativa} falhou. Aguardando ${espera / 1000}s para tentar novamente... Erro:`, erro);
+    const mensagem = String(erro instanceof Error ? erro.message : erro);
+    const erroTransitorio = /HTTP (429|500|502|503)|high demand|temporar/i.test(mensagem);
+    if (erroTransitorio && tentativa < MAX_TENTATIVAS) {
+      const espera = Math.pow(2, tentativa) * 1000 + Math.round(Math.random() * 500);
+      console.log(`⏳ Gemini: nova tentativa em ${espera}ms.`, erro);
       await new Promise(resolve => setTimeout(resolve, espera));
-      return chamarGeminiAPI(promptSistema, promptUsuario, tentativa + 1);
+      return chamarGeminiAPI(promptSistema, promptUsuario, tentativa + 1, modelo);
+    }
+    if (erroTransitorio && modelo !== MODELO_RESERVA) {
+      console.log(`🔁 Gemini: alternando para ${MODELO_RESERVA}.`);
+      return chamarGeminiAPI(promptSistema, promptUsuario, 1, MODELO_RESERVA);
     }
     throw erro;
   }
 }
 
-/**
- * Gera o plano completo com fallback determinístico.
- * Se a Gemini não estiver disponível (sem chave ou erro), retorna
- * um plano baseado apenas nos cálculos matemáticos.
- */
-function gerarPlanoFallback(
-  dados: DadosQuestionario,
-  calculo: ReturnType<typeof calcularTudo>,
-): PlanoIAGerado {
-  return {
-    resumo: {
-      tmb: calculo.tmb,
-      tdee: calculo.tdee,
-      caloriasAlvo: calculo.caloriasAlvo,
-      macros: {
-        proteinas: calculo.macros.proteinas,
-        carboidratos: calculo.macros.carboidratos,
-        gorduras: calculo.macros.gorduras,
-      },
-      metaAguaMl: calculo.metaAguaMl,
-    },
-    treino: {
-      nomeDivisao: `Divisão ${dados.frequenciaSemanal}x — ${dados.objetivo.toUpperCase()}`,
-      dias: [
-        {
-          diaSemana: 1,
-          nome: 'Treino A — Peito & Tríceps',
-          exercicios: [
-            { nome: 'Supino Reto com Barra', series: 4, repeticoes: 10, descansoSegundos: 90 },
-            { nome: 'Supino Inclinado com Halteres', series: 3, repeticoes: 12, descansoSegundos: 60 },
-            { nome: 'Crossover com Cabo', series: 3, repeticoes: 15, descansoSegundos: 45 },
-            { nome: 'Tríceps Pulley com Corda', series: 4, repeticoes: 12, descansoSegundos: 60 },
-          ],
-        },
-        {
-          diaSemana: 2,
-          nome: 'Treino B — Costas & Bíceps',
-          exercicios: [
-            { nome: 'Puxada Frontal', series: 4, repeticoes: 10, descansoSegundos: 90 },
-            { nome: 'Remada Curvada com Barra', series: 4, repeticoes: 10, descansoSegundos: 75 },
-            { nome: 'Rosca Direta com Barra W', series: 3, repeticoes: 12, descansoSegundos: 60 },
-            { nome: 'Rosca Martelo', series: 3, repeticoes: 12, descansoSegundos: 60 },
-          ],
-        },
-        {
-          diaSemana: 3,
-          nome: 'Treino C — Pernas & Ombros',
-          exercicios: [
-            { nome: 'Agachamento Livre com Barra', series: 4, repeticoes: 8, descansoSegundos: 120 },
-            { nome: 'Leg Press 45°', series: 4, repeticoes: 12, descansoSegundos: 90 },
-            { nome: 'Desenvolvimento com Halteres', series: 4, repeticoes: 10, descansoSegundos: 60 },
-            { nome: 'Elevação Lateral', series: 4, repeticoes: 15, descansoSegundos: 45 },
-          ],
-        },
-      ],
-    },
-    dieta: {
-      refeicoes: [
-        {
-          nome: 'Café da Manhã',
-          horario: '07:30',
-          alimentos: [
-            { nome: 'Ovos mexidos', porcao: '3 unidades (150g)', calorias: 219, proteinas: 18, carboidratos: 2, gorduras: 15 },
-            { nome: 'Pão de Forma Integral', porcao: '2 fatias (50g)', calorias: 126, proteinas: 5, carboidratos: 22, gorduras: 2 },
-          ],
-        },
-        {
-          nome: 'Almoço',
-          horario: '12:30',
-          alimentos: [
-            { nome: 'Peito de Frango Grelhado', porcao: '1 filé médio (150g)', calorias: 247, proteinas: 45, carboidratos: 0, gorduras: 6 },
-            { nome: 'Arroz Branco Cozido', porcao: '2 colheres de servir (100g)', calorias: 128, proteinas: 3, carboidratos: 28, gorduras: 0 },
-            { nome: 'Feijão Carioca Cozido', porcao: '1 concha (86g)', calorias: 65, proteinas: 4, carboidratos: 12, gorduras: 0 },
-          ],
-        },
-        {
-          nome: 'Lanche da Tarde',
-          horario: '16:00',
-          alimentos: [
-            { nome: 'Banana', porcao: '1 unidade (120g)', calorias: 107, proteinas: 1, carboidratos: 27, gorduras: 0 },
-            { nome: 'Whey Protein', porcao: '1 scoop (30g)', calorias: 120, proteinas: 24, carboidratos: 3, gorduras: 1 },
-          ],
-        },
-        {
-          nome: 'Jantar',
-          horario: '19:30',
-          alimentos: [
-            { nome: 'Filé de Tilápia Grelhado', porcao: '1 filé (150g)', calorias: 155, proteinas: 33, carboidratos: 0, gorduras: 2 },
-            { nome: 'Batata Doce Cozida', porcao: '1 unidade média (150g)', calorias: 135, proteinas: 2, carboidratos: 31, gorduras: 0 },
-            { nome: 'Salada Verde', porcao: '1 prato (100g)', calorias: 20, proteinas: 2, carboidratos: 3, gorduras: 0 },
-          ],
-        },
-      ],
-    },
-  };
+function mapearSexo(s: string): SexoBiologico {
+  return s.toLowerCase().includes('feminino') ? 'feminino' : 'masculino';
 }
 
-/**
- * FUNÇÃO PRINCIPAL: Gera o plano personalizado com IA.
- *
- * Fluxo:
- * 1. Calcula TMB, TDEE, macros, água (determinístico)
- * 2. Busca alimentos/exercícios do cache para enriquecer prompt
- * 3. Chama Gemini API (com retry)
- * 4. Valida e sanitiza a resposta
- * 5. Persiste no banco (planos_ia_gerados)
- * 6. Retorna PlanoIAGerado tipado
- */
-export async function gerarPlanoComIA(dados: DadosQuestionario): Promise<PlanoIAGerado> {
-  // 1. Cálculos determinísticos
+function mapearNivelAtividade(a: string): NivelAtividade {
+  const t = a.toLowerCase();
+  if (t.includes('sedent')) return 'sedentario';
+  if (t.includes('leve')) return 'leve';
+  if (t.includes('moderado')) return 'moderado';
+  if (t.includes('muito')) return 'muito_ativo';
+  if (t.includes('ativo')) return 'ativo';
+  return 'moderado';
+}
+
+function mapearObjetivo(o: string): ObjetivoTreino {
+  const t = o.toLowerCase();
+  if (t.includes('emagrecimento')) return 'emagrecimento';
+  if (t.includes('defini')) return 'definicao';
+  if (t.includes('forç') || t.includes('forc')) return 'forca';
+  if (t.includes('condicionamento')) return 'condicionamento';
+  return 'hipertrofia';
+}
+
+export async function gerarPlanoComIAGemini(dados: DadosQuestionario): Promise<PlanoIAGerado> {
+  const p = Number(dados.perfil?.peso_atual);
+  const pesoSeguro = isNaN(p) || p <= 0 ? 70 : p;
+  
+  const a = Number(dados.perfil?.altura);
+  const alturaSegura = isNaN(a) || a <= 0 ? 170 : a;
+  
+  const i = Number(dados.perfil?.idade);
+  const idadeSegura = isNaN(i) || i <= 0 ? 30 : i;
+
   const calculo = calcularTudo(
-    dados.pesoKg,
-    dados.alturaCm,
-    dados.idade,
-    dados.sexo,
-    dados.nivelAtividade,
-    dados.objetivo,
+    pesoSeguro,
+    alturaSegura,
+    idadeSegura,
+    mapearSexo(dados.perfil.sexo_biologico),
+    mapearNivelAtividade(dados.objetivo.atividade_fora_treino),
+    mapearObjetivo(dados.objetivo.objetivo_principal),
   );
 
-  // 2. Busca dados do cache para enriquecer o prompt (fire-and-forget se falhar)
-  let alimentosCache: string[] = [];
-  let exerciciosCache: string[] = [];
-
-  try {
-    [alimentosCache, exerciciosCache] = await Promise.all([
-      buscarAlimentosParaPrompt(50),
-      buscarExerciciosParaPrompt(dados.equipamentos, 80),
-    ]);
-  } catch {
-    console.log('⚠️ Gemini: Não foi possível buscar cache, seguindo sem enriquecimento.');
-  }
-
-  // 3. Tenta chamar a Gemini API
   let plano: PlanoIAGerado;
 
   try {
     const promptSistema = montarPromptSistema();
-    const promptUsuario = montarPromptUsuario(dados, calculo, alimentosCache, exerciciosCache);
+    const promptUsuario = montarPromptUsuario(dados, calculo);
 
     const respostaRaw = await chamarGeminiAPI(promptSistema, promptUsuario);
+
+    // Injeção de dependência determinística: o LLM não precisa mais gerar o resumo!
+    if (typeof respostaRaw === 'object' && respostaRaw !== null) {
+      (respostaRaw as Record<string, unknown>).resumo = {
+        tmb: calculo.tmb,
+        tdee: calculo.tdee,
+        caloriasAlvo: calculo.caloriasAlvo,
+        macros: {
+          proteinas: calculo.macros.proteinas,
+          carboidratos: calculo.macros.carboidratos,
+          gorduras: calculo.macros.gorduras
+        },
+        metaAguaMl: calculo.metaAguaMl
+      };
+    }
 
     // 4. Valida a resposta
     const validacao = validarPlanoIA(respostaRaw);
 
     if (validacao.valido) {
       plano = sanitizarPlanoIA(respostaRaw)!;
+      validarCompatibilidadePlano(plano, dados);
       console.log('✅ Gemini: Plano gerado e validado com sucesso.');
     } else {
-      console.warn('⚠️ Gemini: Resposta com problemas, tentando sanitizar:', validacao.erros);
-      const sanitizado = sanitizarPlanoIA(respostaRaw);
-
-      if (sanitizado) {
-        plano = sanitizado;
-        console.log('✅ Gemini: Plano sanitizado com sucesso.');
-      } else {
-        console.warn('❌ Gemini: Plano irrecuperável, usando fallback determinístico.');
-        plano = gerarPlanoFallback(dados, calculo);
-      }
+      throw new Error(`Resposta da IA inválida: ${validacao.erros.join('; ')}`);
     }
   } catch (erro) {
-    console.error('❌ Gemini: Erro ao gerar plano, usando fallback:', erro);
-    plano = gerarPlanoFallback(dados, calculo);
+    console.error('❌ Gemini: Erro ao gerar plano:', erro);
+    throw erro;
   }
 
-  // 5. Persiste no banco (fire-and-forget — não bloqueia o retorno)
-  persistirPlanoNoBanco(dados, plano).catch(err =>
-    console.error('⚠️ Gemini: Erro ao persistir plano:', err)
-  );
+  // 5. Aguarda a persistência para nunca exibir um plano que não foi salvo.
+  await persistirPlanoNoBanco(dados, plano);
 
   return plano;
+}
+
+function validarCompatibilidadePlano(plano: PlanoIAGerado, dados: DadosQuestionario): void {
+  if (plano.treino.dias.length !== 7) {
+    throw new Error(`O planejamento deve conter 7 dias, mas retornou ${plano.treino.dias.length}.`);
+  }
+
+  const quantidade = dados.dieta.refeicoes_por_dia;
+  if (quantidade && plano.dieta.refeicoes.length !== quantidade) {
+    throw new Error(`A IA retornou ${plano.dieta.refeicoes.length} refeições; o usuário solicitou ${quantidade}.`);
+  }
+
+  const diasValidos = new Set(plano.treino.dias.map((dia) => dia.diaSemana));
+  if (diasValidos.size !== 7 || [...diasValidos].some((dia) => dia < 0 || dia > 6)) {
+    throw new Error('O cronograma precisa conter os dias 0 a 6 sem repetição.');
+  }
 }
 
 /**
@@ -534,7 +458,8 @@ async function persistirPlanoNoBanco(
 ): Promise<void> {
   try {
     const userRes = await supabase.auth.getUser();
-    const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
+    const userId = userRes.data.user?.id;
+    if (!userId) throw new Error('Não foi possível persistir o plano: usuário não autenticado.');
 
     const { error } = await supabase
       .from('planos_ia_gerados')
@@ -545,12 +470,10 @@ async function persistirPlanoNoBanco(
         modelo_ia: MODELO_PADRAO,
       }]);
 
-    if (error) {
-      console.error('❌ Erro ao persistir plano no banco:', error.message);
-    } else {
-      console.log('✅ Plano persistido na tabela planos_ia_gerados.');
-    }
+    if (error) throw new Error(`Não foi possível persistir o plano gerado: ${error.message}`);
+    console.log('✅ Plano persistido na tabela planos_ia_gerados.');
   } catch (erro) {
     console.error('❌ Erro de rede ao persistir plano:', erro);
+    throw erro;
   }
 }

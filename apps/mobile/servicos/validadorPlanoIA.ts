@@ -145,7 +145,17 @@ function validarTreino(treino: Record<string, unknown>, erros: string[]): void {
     }
 
     const exercicios = dia.exercicios;
+    
+    // IA pode as vezes escrever "Descanso" com D maiúsculo, ou colocar no nome mas esquecer no tipo
+    const nomeBaixa = String(dia.nome).toLowerCase();
+    const tipoBaixa = String(dia.tipo).toLowerCase();
+    const eDescanso = tipoBaixa === 'descanso' || nomeBaixa.includes('descanso');
+
+    if (eDescanso && Array.isArray(exercicios) && exercicios.length > 0) {
+      erros.push(`Dia ${indice + 1}: descanso não pode conter exercícios.`);
+    }
     if (!Array.isArray(exercicios) || exercicios.length === 0) {
+      if (eDescanso) return;
       erros.push(`Dia ${indice + 1} (${dia.nome}): sem exercícios.`);
       return;
     }
@@ -160,9 +170,17 @@ function validarTreino(treino: Record<string, unknown>, erros: string[]): void {
         erros.push(`Dia ${indice + 1}, "${ex.nome}": séries fora da faixa (1-10): ${series}`);
       }
 
-      const reps = Number(ex.repeticoes);
-      if (isNaN(reps) || reps < 1 || reps > 100) {
-        erros.push(`Dia ${indice + 1}, "${ex.nome}": repetições fora da faixa (1-100): ${reps}`);
+      const reps = ex.repeticoes;
+      if (typeof reps === 'number') {
+        if (reps < 1 || reps > 100) {
+          erros.push(`Dia ${indice + 1}, "${ex.nome}": repetições fora da faixa (1-100): ${reps}`);
+        }
+      } else if (typeof reps === 'string') {
+        if (!reps.trim()) {
+          erros.push(`Dia ${indice + 1}, "${ex.nome}": repetições em formato string vazia.`);
+        }
+      } else {
+        erros.push(`Dia ${indice + 1}, "${ex.nome}": repetições em formato inválido.`);
       }
     });
   });
@@ -251,11 +269,13 @@ export function sanitizarPlanoIA(plano: unknown): PlanoIAGerado | null {
         nomeDivisao: String(treino.nomeDivisao || 'Plano Personalizado'),
         dias: Array.isArray(treino.dias) ? treino.dias.map((dia: Record<string, unknown>) => ({
           diaSemana: Number(dia.diaSemana) || 0,
-          nome: String(dia.nome || 'Treino'),
+        nome: String(dia.nome || 'Treino'),
+          tipo: dia.tipo === 'descanso' ? 'descanso' : 'treino',
           exercicios: Array.isArray(dia.exercicios) ? dia.exercicios.map((ex: Record<string, unknown>) => ({
+            exercicioId: ex.exercicioId || ex.exercicio_id ? String(ex.exercicioId || ex.exercicio_id) : undefined,
             nome: String(ex.nome || 'Exercício'),
             series: Number(ex.series) || 3,
-            repeticoes: Number(ex.repeticoes) || 10,
+            repeticoes: ex.repeticoes != null ? (typeof ex.repeticoes === 'string' ? ex.repeticoes : Number(ex.repeticoes)) : 10,
             descansoSegundos: Number(ex.descansoSegundos) || 60,
             grupoMuscular: ex.grupoMuscular ? String(ex.grupoMuscular) : undefined,
           })) : [],
@@ -266,6 +286,7 @@ export function sanitizarPlanoIA(plano: unknown): PlanoIAGerado | null {
           nome: String(ref.nome || 'Refeição'),
           horario: String(ref.horario || '12:00'),
           alimentos: Array.isArray(ref.alimentos) ? ref.alimentos.map((a: Record<string, unknown>) => ({
+            alimentoId: a.alimentoId || a.alimento_id ? String(a.alimentoId || a.alimento_id) : undefined,
             nome: String(a.nome || 'Alimento'),
             porcao: String(a.porcao || '100g'),
             calorias: Number(a.calorias) || 0,

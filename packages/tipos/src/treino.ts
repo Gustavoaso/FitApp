@@ -54,7 +54,7 @@ export interface Exercicio {
 /** Uma série de um exercício (dentro do plano) */
 export interface Serie {
   numero: number;      // 1, 2, 3...
-  repeticoes: number;  // Quantidade de repetições
+  repeticoes: number | string;  // Quantidade de repetições
   cargaKg?: number;    // Carga sugerida (opcional no plano, preenchida no registro)
   descansoSegundos: number; // Tempo de descanso após esta série
 }

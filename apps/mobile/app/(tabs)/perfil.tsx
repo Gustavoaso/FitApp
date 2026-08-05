@@ -9,7 +9,7 @@
 // - Aparência (Design System Liquid Glass / Tema)
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,17 +21,51 @@ import {
   Switch,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro } from '../../componentes/ui';
+import { VisualizadorJSONModal } from '../../componentes/ui/VisualizadorJSONModal';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { useAuth } from '../../contextos/AuthContexto';
 import { repositorioPlano } from '../../servicos/repositorio';
+import { obterDadosRawTacoAPI } from '../../servicos/tacoSincronizacaoServico';
+import { obterDadosRawExerciseDB } from '../../servicos/exerciseDBSincronizacaoServico';
 
 export default function TelaPerfil() {
   const router = useRouter();
   const { usuario, sair } = useAuth();
+
+  // Inspector JSON Dev
+  const [modalJSONVisivel, setModalJSONVisivel] = useState(false);
+  const [rawTaco, setRawTaco] = useState<any[]>([]);
+  const [rawExerciseDB, setRawExerciseDB] = useState<any[]>([]);
+  const [carregandoJSON, setCarregandoJSON] = useState(false);
+
+  const lidarComAbrirInspectorJSON = async () => {
+    setModalJSONVisivel(true);
+    setCarregandoJSON(true);
+    try {
+      const [alimentos, exercicios] = await Promise.all([
+        obterDadosRawTacoAPI(),
+        obterDadosRawExerciseDB(),
+      ]);
+      setRawTaco(alimentos || []);
+      setRawExerciseDB(exercicios || []);
+    } catch (err: any) {
+      Alert.alert('Erro ao carregar dados', err?.message || 'Falha ao conectar com APIs');
+    } finally {
+      setCarregandoJSON(false);
+    }
+  };
+
+  // Estados do Perfil e Físicos
+  const [dadosFisicos, setDadosFisicos] = useState({
+    peso: '70 kg',
+    altura: '175 cm',
+    idade: '25 anos',
+    objetivo: 'Hipertrofia',
+  });
 
   // Estados do Ajuste 5
   const [modalNotificacoesVisivel, setModalNotificacoesVisivel] = useState(false);
@@ -48,6 +82,37 @@ export default function TelaPerfil() {
 
   // Aparência
   const [temaSelecionado, setTemaSelecionado] = useState('OLED Preto Puro');
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarPerfilReal();
+    }, [])
+  );
+
+  const carregarPerfilReal = async () => {
+    const perfilBanco = await repositorioPlano.obterPerfilUsuario();
+    const ultimasRespostas = await repositorioPlano.obterUltimasRespostasQuestionario();
+
+    const peso = ultimasRespostas?.pesoKg || perfilBanco?.peso_kg || 70;
+    const altura = ultimasRespostas?.alturaCm || perfilBanco?.altura_cm || 175;
+    const idade = ultimasRespostas?.idade || perfilBanco?.idade || 25;
+    const objRaw = ultimasRespostas?.objetivo || 'hipertrofia';
+
+    const mapaObjetivo: Record<string, string> = {
+      emagrecimento: 'Emagrecimento',
+      hipertrofia: 'Hipertrofia',
+      definicao: 'Definição Muscular',
+      manutencao: 'Manutenção',
+      saude: 'Saúde Geral',
+    };
+
+    setDadosFisicos({
+      peso: sistemaUnidades === 'metrico' ? `${peso} kg` : `${Math.round(peso * 2.20462)} lbs`,
+      altura: sistemaUnidades === 'metrico' ? `${altura} cm` : `${Math.floor(altura / 30.48)} ft ${Math.round((altura % 30.48) / 2.54)} in`,
+      idade: `${idade} anos`,
+      objetivo: mapaObjetivo[objRaw] || 'Hipertrofia',
+    });
+  };
 
   const lidarComSair = async () => {
     Alert.alert('Sair da conta', 'Tem certeza que deseja sair?', [
@@ -74,7 +139,10 @@ export default function TelaPerfil() {
     const respostasSalvas = await repositorioPlano.obterUltimasRespostasQuestionario();
     router.push({
       pathname: '/questionario',
-      params: respostasSalvas ? { dadosFormulario: JSON.stringify(respostasSalvas) } : undefined,
+      params: {
+        origem: 'perfil',
+        ...(respostasSalvas ? { dadosFormulario: JSON.stringify(respostasSalvas) } : {}),
+      },
     });
   };
 
@@ -96,10 +164,10 @@ export default function TelaPerfil() {
         <CardVidro semBorda estilo={estilos.cardDados}>
           <View style={estilos.gridDados}>
             {[
-              { label: 'Peso', valor: sistemaUnidades === 'metrico' ? '75 kg' : '165 lbs' },
-              { label: 'Altura', valor: sistemaUnidades === 'metrico' ? '175 cm' : '5 ft 9 in' },
-              { label: 'Idade', valor: '25 anos' },
-              { label: 'Objetivo', valor: 'Hipertrofia' },
+              { label: 'Peso', valor: dadosFisicos.peso },
+              { label: 'Altura', valor: dadosFisicos.altura },
+              { label: 'Idade', valor: dadosFisicos.idade },
+              { label: 'Objetivo', valor: dadosFisicos.objetivo },
             ].map((dado, i) => (
               <View key={i} style={estilos.dadoItem}>
                 <Text style={estilos.dadoLabel}>{dado.label}</Text>
@@ -163,7 +231,7 @@ export default function TelaPerfil() {
 
           {/* Aparência */}
           <TouchableOpacity
-            style={estilos.itemOpcao}
+            style={[estilos.itemOpcao, estilos.itemBorda]}
             onPress={() => setModalAparenciaVisivel(true)}
             activeOpacity={0.7}
           >
@@ -175,6 +243,25 @@ export default function TelaPerfil() {
               <Text style={estilos.subOpcao}>{temaSelecionado} · Liquid Glass</Text>
             </View>
             <SymbolView name="chevron.right" size={14} tintColor={Cores.texto.desabilitado} />
+          </TouchableOpacity>
+
+          {/* Dev Tool: Inspetor JSON Interativo */}
+          <TouchableOpacity
+            style={estilos.itemOpcao}
+            onPress={lidarComAbrirInspectorJSON}
+            disabled={carregandoJSON}
+            activeOpacity={0.7}
+          >
+            <View style={[estilos.iconeOpcaoContainer, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}>
+              <SymbolView name="terminal.fill" size={18} tintColor={Cores.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[estilos.tituloOpcao, { color: Cores.accent }]}>
+                {carregandoJSON ? 'Buscando JSON...' : 'Dev: Inspetor de JSON das APIs'}
+              </Text>
+              <Text style={estilos.subOpcao}>Abre modal interativo para expandir/colapsar os objetos brutos</Text>
+            </View>
+            <SymbolView name="chevron.right" size={14} tintColor={Cores.accent} />
           </TouchableOpacity>
 
         </CardVidro>
@@ -293,6 +380,15 @@ export default function TelaPerfil() {
           </View>
         </BlurView>
       </Modal>
+
+      {/* Modal Inspector JSON Dev */}
+      <VisualizadorJSONModal
+        visivel={modalJSONVisivel}
+        aoFechar={() => setModalJSONVisivel(false)}
+        dadosTaco={rawTaco}
+        dadosExerciseDB={rawExerciseDB}
+        carregando={carregandoJSON}
+      />
     </View>
   );
 }

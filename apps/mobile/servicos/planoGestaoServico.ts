@@ -66,15 +66,7 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
   },
 ];
 
-const MAPEAMENTO_INICIAL_SEMANAL: Record<string, string> = {
-  dom: 'dia-3',
-  seg: 'dia-1',
-  ter: 'dia-2',
-  qua: 'dia-3',
-  qui: 'dia-1',
-  sex: 'dia-2',
-  sáb: 'dia-3',
-};
+const MAPEAMENTO_INICIAL_SEMANAL: Record<string, string> = {};
 
 /**
  * Obtém os dias de treino customizados.
@@ -82,23 +74,32 @@ const MAPEAMENTO_INICIAL_SEMANAL: Record<string, string> = {
 export async function obterPlanoTreinoCustomizado(): Promise<DiaTreinoCustomizado[]> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_PLANO_TREINO);
-    if (!json) {
-      await AsyncStorage.setItem(CHAVE_PLANO_TREINO, JSON.stringify(TREINOS_PADRAO));
-      return TREINOS_PADRAO;
+    if (json) {
+      return JSON.parse(json);
     }
-    return JSON.parse(json);
+
+    const { repositorioTreino } = await import('./repositorio');
+    const doBanco = await repositorioTreino.buscarPlanosTreino();
+    if (doBanco && doBanco.length > 0) {
+      await AsyncStorage.setItem(CHAVE_PLANO_TREINO, JSON.stringify(doBanco));
+      return doBanco;
+    }
+
+    return [];
   } catch (erro) {
     console.error('Erro ao obter plano de treino:', erro);
-    return TREINOS_PADRAO;
+    return [];
   }
 }
 
 /**
- * Salva o plano de treino atualizado.
+ * Salva o plano de treino atualizado localmente e no Supabase.
  */
 export async function salvarPlanoTreinoCustomizado(planos: DiaTreinoCustomizado[]): Promise<void> {
   try {
     await AsyncStorage.setItem(CHAVE_PLANO_TREINO, JSON.stringify(planos));
+    const { repositorioTreino } = await import('./repositorio');
+    await repositorioTreino.salvarPlanosTreino(planos);
   } catch (erro) {
     console.error('Erro ao salvar plano de treino:', erro);
   }

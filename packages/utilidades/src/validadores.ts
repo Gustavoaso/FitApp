@@ -18,7 +18,7 @@ export type ResultadoValidacao =
  * Máximo: 100 anos (limite razoável)
  */
 export function validarIdade(idade: number): ResultadoValidacao {
-  if (!Number.isInteger(idade)) {
+  if (Number.isNaN(idade) || !Number.isInteger(idade)) {
     return { valido: false, mensagem: 'A idade deve ser um número inteiro.' };
   }
   if (idade < 14) {
@@ -36,6 +36,7 @@ export function validarIdade(idade: number): ResultadoValidacao {
  * Máximo: 300 kg (limite razoável)
  */
 export function validarPeso(pesoKg: number): ResultadoValidacao {
+  if (Number.isNaN(pesoKg)) return { valido: false, mensagem: 'Peso inválido.' };
   if (pesoKg < 30) {
     return { valido: false, mensagem: 'Peso mínimo: 30 kg.' };
   }
@@ -51,6 +52,7 @@ export function validarPeso(pesoKg: number): ResultadoValidacao {
  * Máximo: 250 cm (2,5 metros)
  */
 export function validarAltura(alturaCm: number): ResultadoValidacao {
+  if (Number.isNaN(alturaCm)) return { valido: false, mensagem: 'Altura inválida.' };
   if (alturaCm < 100) {
     return { valido: false, mensagem: 'Altura mínima: 100 cm.' };
   }

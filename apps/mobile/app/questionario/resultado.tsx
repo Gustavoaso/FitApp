@@ -33,25 +33,20 @@ export default function TelaResultadoQuestionario() {
   const dadosPlano: PlanoIAGerado | null = plano ? JSON.parse(plano) : null;
   const dadosRespostas = respostas ? JSON.parse(respostas) : null;
 
-  const resumo = dadosPlano?.resumo || {
-    tmb: 1847,
-    tdee: 2400,
-    caloriasAlvo: 2400,
-    macros: { proteinas: 160, carboidratos: 280, gorduras: 72 },
-    metaAguaMl: 3200,
-  };
+  const resumo = dadosPlano?.resumo;
 
-  const refeicoes = dadosPlano?.dieta?.refeicoes || [
-    { nome: 'Café da Manhã', horario: '07:30', alimentos: [] },
-    { nome: 'Almoço', horario: '12:30', alimentos: [] },
-    { nome: 'Jantar', horario: '19:30', alimentos: [] },
-  ];
+  const refeicoes = dadosPlano?.dieta?.refeicoes || [];
 
-  const diasTreino = dadosPlano?.treino?.dias || [
-    { diaSemana: 1, nome: 'Push', exercicios: [{ nome: 'Supino', series: 4, repeticoes: 10, descansoSegundos: 60 }] },
-    { diaSemana: 2, nome: 'Pull', exercicios: [{ nome: 'Puxada', series: 4, repeticoes: 10, descansoSegundos: 60 }] },
-    { diaSemana: 3, nome: 'Legs', exercicios: [{ nome: 'Agachamento', series: 4, repeticoes: 10, descansoSegundos: 90 }] },
-  ];
+  const diasTreino = dadosPlano?.treino?.dias || [];
+
+  if (!dadosPlano || !resumo) {
+    return (
+      <View style={[estilos.container, { alignItems: 'center', justifyContent: 'center', padding: 24 }]}>
+        <Text style={estilos.tituloPill}>Planejamento indisponível</Text>
+        <Text style={estilos.subtituloPill}>Gere o planejamento novamente para continuar.</Text>
+      </View>
+    );
+  }
 
   const aceitarEIniciar = async () => {
     setSalvando(true);
@@ -61,9 +56,10 @@ export default function TelaResultadoQuestionario() {
       }
       setSalvando(false);
       router.replace('/(tabs)/inicio');
-    } catch {
+    } catch (erro) {
       setSalvando(false);
-      Alert.alert('Erro', 'Não foi possível salvar seu plano ativo. Tente novamente.');
+      const mensagem = erro instanceof Error ? erro.message : 'Erro desconhecido ao salvar o planejamento.';
+      Alert.alert('Erro ao salvar planejamento', mensagem);
     }
   };
 
@@ -180,7 +176,7 @@ export default function TelaResultadoQuestionario() {
 
                 <View style={estilos.colTextosPill}>
                   <Text style={estilos.tituloPill}>Hidratação</Text>
-                  <Text style={estilos.subtituloPill}>Meta de {formatarAgua(resumo.metaAguaMl)} por dia</Text>
+              <Text style={estilos.subtituloPill}>Meta de {formatarAgua(resumo?.metaAguaMl || 0)} por dia</Text>
                 </View>
 
                 <View style={estilos.checkmarkCircle}>

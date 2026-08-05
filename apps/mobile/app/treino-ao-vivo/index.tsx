@@ -23,8 +23,18 @@ import { CardVidro, BotaoPrimario, AnelProgresso } from '../../componentes/ui';
 import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '../../constantes/Cores';
 import { formatarTempo } from '@fitapp/utilidades';
 import { registrarExecucaoSerie } from '../../servicos/progressoServico';
+import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '../../servicos/planoGestaoServico';
 
-const exercicios = [
+interface ExercicioAoVivo {
+  id: string;
+  nome: string;
+  series: number;
+  reps: number;
+  cargaSugerida: number;
+  descansoSegundos: number;
+}
+
+const EXERCICIOS_PADRAO: ExercicioAoVivo[] = [
   { id: 'ex-1', nome: 'Supino Reto com Barra', series: 4, reps: 10, cargaSugerida: 60, descansoSegundos: 90 },
   { id: 'ex-2', nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, cargaSugerida: 24, descansoSegundos: 60 },
   { id: 'ex-4', nome: 'Tríceps Pulley com Corda', series: 4, reps: 12, cargaSugerida: 35, descansoSegundos: 60 },
@@ -33,13 +43,53 @@ const exercicios = [
 export default function TelaTreinoAoVivo() {
   const router = useRouter();
 
+  const sairDoTreino = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace('/(tabs)/treino');
+  };
+
+  const [listaExercicios, setListaExercicios] = useState<ExercicioAoVivo[]>(EXERCICIOS_PADRAO);
+  const [tituloTreino, setTituloTreino] = useState('Treino ao Vivo');
   const [indexExercicio, setIndexExercicio] = useState(0);
   const [serieAtual, setSerieAtual] = useState(1);
   const [cargaUsada, setCargaUsada] = useState('');
   const [tempoRestante, setTempoRestante] = useState(90);
   const [emDescanso, setEmDescanso] = useState(false);
 
-  const exAtual = exercicios[indexExercicio];
+  useEffect(() => {
+    async function carregarTreinoReal() {
+      try {
+        const planos = await obterPlanoTreinoCustomizado();
+        const mapSemana = await obterMapeamentoSemanal();
+        const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+        const abrevHoje = abrevs[new Date().getDay()];
+        const idHoje = mapSemana[abrevHoje];
+
+        const planoHoje = (idHoje && planos.find(p => p.id === idHoje)) || planos[0];
+        if (planoHoje && planoHoje.exercicios && planoHoje.exercicios.length > 0) {
+          setTituloTreino(planoHoje.foco || planoHoje.diaSemana);
+          const adaptados: ExercicioAoVivo[] = planoHoje.exercicios.map(ex => ({
+            id: ex.id,
+            nome: ex.nome,
+            series: ex.series || 4,
+            reps: ex.repeticoes || 10,
+            cargaSugerida: ex.cargaKg || 20,
+            descansoSegundos: ex.tempoDescansoSegundos || 60,
+          }));
+          setListaExercicios(adaptados);
+          setTempoRestante(adaptados[0].descansoSegundos);
+        }
+      } catch (err) {
+        console.warn('Erro ao carregar treino real para execução ao vivo:', err);
+      }
+    }
+    carregarTreinoReal();
+  }, []);
+
+  const exAtual = listaExercicios[indexExercicio] || EXERCICIOS_PADRAO[0];
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -77,26 +127,28 @@ export default function TelaTreinoAoVivo() {
       setTempoRestante(exAtual.descansoSegundos);
       setEmDescanso(true);
     } else {
-      if (indexExercicio < exercicios.length - 1) {
+      if (indexExercicio < listaExercicios.length - 1) {
         setIndexExercicio(indexExercicio + 1);
         setSerieAtual(1);
-        setTempoRestante(exercicios[indexExercicio + 1].descansoSegundos);
+        setTempoRestante(listaExercicios[indexExercicio + 1].descansoSegundos);
         setEmDescanso(true);
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Parabéns! 🎉', 'Treino concluído com sucesso!');
-        router.back();
+        const { incrementarTreinoRealizado } = await import('../../servicos/progressoServico');
+        await incrementarTreinoRealizado();
+        Alert.alert('Parabéns!', 'Treino concluído com sucesso!');
+        sairDoTreino();
       }
     }
   };
 
   const pularExercicio = () => {
-    if (indexExercicio < exercicios.length - 1) {
+    if (indexExercicio < listaExercicios.length - 1) {
       setIndexExercicio(indexExercicio + 1);
       setSerieAtual(1);
       setEmDescanso(false);
     } else {
-      router.back();
+      sairDoTreino();
     }
   };
 
@@ -106,7 +158,7 @@ export default function TelaTreinoAoVivo() {
       <View style={estilos.topo}>
         <TouchableOpacity
           style={estilos.btnSairAmarelo}
-          onPress={() => router.back()}
+          onPress={sairDoTreino}
           activeOpacity={0.8}
         >
           <SymbolView name="xmark" size={14} tintColor="#FFFFFF" weight="bold" />
@@ -114,9 +166,9 @@ export default function TelaTreinoAoVivo() {
         </TouchableOpacity>
 
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={estilos.tituloTreino}>Peito + Tríceps</Text>
+          <Text style={estilos.tituloTreino}>{tituloTreino}</Text>
           <Text style={estilos.progressoTexto}>
-            Exercício {indexExercicio + 1}/{exercicios.length}
+            Exercício {indexExercicio + 1}/{listaExercicios.length}
           </Text>
         </View>
       </View>

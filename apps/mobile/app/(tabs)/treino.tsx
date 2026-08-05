@@ -8,7 +8,7 @@
 // 3. Removido o botão '+' do card do dia (mantido apenas botão 'Trocar')
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import {
   KeyboardAvoidingView,
   Image,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '../../componentes/ui';
@@ -40,21 +40,37 @@ import {
   DiaTreinoCustomizado,
   ExercicioCustomizado,
 } from '../../servicos/planoGestaoServico';
-import { obterSeriesUltimaExecucao } from '../../servicos/progressoServico';
+import {
+  obterSeriesUltimaExecucao,
+  EstatisticasAderencia,
+  recalcularMetaSemanalAuto,
+  calcularAderenciaSemanal,
+} from '../../servicos/progressoServico';
 
-const DIAS_SEMANA_CARROSSEL = [
-  { abrev: 'dom', diaNum: '26', data: '2026-07-26' },
-  { abrev: 'seg', diaNum: '27', data: '2026-07-27' },
-  { abrev: 'ter', diaNum: '28', data: '2026-07-28' },
-  { abrev: 'qua', diaNum: '29', data: '2026-07-29' },
-  { abrev: 'qui', diaNum: '30', data: '2026-07-30' },
-  { abrev: 'sex', diaNum: '31', data: '2026-07-31' },
-  { abrev: 'sáb', diaNum: '01', data: '2026-08-01' },
-];
+function gerarDiasSemanaCarrossel() {
+  const hoje = new Date();
+  const diaSemanaIndex = hoje.getDay();
+  const inicioSemana = new Date(hoje);
+  inicioSemana.setDate(hoje.getDate() - diaSemanaIndex);
+
+  const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  return abrevs.map((abrev, idx) => {
+    const d = new Date(inicioSemana);
+    d.setDate(inicioSemana.getDate() + idx);
+    const dataIso = d.toISOString().split('T')[0];
+    const diaNum = String(d.getDate()).padStart(2, '0');
+    return { abrev, diaNum, data: dataIso };
+  });
+}
 
 export default function TelaTreino() {
   const router = useRouter();
-  const [diaSelecionado, setDiaSelecionado] = useState('2026-07-27');
+  const [abaModo, setAbaModo] = useState<'registrado' | 'planejado'>('registrado');
+  const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia | null>(null);
+  const [modalReformularSemanaVisivel, setModalReformularSemanaVisivel] = useState(false);
+
+  const DIAS_SEMANA_CARROSSEL = React.useMemo(() => gerarDiasSemanaCarrossel(), []);
+  const [diaSelecionado, setDiaSelecionado] = useState(() => new Date().toISOString().split('T')[0]);
   const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
   const [mapeamentoSemanal, setMapeamentoSemanal] = useState<Record<string, string>>({});
   const [idTreinoEspecial, setIdTreinoEspecial] = useState<string | null>(null);
@@ -118,9 +134,11 @@ export default function TelaTreino() {
   const [novaCarga, setNovaCarga] = useState('60');
   const [novoDescanso, setNovoDescanso] = useState('60');
 
-  useEffect(() => {
-    carregarPlanos();
-  }, [diaSelecionado]);
+  useFocusEffect(
+    useCallback(() => {
+      carregarPlanos();
+    }, [diaSelecionado])
+  );
 
   const carregarPlanos = async () => {
     const dados = await obterPlanoTreinoCustomizado();
@@ -132,7 +150,6 @@ export default function TelaTreino() {
     const especial = await obterTreinoEspecialParaData(diaSelecionado);
     setIdTreinoEspecial(especial);
 
-    // Rodada 3 — Ajuste 1: Carrega histórico por série de cada exercício
     const seriesMapa: Record<string, Record<number, { cargaKg: number; repeticoes: number }>> = {};
     for (const dia of dados) {
       for (const ex of dia.exercicios) {
@@ -143,13 +160,24 @@ export default function TelaTreino() {
       }
     }
     setHistoricoSeriesMapa(seriesMapa);
+
+    const stats = await calcularAderenciaSemanal();
+    setEstatisticas(stats);
+  };
+
+  const [diasExpandidos, setDiasExpandidos] = useState<Record<string, boolean>>({});
+
+  const alternarExpansaoDia = (abrev: string) => {
+    setDiasExpandidos(prev => ({ ...prev, [abrev]: !prev[abrev] }));
   };
 
   const itemCarrossel = DIAS_SEMANA_CARROSSEL.find(d => d.data === diaSelecionado);
   const abrevDia = itemCarrossel ? itemCarrossel.abrev : 'seg';
 
   const idTreinoPredefinido = mapeamentoSemanal[abrevDia];
-  const treinoDefaultSemanal = planos.find(p => p.id === idTreinoPredefinido) || planos[0];
+  const treinoDefaultSemanal = idTreinoPredefinido && idTreinoPredefinido !== 'descanso'
+    ? planos.find(p => p.id === idTreinoPredefinido) || null
+    : null;
   const diaAtual = idTreinoEspecial ? planos.find(p => p.id === idTreinoEspecial) || treinoDefaultSemanal : treinoDefaultSemanal;
 
   const temTreino = diaAtual && diaAtual.exercicios && diaAtual.exercicios.length > 0;
@@ -184,6 +212,9 @@ export default function TelaTreino() {
     const atualizados = [...planos, novoTreino];
     setPlanos(atualizados);
     await salvarPlanoTreinoCustomizado(atualizados);
+    await recalcularMetaSemanalAuto(undefined, true);
+    const stats = await calcularAderenciaSemanal();
+    setEstatisticas(stats);
     setNovoFocoTreino('');
     setExerciciosTempNovoTreino([]);
     setModalCriarNovoTreinoVisivel(false);
@@ -193,6 +224,9 @@ export default function TelaTreino() {
     const novoMap = { ...mapeamentoSemanal, [abrev]: idTreino };
     setMapeamentoSemanal(novoMap);
     await salvarMapeamentoSemanal(novoMap);
+    await recalcularMetaSemanalAuto(undefined, true);
+    const stats = await calcularAderenciaSemanal();
+    setEstatisticas(stats);
   };
 
   const lidarComSalvarNovoExercicio = async () => {
@@ -248,122 +282,254 @@ export default function TelaTreino() {
           </View>
         </View>
 
-        {/* ── Carrossel Semanal de Dias ─────────────────────── */}
-        <View style={estilos.carrosselContainer}>
-          {DIAS_SEMANA_CARROSSEL.map((dia) => {
-            const sel = dia.data === diaSelecionado;
-            return (
-              <TouchableOpacity
-                key={dia.data}
-                onPress={() => setDiaSelecionado(dia.data)}
-                activeOpacity={0.7}
-                style={estilos.itemDia}
-              >
-                <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>
-                  {dia.abrev}
-                </Text>
-                <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>
-                  {dia.diaNum}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+        {/* ── Segmented Control: Registrado x Planejado ── */}
+        <View style={estilos.segmentControlContainer}>
+          <TouchableOpacity
+            style={[estilos.segmentTab, abaModo === 'registrado' && estilos.segmentTabAtiva]}
+            onPress={() => setAbaModo('registrado')}
+          >
+            <Text style={[estilos.segmentTxt, abaModo === 'registrado' && estilos.segmentTxtAtivo]}>
+              📋 Registrado
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[estilos.segmentTab, abaModo === 'planejado' && estilos.segmentTabAtiva]}
+            onPress={() => setAbaModo('planejado')}
+          >
+            <Text style={[estilos.segmentTxt, abaModo === 'planejado' && estilos.segmentTxtAtivo]}>
+              📅 Planejado
+            </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* ── Card do Foco do Dia (Rodada 3 — Ajuste 1: Mantido APENAS botão 'Trocar', removido '+') ── */}
-        <CardVidro semBorda estilo={estilos.cardDiaHeader}>
-          <View style={estilos.rowDiaHeader}>
-            <View style={estilos.iconeFocoContainer}>
-              <SymbolView
-                name={temTreino ? 'dumbbell.fill' : 'dumbbell'}
-                size={18}
-                tintColor={temTreino ? Cores.accent : Cores.texto.desabilitado}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={estilos.diaFoco}>{diaAtual ? diaAtual.foco : 'Recuperação'}</Text>
-              <Text style={estilos.diaDetalhes}>
-                {temTreino ? `${diaAtual.exercicios.length} exercícios programados` : 'Descanso ativo'}
-              </Text>
-            </View>
+        {abaModo === 'planejado' ? (
+          /* ── ABA PLANEJADO: Cronograma Semanal & Guia Flexível ── */
+          <View style={{ gap: 16 }}>
+            {/* Banner Resumo de Progresso */}
+            <CardVidro semBorda estilo={estilos.bannerResumoPlanejado}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <SymbolView name="flag.checkered" size={20} tintColor={Cores.accent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.txtBannerTitulo}>
+                    {estatisticas?.diasTreinados || 0} de {estatisticas?.metaDiasTreino || 5} treinos concluídos
+                  </Text>
+                  <Text style={estilos.txtBannerSub}>
+                    {estatisticas?.exerciciosRealizados || 0} de {estatisticas?.metaExercicios || 25} exercícios executados nesta semana
+                  </Text>
+                </View>
+              </View>
+            </CardVidro>
 
-            {/* Botão de Trocar Treino */}
+            {/* Ação: Reformular Semana Completa */}
             <TouchableOpacity
-              style={estilos.btnTrocarTreino}
-              onPress={() => setModalTrocarTreinoVisivel(true)}
+              style={estilos.btnReformularSemana}
+              onPress={() => setModalDefinirSemanaVisivel(true)}
+              activeOpacity={0.8}
             >
-              <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor={Cores.accent} weight="bold" />
-              <Text style={estilos.txtTrocarTreino}>Trocar</Text>
+              <SymbolView name="arrow.triangle.2.circlepath" size={16} tintColor="#080A0E" weight="bold" />
+              <Text style={estilos.txtReformularSemana}>Reformular Semana Completa</Text>
             </TouchableOpacity>
-          </View>
-        </CardVidro>
 
-        {/* ── Lista de Exercícios com Visualização por Série em LINHA (Ajuste 1) ── */}
-        {temTreino ? (
-          <>
-            <Text style={estilos.secaoTitulo}>Exercícios do Dia</Text>
+            {/* Cronograma dos 7 Dias da Semana */}
+            <Text style={estilos.secaoTitulo}>Cronograma dos 7 Dias</Text>
 
-            {diaAtual.exercicios.map((ex, i) => {
-              const seriesHistorico = historicoSeriesMapa[ex.id] || {};
-              const numSeriesArray = Array.from({ length: ex.series }, (_, idx) => idx + 1);
+            {[
+              { abrev: 'seg', nome: 'Segunda-feira' },
+              { abrev: 'ter', nome: 'Terça-feira' },
+              { abrev: 'qua', nome: 'Quarta-feira' },
+              { abrev: 'qui', nome: 'Quinta-feira' },
+              { abrev: 'sex', nome: 'Sexta-feira' },
+              { abrev: 'sáb', nome: 'Sábado' },
+              { abrev: 'dom', nome: 'Domingo' },
+            ].map((diaItem) => {
+              const idTr = mapeamentoSemanal[diaItem.abrev];
+              const tObj = planos.find((p) => p.id === idTr);
+              const expandido = !!diasExpandidos[diaItem.abrev];
 
               return (
-                <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
+                <CardVidro key={diaItem.abrev} semBorda estilo={estilos.cardItemCronograma}>
                   <TouchableOpacity
-                    onPress={() => {
-                      setExercicioEmEdicao(ex);
-                      setModalEditarVisivel(true);
-                    }}
-                    activeOpacity={0.7}
-                    style={estilos.rowExercicioTopo}
+                    activeOpacity={0.8}
+                    onPress={() => alternarExpansaoDia(diaItem.abrev)}
+                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
                   >
-                    <View style={estilos.ordemContainer}>
-                      <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
-                    </View>
-
-                    <View style={estilos.colExercicio}>
-                      <Text style={estilos.exNome}>{ex.nome}</Text>
-                      <Text style={estilos.exSub}>
-                        {ex.series} séries · {ex.repeticoes} reps · {ex.tempoDescansoSegundos || 60}s descanso
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={estilos.txtDiaSemanaNome}>{diaItem.nome}</Text>
+                        <SymbolView
+                          name={expandido ? 'chevron.up' : 'chevron.down'}
+                          size={12}
+                          tintColor={Cores.accent}
+                        />
+                      </View>
+                      <Text style={estilos.txtFocoAlocado}>
+                        {tObj ? tObj.foco : 'Descanso'}
+                      </Text>
+                      <Text style={estilos.txtQtdExAlocado}>
+                        {tObj && tObj.exercicios ? `${tObj.exercicios.length} exercícios (toque para expandir)` : 'Recuperação ativa'}
                       </Text>
                     </View>
 
-                    <View style={estilos.badgeGrupo}>
-                      <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
-                    </View>
+                    <TouchableOpacity
+                      style={estilos.btnAlterarDiaPlanejado}
+                      onPress={() => {
+                        setDiaEmTrocaConfig(diaItem.abrev);
+                        setModalSeletorTreinoVisivel(true);
+                      }}
+                    >
+                      <Text style={estilos.txtAlterarDiaPlanejado}>Alterar</Text>
+                    </TouchableOpacity>
                   </TouchableOpacity>
 
-                  {/* Rodada 3 — Ajuste 1: Exibição das séries em LINHA (uma por linha com Carga x Reps) */}
-                  <View style={estilos.containerLinhasSeries}>
-                    {numSeriesArray.map(nSerie => {
-                      const reg = seriesHistorico[nSerie];
-                      const cargaExibir = reg ? reg.cargaKg : ex.cargaKg;
-                      const repsExibir = reg ? reg.repeticoes : ex.repeticoes;
-
-                      return (
-                        <View key={nSerie} style={estilos.linhaSerieItem}>
-                          <Text style={estilos.txtNumeroSerie}>Série {nSerie}</Text>
-                          <View style={estilos.linhaDivisoraPontilhada} />
-                          <Text style={estilos.txtValoresSerie}>{cargaExibir} kg  ×  {repsExibir} reps</Text>
+                  {expandido && tObj && tObj.exercicios && tObj.exercicios.length > 0 && (
+                    <View style={estilos.containerExerciciosExpandidos}>
+                      {tObj.exercicios.map((ex, idx) => (
+                        <View key={ex.id || idx} style={estilos.itemExercicioExpandido}>
+                          <Text style={estilos.numExExpandido}>{String(idx + 1).padStart(2, '0')}</Text>
+                          <View style={{ flex: 1 }}>
+                            <Text style={estilos.nomeExExpandido}>{ex.nome}</Text>
+                            <Text style={estilos.subExExpandido}>
+                              {ex.series} séries × {ex.repeticoes} reps ({ex.cargaKg} kg)
+                            </Text>
+                          </View>
+                          <Text style={estilos.badgeGrupoExpandido}>{ex.grupoMuscular}</Text>
                         </View>
-                      );
-                    })}
-                  </View>
+                      ))}
+                    </View>
+                  )}
                 </CardVidro>
               );
             })}
-
-            <BotaoPrimario
-              texto="Iniciar Treino ao Vivo"
-              aoPresionar={() => router.push('/treino-ao-vivo')}
-              estilo={estilos.botaoIniciar}
-            />
-          </>
-        ) : (
-          <View style={estilos.containerVazio}>
-            <Text style={estilos.textoVazioTitulo}>Dia de Descanso</Text>
-            <Text style={estilos.textoVazioSub}>Recuperação ativa muscular</Text>
           </View>
+        ) : (
+          /* ── ABA REGISTRADO: Execução & Histórico Diário ── */
+          <>
+            {/* Indicador de Divergência se o treino atual for diferente do planejado */}
+            {idTreinoEspecial && idTreinoEspecial !== idTreinoPredefinido && (
+              <View style={estilos.badgeDivergenciaContainer}>
+                <SymbolView name="sparkles" size={14} tintColor={Cores.accent} />
+                <Text style={estilos.txtDivergencia}>Diferente do planejado inicial</Text>
+              </View>
+            )}
+
+            {/* ── Carrossel Semanal de Dias ─────────────────────── */}
+            <View style={estilos.carrosselContainer}>
+              {DIAS_SEMANA_CARROSSEL.map((dia) => {
+                const sel = dia.data === diaSelecionado;
+                return (
+                  <TouchableOpacity
+                    key={dia.data}
+                    onPress={() => setDiaSelecionado(dia.data)}
+                    activeOpacity={0.7}
+                    style={estilos.itemDia}
+                  >
+                    <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>
+                      {dia.abrev}
+                    </Text>
+                    <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>
+                      {dia.diaNum}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* ── Card do Foco do Dia ── */}
+            <CardVidro semBorda estilo={estilos.cardDiaHeader}>
+              <View style={estilos.rowDiaHeader}>
+                <View style={estilos.iconeFocoContainer}>
+                  <SymbolView
+                    name={temTreino ? 'dumbbell.fill' : 'dumbbell'}
+                    size={18}
+                    tintColor={temTreino ? Cores.accent : Cores.texto.desabilitado}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={estilos.diaFoco}>{diaAtual ? diaAtual.foco : 'Recuperação'}</Text>
+                  <Text style={estilos.diaDetalhes}>
+                    {temTreino ? `${diaAtual.exercicios.length} exercícios programados` : 'Descanso ativo'}
+                  </Text>
+                </View>
+
+                {/* Botão de Trocar Treino */}
+                <TouchableOpacity
+                  style={estilos.btnTrocarTreino}
+                  onPress={() => setModalTrocarTreinoVisivel(true)}
+                >
+                  <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor={Cores.accent} weight="bold" />
+                  <Text style={estilos.txtTrocarTreino}>Trocar</Text>
+                </TouchableOpacity>
+              </View>
+            </CardVidro>
+
+            {/* ── Lista de Exercícios ── */}
+            {temTreino ? (
+              <>
+                <Text style={estilos.secaoTitulo}>Exercícios do Dia</Text>
+
+                {diaAtual.exercicios.map((ex, i) => {
+                  const seriesHistorico = historicoSeriesMapa[ex.id] || {};
+                  const numSeriesArray = Array.from({ length: ex.series }, (_, idx) => idx + 1);
+
+                  return (
+                    <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setExercicioEmEdicao(ex);
+                          setModalEditarVisivel(true);
+                        }}
+                        activeOpacity={0.7}
+                        style={estilos.rowExercicioTopo}
+                      >
+                        <View style={estilos.ordemContainer}>
+                          <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
+                        </View>
+
+                        <View style={estilos.colExercicio}>
+                          <Text style={estilos.exNome}>{ex.nome}</Text>
+                          <Text style={estilos.exSub}>
+                            {ex.series} séries · {ex.repeticoes} reps · {ex.tempoDescansoSegundos || 60}s descanso
+                          </Text>
+                        </View>
+
+                        <View style={estilos.badgeGrupo}>
+                          <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
+                        </View>
+                      </TouchableOpacity>
+
+                      <View style={estilos.containerLinhasSeries}>
+                        {numSeriesArray.map(nSerie => {
+                          const reg = seriesHistorico[nSerie];
+                          const cargaExibir = reg ? reg.cargaKg : ex.cargaKg;
+                          const repsExibir = reg ? reg.repeticoes : ex.repeticoes;
+
+                          return (
+                            <View key={nSerie} style={estilos.linhaSerieItem}>
+                              <Text style={estilos.txtNumeroSerie}>Série {nSerie}</Text>
+                              <View style={estilos.linhaDivisoraPontilhada} />
+                              <Text style={estilos.txtValoresSerie}>{cargaExibir} kg  ×  {repsExibir} reps</Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </CardVidro>
+                  );
+                })}
+
+                <BotaoPrimario
+                  texto="Iniciar Treino ao Vivo"
+                  aoPresionar={() => router.push('/treino-ao-vivo')}
+                  estilo={estilos.botaoIniciar}
+                />
+              </>
+            ) : (
+              <View style={estilos.containerVazio}>
+                <Text style={estilos.textoVazioTitulo}>Dia de Descanso</Text>
+                <Text style={estilos.textoVazioSub}>Recuperação ativa muscular</Text>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
 
@@ -1254,6 +1420,163 @@ const estilos = StyleSheet.create({
     color: Cores.texto.principal,
     fontFamily: FamiliaFonte.regular,
     marginBottom: 12,
+  },
+  modalInputPesquisa: {
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: Raio.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: Cores.texto.principal,
+    fontFamily: FamiliaFonte.regular,
+    fontSize: Fonte.corpo,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+    marginBottom: 12,
+  },
+  segmentControlContainer: {
+    flexDirection: 'row',
+    backgroundColor: Cores.fundo.elevada,
+    borderRadius: Raio.md,
+    padding: 4,
+    marginBottom: 16,
+  },
+  segmentTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: Raio.sm,
+  },
+  segmentTabAtiva: {
+    backgroundColor: Cores.accent,
+  },
+  segmentTxt: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: Fonte.label,
+    color: Cores.texto.secundario,
+  },
+  segmentTxtAtivo: {
+    color: '#080A0E',
+  },
+  bannerResumoPlanejado: {
+    padding: 14,
+    backgroundColor: 'rgba(234, 179, 8, 0.08)',
+    borderColor: 'rgba(234, 179, 8, 0.2)',
+    borderWidth: 1,
+  },
+  txtBannerTitulo: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 14,
+    color: Cores.texto.principal,
+  },
+  txtBannerSub: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+  btnReformularSemana: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Cores.accent,
+    paddingVertical: 12,
+    borderRadius: Raio.md,
+  },
+  txtReformularSemana: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 14,
+    color: '#080A0E',
+  },
+  cardItemCronograma: {
+    padding: 14,
+    marginBottom: 10,
+  },
+  txtDiaSemanaNome: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 14,
+    color: Cores.accent,
+  },
+  txtFocoAlocado: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 15,
+    color: Cores.texto.principal,
+    marginTop: 2,
+  },
+  txtQtdExAlocado: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 12,
+    color: Cores.texto.secundario,
+    marginTop: 2,
+  },
+  btnAlterarDiaPlanejado: {
+    backgroundColor: Cores.fundo.elevada,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: Raio.sm,
+    borderWidth: 1,
+    borderColor: Cores.borda.sutil,
+  },
+  txtAlterarDiaPlanejado: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 12,
+    color: Cores.texto.principal,
+  },
+  badgeDivergenciaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(234, 179, 8, 0.12)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Raio.full,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  txtDivergencia: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 12,
+    color: Cores.accent,
+  },
+  containerExerciciosExpandidos: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 8,
+  },
+  itemExercicioExpandido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: Cores.fundo.elevada,
+    padding: 10,
+    borderRadius: Raio.sm,
+  },
+  numExExpandido: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 12,
+    color: Cores.accent,
+  },
+  nomeExExpandido: {
+    fontFamily: FamiliaFonte.semibold,
+    fontSize: 13,
+    color: Cores.texto.principal,
+  },
+  subExExpandido: {
+    fontFamily: FamiliaFonte.regular,
+    fontSize: 11,
+    color: Cores.texto.secundario,
+    marginTop: 1,
+  },
+  badgeGrupoExpandido: {
+    fontFamily: FamiliaFonte.bold,
+    fontSize: 10,
+    color: Cores.texto.secundario,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
   },
   labelInput: {
     fontFamily: FamiliaFonte.regular,

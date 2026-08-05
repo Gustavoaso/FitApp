@@ -76,9 +76,10 @@ export interface ResumoNutricionalIA {
 
 /** Exercício dentro de um dia no plano gerado pela IA */
 export interface ExercicioPlanoIA {
+  exercicioId?: string;
   nome: string;
   series: number;
-  repeticoes: number;
+  repeticoes: number | string;
   descansoSegundos: number;
   grupoMuscular?: string;
 }
@@ -87,11 +88,13 @@ export interface ExercicioPlanoIA {
 export interface DiaTreinoIA {
   diaSemana: number;
   nome: string;
+  tipo?: 'treino' | 'descanso';
   exercicios: ExercicioPlanoIA[];
 }
 
 /** Alimento dentro de uma refeição no plano gerado pela IA */
 export interface AlimentoPlanoIA {
+  alimentoId?: string;
   nome: string;
   porcao: string;
   calorias: number;
@@ -119,4 +122,3 @@ export interface PlanoIAGerado {
   };
   comentarios?: string[];
 }
-

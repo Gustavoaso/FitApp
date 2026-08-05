@@ -13,7 +13,7 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://asuxqjbwget
 const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_KEY ||
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  'sb_publishable_gnENJdi83TUersfr5iZ9Kg_dRINulr_';
+  'sb_publishable_s97SsJOHdU0myvXzWT26DA_PBaFe95D';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn(

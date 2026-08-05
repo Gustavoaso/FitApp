@@ -32,6 +32,14 @@ export default function TelaCadastro() {
   const { cadastrarComEmail } = useAuth();
   const router = useRouter();
 
+  const voltarParaLogin = () => {
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+    router.replace('/(auth)/login');
+  };
+
   const lidarComCadastro = async () => {
     if (!nome || nome.trim().length < 2) {
       Alert.alert('Aviso', 'Por favor, digite seu nome.');
@@ -60,7 +68,7 @@ export default function TelaCadastro() {
     } else if (erro) {
       Alert.alert('Erro ao cadastrar', erro);
     } else {
-      router.replace('/');
+      router.replace('/questionario');
     }
   };
 
@@ -123,7 +131,7 @@ export default function TelaCadastro() {
 
         <View style={estilos.rodape}>
           <Text style={estilos.textoRodape}>Já possui uma conta? </Text>
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={voltarParaLogin}>
             <Text style={estilos.linkLogin}>Voltar para o Login</Text>
           </TouchableOpacity>
         </View>

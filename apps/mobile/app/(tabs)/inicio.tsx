@@ -6,7 +6,7 @@
 // Rodada 2 — Ajuste 2: Adicionadas opções inversas para remover água (-250ml, -500ml, -1L).
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,7 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '../../componentes/ui';
@@ -31,37 +31,45 @@ import {
   calcularAderenciaSemanal,
   EstatisticasAderencia,
 } from '../../servicos/progressoServico';
-import { repositorioPlano } from '../../servicos/repositorio';
+import { repositorioPlano, repositorioAgua } from '../../servicos/repositorio';
+import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '../../servicos/planoGestaoServico';
 
 export default function TelaInicio() {
   const router = useRouter();
 
-  const [caloriasConsumidas] = useState(1847);
+  const [caloriasConsumidas, setCaloriasConsumidas] = useState(0);
   const [caloriasMeta, setCaloriasMeta] = useState(2400);
 
-  const [proteina] = useState(124);
+  const [proteina, setProteina] = useState(0);
   const [proteinaMeta, setProteinaMeta] = useState(160);
 
-  const [carboidrato] = useState(198);
-  const [carboidratoMeta, setCarboidratoMeta] = useState(280);
+  const [carboidrato, setCarboidrato] = useState(0);
+  const [carboidratoMeta, setCarboidratoMeta] = useState(0);
 
-  const [gordura] = useState(52);
-  const [gorduraMeta, setGorduraMeta] = useState(72);
+  const [gordura, setGordura] = useState(0);
+  const [gorduraMeta, setGorduraMeta] = useState(0);
 
   // Hidratação
-  const [aguaConsumidaMl, setAguaConsumidaMl] = useState(1250);
-  const [metaAguaMl, setMetaAguaMl] = useState(2000);
+  const [aguaConsumidaMl, setAguaConsumidaMl] = useState(0);
+  const [metaAguaMl, setMetaAguaMl] = useState(2500);
   const [modalMetaAguaVisivel, setModalMetaAguaVisivel] = useState(false);
-  const [novaMetaAguaStr, setNovaMetaAguaStr] = useState('2000');
+  const [novaMetaAguaStr, setNovaMetaAguaStr] = useState('');
+
+  // Treino de hoje
+  const [treinoHojeTitulo, setTreinoHojeTitulo] = useState('Treino do Dia');
+  const [treinoHojeSub, setTreinoHojeSub] = useState('Carregando treino...');
+  const [treinoHojeId, setTreinoHojeId] = useState<string | null>(null);
 
   // Estados de progresso
   const [dadosGraficoPeso, setDadosGraficoPeso] = useState<PontoGrafico[]>([]);
   const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia>({
-    diasTreinados: 4,
-    metaDiasTreino: 5,
-    refeicoesConcluidas: 18,
-    totalRefeicoesPrevistas: 21,
-    porcentagemAderenciaGeral: 88,
+    diasTreinados: 0,
+    metaDiasTreino: 0,
+    exerciciosRealizados: 0,
+    metaExercicios: 0,
+    refeicoesConcluidas: 0,
+    totalRefeicoesPrevistas: 0,
+    porcentagemAderenciaGeral: 0,
   });
 
   // Modal registrar peso
@@ -73,11 +81,13 @@ export default function TelaInicio() {
   const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
   const diasemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
 
-  const porcentagemCalorias = Math.round((caloriasConsumidas / caloriasMeta) * 100);
+  const porcentagemCalorias = Math.round((caloriasConsumidas / (caloriasMeta || 1)) * 100);
 
-  useEffect(() => {
-    carregarDadosProgresso();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      carregarDadosProgresso();
+    }, [])
+  );
 
   const carregarDadosProgresso = async () => {
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
@@ -87,6 +97,74 @@ export default function TelaInicio() {
       if (metas.carboidratoMeta) setCarboidratoMeta(metas.carboidratoMeta);
       if (metas.gorduraMeta) setGorduraMeta(metas.gorduraMeta);
       if (metas.metaAguaMl) setMetaAguaMl(metas.metaAguaMl);
+    }
+
+    // Calcula macronutrientes consumidos hoje a partir das refeições concluídas
+    const hojeStr = new Date().toISOString().split('T')[0];
+    const { obterHistoricoDieta } = await import('../../servicos/historicoServico');
+    const salvoRefeicoes = await obterHistoricoDieta(hojeStr);
+
+    let cConsumidas = 0;
+    let pConsumidas = 0;
+    let carbConsumidos = 0;
+    let gConsumidas = 0;
+
+    if (salvoRefeicoes && Array.isArray(salvoRefeicoes)) {
+      for (const ref of salvoRefeicoes) {
+        if (ref.concluida && Array.isArray(ref.alimentos)) {
+          for (const ali of ref.alimentos) {
+            cConsumidas += ali.calorias || 0;
+            pConsumidas += ali.proteinas || 0;
+            carbConsumidos += ali.carbos || 0;
+            gConsumidas += ali.gorduras || 0;
+          }
+        }
+      }
+    }
+
+    setCaloriasConsumidas(cConsumidas);
+    setProteina(pConsumidas);
+    setCarboidrato(carbConsumidos);
+    setGordura(gConsumidas);
+
+    // 1. Busca hidratação do Supabase para a data de hoje
+    const registroAgua = await repositorioAgua.buscarAguaDoDia(hojeStr);
+    if (registroAgua) {
+      setAguaConsumidaMl(registroAgua.total_ml || 0);
+      if (registroAgua.meta_ml) setMetaAguaMl(registroAgua.meta_ml);
+    }
+
+    // 2. Busca o treino planejado para hoje
+    try {
+      const planos = await obterPlanoTreinoCustomizado();
+      const mapSemana = await obterMapeamentoSemanal();
+      const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+      const abrevHoje = abrevs[new Date().getDay()];
+      const idTreinoHoje = mapSemana[abrevHoje];
+
+      if (idTreinoHoje && idTreinoHoje !== 'descanso') {
+        const treinoEncontrado = planos.find(p => p.id === idTreinoHoje);
+        if (treinoEncontrado) {
+          setTreinoHojeTitulo(treinoEncontrado.foco || treinoEncontrado.diaSemana);
+          setTreinoHojeSub(`${treinoEncontrado.exercicios.length} exercícios · ~45 min`);
+          setTreinoHojeId(treinoEncontrado.id);
+        } else {
+          setTreinoHojeTitulo('Descanso Planejado');
+          setTreinoHojeSub('Aproveite para recuperar as energias');
+          setTreinoHojeId(null);
+        }
+      } else if (planos.length > 0) {
+        const primeiro = planos[0];
+        setTreinoHojeTitulo(primeiro.foco || primeiro.diaSemana);
+        setTreinoHojeSub(`${primeiro.exercicios.length} exercícios · ~45 min`);
+        setTreinoHojeId(primeiro.id);
+      } else {
+        setTreinoHojeTitulo('Sem Treino Cadastrado');
+        setTreinoHojeSub('Crie ou recalcule um plano no perfil');
+        setTreinoHojeId(null);
+      }
+    } catch (errTreino) {
+      console.warn('Erro ao carregar treino do dia:', errTreino);
     }
 
     const historicoPesos = await obterHistoricoPeso();
@@ -114,19 +192,27 @@ export default function TelaInicio() {
   };
 
   // Adicionar consumo de água
-  const adicionarAgua = (quantidadeMl: number) => {
-    setAguaConsumidaMl(prev => Math.min(prev + quantidadeMl, metaAguaMl + 3000));
+  const adicionarAgua = async (quantidadeMl: number) => {
+    const novoTotal = Math.min(aguaConsumidaMl + quantidadeMl, metaAguaMl + 3000);
+    setAguaConsumidaMl(novoTotal);
+    const hojeStr = new Date().toISOString().split('T')[0];
+    await repositorioAgua.salvarAguaDoDia(hojeStr, novoTotal, metaAguaMl);
   };
 
-  // Rodada 2 — Ajuste 2: Remover consumo de água (função inversa)
-  const removerAgua = (quantidadeMl: number) => {
-    setAguaConsumidaMl(prev => Math.max(0, prev - quantidadeMl));
+  // Remover consumo de água (função inversa)
+  const removerAgua = async (quantidadeMl: number) => {
+    const novoTotal = Math.max(0, aguaConsumidaMl - quantidadeMl);
+    setAguaConsumidaMl(novoTotal);
+    const hojeStr = new Date().toISOString().split('T')[0];
+    await repositorioAgua.salvarAguaDoDia(hojeStr, novoTotal, metaAguaMl);
   };
 
-  const salvarMetaAgua = () => {
+  const salvarMetaAgua = async () => {
     const valor = parseInt(novaMetaAguaStr, 10);
     if (!isNaN(valor) && valor >= 500 && valor <= 10000) {
       setMetaAguaMl(valor);
+      const hojeStr = new Date().toISOString().split('T')[0];
+      await repositorioAgua.salvarAguaDoDia(hojeStr, aguaConsumidaMl, valor);
     }
     setModalMetaAguaVisivel(false);
   };
@@ -293,8 +379,8 @@ export default function TelaInicio() {
             <View style={estilos.rowTreino}>
               <View style={estilos.colTreino}>
                 <Text style={estilos.badgeTreino}>HOJE</Text>
-                <Text style={estilos.treinoTitulo}>Peito & Tríceps</Text>
-                <Text style={estilos.treinoSub}>4 exercícios · ~45 min</Text>
+                <Text style={estilos.treinoTitulo}>{treinoHojeTitulo}</Text>
+                <Text style={estilos.treinoSub}>{treinoHojeSub}</Text>
               </View>
               <View style={estilos.iconeTreinoContainer}>
                 <SymbolView name="bolt.fill" size={20} tintColor={Cores.accent} />

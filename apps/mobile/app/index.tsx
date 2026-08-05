@@ -7,6 +7,7 @@
 // 2. Se o usuário ESTÁ autenticado: verifica se possui planejamento ativo.
 //    - Se SIM: redireciona para o Dashboard ((tabs)/inicio)
 //    - Se NÃO: redireciona para o Questionário (/questionario)
+// 3. Sem sessão, o fluxo começa sempre pelo Login/Cadastro.
 // ============================================================
 
 import React, { useEffect, useState } from 'react';
@@ -61,52 +62,15 @@ export default function TelaInicialRaiz() {
   // 2. Se usuário está logado
   if (usuario) {
     if (possuiPlanoAtivo) {
-      // Já tem plano -> direto para o app principal
       return <Redirect href="/(tabs)/inicio" />;
-    } else {
-      // Novo usuário ou sem plano -> direto para o questionário
-      return <Redirect href="/questionario" />;
     }
+
+    // Conta autenticada sem plano: redireciona diretamente para o onboarding (questionário).
+    return <Redirect href="/questionario" />;
   }
 
-  // 3. Se NÃO está logado: exibe a Tela Inicial de Apresentação (Landing / Auth Options)
-  return (
-    <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent}>
-        {/* Cabeçalho Hero */}
-        <View style={estilos.heroContainer}>
-          <SymbolView name="bolt.fill" size={44} tintColor={Cores.accent} weight="bold" />
-          <Text style={estilos.tituloApp}>FitApp</Text>
-          <Text style={estilos.subtituloHero}>
-            Treinos e dietas personalizados construídos com Inteligência Artificial
-          </Text>
-        </View>
-
-        {/* Card de Apresentação Glass */}
-        <CardVidro estilo={estilos.cardApresentacao}>
-          <Text style={estilos.tituloCard}>Bem-vindo ao FitApp</Text>
-          <Text style={estilos.descricaoCard}>
-            Conecte-se para continuar seu acompanhamento ou crie sua conta para gerar um plano 100% exclusivo.
-          </Text>
-
-          {/* Opção 1: Entrar (Usuário já cadastrado) */}
-          <BotaoPrimario
-            texto="Entrar na Minha Conta"
-            aoPresionar={() => router.push('/(auth)/login')}
-            estilo={estilos.botaoEntrar}
-          />
-
-          {/* Opção 2: Criar Conta (Novo Usuário) */}
-          <BotaoPrimario
-            texto="Criar Nova Conta"
-            aoPresionar={() => router.push('/(auth)/cadastro')}
-            variante="outline"
-            estilo={estilos.botaoCriarConta}
-          />
-        </CardVidro>
-      </ScrollView>
-    </View>
-  );
+  // 3. Sem sessão: Login oferece o cadastro e inicia o onboarding após autenticar.
+  return <Redirect href="/(auth)/login" />;
 }
 
 const estilos = StyleSheet.create({
