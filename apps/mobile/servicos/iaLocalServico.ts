@@ -57,7 +57,14 @@ function montarPromptUsuario(
 
   const qtdRefeicoes = Math.max(2, dados.dieta.refeicoes_por_dia || 4);
 
-  return `Gere o plano de treino e dieta em JSON para este perfil:
+  return `Você é um nutricionista e personal trainer de elite, focado na ciência hipertrófica e nutrição esportiva avançada.
+Gere o plano de treino e dieta em JSON para este perfil seguindo estas DIRETRIZES:
+
+DIRETRIZES DE ESPECIALISTA (OBRIGATÓRIO):
+1. OBEDEÇA A DIVISÃO DE TREINO ESCOLHIDA: Se o usuário pediu "Push/Pull/Legs", estruture EXATAMENTE treinos de Push, Pull e Legs nos dias ativos. Não crie treinos de 1 exercício ou treinos sem sentido.
+2. VOLUME DE TREINO EFICAZ: Um treino de musculação real exige de 5 a 8 exercícios por dia. Atribua exercícios focados e completos (multiarticulares e isoladores).
+3. CIÊNCIA ATUALIZADA: Baseie os treinos e dietas em métodos consagrados de biomecânica e estudos recentes (ex: hipertrofia focada na proximidade da falha, sobrecarga progressiva).
+4. PRECISÃO NUTRICIONAL: Estruture as refeições combinando proteínas de alto valor biológico com carboidratos limpos e fontes de gordura saudáveis.
 
 DADOS CALCULADOS DETERMINISTICAMENTE:
 - TMB: ${calculo.tmb} kcal
