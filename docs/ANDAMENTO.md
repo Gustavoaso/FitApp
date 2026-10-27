@@ -38,7 +38,7 @@ Fluxo: novo-projeto
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
-| 15. Testes finais: correções | Pendente | | |
+| 15. Testes finais: correções | Implementada, aguardando o testador | 1 | 8b21358, b160b5c |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
