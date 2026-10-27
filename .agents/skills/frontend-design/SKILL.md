@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
+description: Dispare automaticamente sempre que a tarefa envolver criação, alteração ou discussão sobre Interface de Usuário (UI), Frontend, HTML, CSS, React, ou layouts web, mesmo que o usuário não peça por revisão.
 license: Complete terms in LICENSE.txt
 ---
 

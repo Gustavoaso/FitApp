@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 
 const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL,
-  process.env.EXPO_PUBLIC_SUPABASE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
 )
 
 function levenshtein(a, b) {
@@ -30,7 +30,7 @@ function levenshtein(a, b) {
 async function run() {
   const jsonPath = '/Users/gustavosoares/Documents/Projetos/FitApp/scratch/exercicios-bd-ptbr/exercises/exercises-ptbr-full-translation.json';
   const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-  
+
   const { data: exerciciosDb, error } = await supabase.from('base_exercicios').select('id, nome, id_externo');
   if (error) {
     console.error('Error fetching db:', error);
@@ -46,13 +46,13 @@ async function run() {
   });
 
   let updatedCount = 0;
-  
+
   for (const exDb of exerciciosDb) {
     const dbName = exDb.nome.toLowerCase().replace(/-/g, ' ');
-    
+
     let bestMatch = null;
     let bestDist = Infinity;
-    
+
     for (const repoEx of repoExs) {
       const dist = levenshtein(dbName, repoEx.enId);
       if (dist < bestDist) {
@@ -60,19 +60,19 @@ async function run() {
         bestMatch = repoEx;
       }
     }
-    
+
     // Calculate similarity score (0 to 1)
     const maxLength = Math.max(dbName.length, bestMatch.enId.length);
     const similarity = (maxLength - bestDist) / maxLength;
-    
+
     if (similarity > 0.7) { // Reasonable threshold for matching names
       console.log(`Updating '${exDb.nome}' -> '${bestMatch.ptName}' (matched '${bestMatch.enId}', sim: ${similarity.toFixed(2)})`);
-      
+
       const { error: updateErr } = await supabase
         .from('base_exercicios')
         .update({ nome: bestMatch.ptName })
         .eq('id', exDb.id);
-        
+
       if (updateErr) {
         console.error('Failed to update:', updateErr);
       } else {

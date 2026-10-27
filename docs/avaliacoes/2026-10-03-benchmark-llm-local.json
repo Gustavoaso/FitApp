@@ -1,0 +1,606 @@
+{
+ "livre": [
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 55.3,
+   "tps": 8.1,
+   "notas": "ombros=4; triceps=0; isolado antes de composto"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 4,
+   "max": 9,
+   "seg": 36.1,
+   "tps": 8.7,
+   "notas": "7 exercícios; ombros=4; triceps=0; isolado antes de composto"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 40.3,
+   "tps": 8.4,
+   "notas": "7 exercícios; quadriceps=5; panturrilhas=0"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 5,
+   "max": 9,
+   "seg": 31.2,
+   "tps": 8.7,
+   "notas": "quadriceps=0; isquiotibiais+gluteos=6; panturrilhas=0; isolado antes de composto"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 6,
+   "max": 9,
+   "seg": 39.5,
+   "tps": 8.7,
+   "notas": "dorsais+meio-das-costas=2; trapezio=4; biceps=0"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 6,
+   "max": 9,
+   "seg": 33.0,
+   "tps": 8.6,
+   "notas": "trapezio=3; biceps=0"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 4,
+   "max": 9,
+   "seg": 48.0,
+   "tps": 9.1,
+   "notas": "erro kcal:32% p:40% c:77% g:21%"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 4,
+   "max": 9,
+   "seg": 36.8,
+   "tps": 10.3,
+   "notas": "erro kcal:39% p:22% c:72% g:36%"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 4,
+   "max": 9,
+   "seg": 40.1,
+   "tps": 10.6,
+   "notas": "erro kcal:52% p:59% c:53% g:39%"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 5.0,
+   "max": 9,
+   "seg": 35.6,
+   "tps": 11.6,
+   "notas": "erro kcal:18% p:37% c:35% g:42%"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 375.1,
+   "tps": 1.0,
+   "notas": "peito=4; ombros=0; isolado antes de composto"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 6,
+   "max": 9,
+   "seg": 175.1,
+   "tps": 1.8,
+   "notas": "peito=4; ombros=0"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 104.9,
+   "tps": 3.2,
+   "notas": "5 exercícios; quadriceps=1"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 9,
+   "max": 9,
+   "seg": 104.6,
+   "tps": 2.9,
+   "notas": ""
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 104.3,
+   "tps": 3.6,
+   "notas": "dorsais+meio-das-costas=6; trapezio=0; biceps=0; isolado antes de composto"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 6,
+   "max": 9,
+   "seg": 102.6,
+   "tps": 2.9,
+   "notas": "dorsais+meio-das-costas=5; biceps=0"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 4,
+   "max": 9,
+   "seg": 116.8,
+   "tps": 3.4,
+   "notas": "erro kcal:33% p:29% c:64% g:40%"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 5.5,
+   "max": 9,
+   "seg": 90.7,
+   "tps": 3.6,
+   "notas": "erro kcal:17% p:37% c:47% g:19%"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 7.0,
+   "max": 9,
+   "seg": 140.5,
+   "tps": 3.2,
+   "notas": "erro kcal:14% p:1% c:34% g:6%"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 6,
+   "max": 9,
+   "seg": 120.5,
+   "tps": 3.8,
+   "notas": "erro kcal:37% p:6% c:78% g:2%"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 62.8,
+   "tps": 6.7,
+   "notas": "triceps=3; isolado antes de composto"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 4,
+   "max": 9,
+   "seg": 40.6,
+   "tps": 6.7,
+   "notas": "triceps=3; isolado antes de composto; séries/reps fora do padrão"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 8,
+   "max": 9,
+   "seg": 37.2,
+   "tps": 6.8,
+   "notas": "5 exercícios"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 4,
+   "max": 9,
+   "seg": 31.7,
+   "tps": 6.9,
+   "notas": "5 exercícios; panturrilhas=0; séries/reps fora do padrão"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 5,
+   "max": 9,
+   "seg": 21.3,
+   "tps": 6.7,
+   "notas": "2 exercícios; dorsais+meio-das-costas=2; trapezio=0; biceps=0"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 5,
+   "max": 9,
+   "seg": 40.0,
+   "tps": 6.7,
+   "notas": "trapezio=2; biceps=1; isolado antes de composto"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 3,
+   "max": 9,
+   "seg": 102.2,
+   "tps": 7.1,
+   "notas": "8 refeições; erro kcal:171% p:203% c:49% g:382%"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 5,
+   "max": 9,
+   "seg": 49.9,
+   "tps": 6.9,
+   "notas": "erro kcal:51% p:61% c:7% g:153%"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 4,
+   "max": 9,
+   "seg": 45.1,
+   "tps": 6.9,
+   "notas": "4 refeições; erro kcal:30% p:57% c:4% g:57%"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 4,
+   "max": 9,
+   "seg": 38.6,
+   "tps": 7.3,
+   "notas": "erro kcal:33% p:22% c:42% g:25%"
+  }
+ ],
+ "assistido": [
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 7,
+   "max": 7,
+   "seg": 13.5,
+   "tps": 11.4,
+   "notas": "Supino Declinado com Barra > Supino Inclinado com Barra - Pegada Média > Supino Declinado com Halteres > Desenvolvimento com Halteres e Pegada Neutra em Pé > Clean e Desenvolvimento > Máquina de Mergulho > Extensão de Tríceps com Halteres em Pé, Inclinado e Bilateral"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 7,
+   "max": 7,
+   "seg": 5.4,
+   "tps": 11.2,
+   "notas": "Supino Declinado com Barra > Supino Inclinado com Barra - Pegada Média > Supino Declinado com Halteres > Desenvolvimento com Halteres e Pegada Neutra em Pé > Clean e Desenvolvimento > Máquina de Mergulho > Extensão de Tríceps com Halteres em Pé, Inclinado e Bilateral"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 7,
+   "max": 7,
+   "seg": 8.8,
+   "tps": 11.8,
+   "notas": "Agachamento Sumô com Halter > Agachamento com Halteres > Levantamento Terra com Halteres Pernas Estendidas > Chutes Alternados > Ponte de Glúteo Unilateral > Panturrilha Sentado com Uma Perna e Halteres"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 7,
+   "max": 7,
+   "seg": 5.8,
+   "tps": 11.9,
+   "notas": "Agachamento Sumô com Halter > Agachamento com Halteres > Levantamento Terra com Halteres Pernas Estendidas > Chutes Alternados > Coice de Glúteo > Panturrilha Sentado com Uma Perna e Halteres"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 6,
+   "max": 7,
+   "seg": 11.8,
+   "tps": 11.0,
+   "notas": "trapezio sem composto ; Remada Sentada no Pulley > Remada Curvada com Barra > Remada Curvada com Dois Halteres > Encolhimento com Barra Atrás das Costas > Rosca Scott > Rosca Martelo no Banco Scott"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 6,
+   "max": 7,
+   "seg": 5.7,
+   "tps": 11.7,
+   "notas": "trapezio sem composto ; Remada Sentada no Pulley > Remada Curvada com Barra > Remada Curvada com Dois Halteres > Encolhimento com Barra Atrás das Costas > Rosca Scott > Rosca Martelo no Banco Scott"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 7,
+   "max": 9,
+   "seg": 16.0,
+   "tps": 11.3,
+   "notas": "refeição sem proteína ; erro kcal:0% p:0% c:0% g:0% ; Café da Manhã: Ovo de galinha cozido 171g, Pão francês 298g, Iogurte natural 140g | Almoço: Feijão carioca cozido 153g, Peito de frango grelhado 90g, Cuscuz de milho cozido 191g | Lanche da Manhã: Maçã 159g, Tomate 126g | Jantar: Filé de tilápia grelhado 96g, Whey protein 51g, Azeite de oliva 30g"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 7,
+   "max": 9,
+   "seg": 12.6,
+   "tps": 11.7,
+   "notas": "refeição sem proteína ; erro kcal:0% p:0% c:0% g:0% ; Café da Manhã: Ovo de galinha cozido 130g, Pão francês 253g, Iogurte natural 126g | Almoço: Feijão carioca cozido 153g, Peito de frango grelhado 159g, Cuscuz de milho cozido 173g | Lanche da Manhã: Tomate 126g, Azeite de oliva 16g, Castanha-do-pará 30g | Jantar: Filé de tilápia grelhado 147g, Batata-doce cozida 160g, Lentilha cozida 160g"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 9,
+   "max": 9,
+   "seg": 18.3,
+   "tps": 11.8,
+   "notas": "erro kcal:1% p:1% c:1% g:1% ; Café da Manhã: Ovo de galinha cozido 350g, Leite integral 104g, Banana prata 44g | Almoço: Feijão carioca cozido 272g, Pão francês 125g, Brócolis cozido 173g | Lanche da Manhã: Iogurte natural 178g, Maçã 57g | Lanche da Tarde: Queijo minas frescal 44g, Tomate 146g | Jantar: Arroz branco cozido 117g, Lentilha cozida 335g, Pasta de amendoim 3g"
+  },
+  {
+   "modelo": "llama3.2:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 6.5,
+   "max": 9,
+   "seg": 14.8,
+   "tps": 11.8,
+   "notas": "refeição sem proteína ; erro kcal:2% p:6% c:2% g:4% ; Café da Manhã: Ovo de galinha cozido 350g, Leite integral 30g, Maçã 30g | Almoço: Feijão carioca cozido 350g, Aveia em flocos 63g, Tomate 232g | Lanche da Manhã: Pão francês 135g, Iogurte natural 292g | Lanche da Tarde: Castanha-do-pará 3g, Azeite de oliva 3g | Jantar: Arroz branco cozido 123g, Brócolis cozido 338g, Alface 294g"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 7,
+   "max": 7,
+   "seg": 13.5,
+   "tps": 9.9,
+   "notas": "Supino Declinado com Barra > Supino Inclinado com Barra - Pegada Média > Supino Reto com Barra e Pegada Larga > Desenvolvimento com Halteres e Pegada Neutra em Pé > Supino no Chão > Elevações Frontais no Banco Inclinado > Extensão de Tríceps com Halteres em Pé, Inclinado e Bilateral"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 6,
+   "max": 7,
+   "seg": 5.4,
+   "tps": 10.1,
+   "notas": "triceps sem composto ; Supino Declinado com Barra > Supino Inclinado com Barra - Pegada Média > Supino Declinado na Máquina de Alavanca > Desenvolvimento com Halteres e Pegada Neutra em Pé > Elevações Frontais no Banco Inclinado > Extensão de Tríceps com Halteres em Pé, Inclinado e Bilateral"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 7,
+   "max": 7,
+   "seg": 9.2,
+   "tps": 10.3,
+   "notas": "Agachamento Sumô com Halter > Agachamento Corporal > Levantamento Terra com Halteres Pernas Estendidas > Ponte de Glúteo Unilateral > Elevação de Perna > Panturrilha Sentado com Uma Perna e Halteres"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 7,
+   "max": 7,
+   "seg": 6.6,
+   "tps": 9.9,
+   "notas": "Agachamento Sumô com Halter > Agachamento Corporal > Levantamento Terra com Halteres Pernas Estendidas > Ponte de Glúteo Unilateral > Elevação de Perna > Panturrilha Sentado com Uma Perna e Halteres"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 6,
+   "max": 7,
+   "seg": 13.3,
+   "tps": 8.3,
+   "notas": "trapezio sem composto ; Remada no Pulley com Elevação > Pulldown com Amplitude Completa > Remada Sentada no Pulley > Encolhimento com Barra Atrás das Costas > Rosca Scott > Rosca Inversa com Barra"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 6,
+   "max": 7,
+   "seg": 8.4,
+   "tps": 7.4,
+   "notas": "trapezio sem composto ; Remada no Pulley com Elevação > Pulldown com Amplitude Completa > Remada Sentada no Pulley > Encolhimento com Barra Atrás das Costas > Rosca Scott > Rosca Inversa com Barra"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 7,
+   "max": 9,
+   "seg": 17.2,
+   "tps": 8.9,
+   "notas": "refeição sem proteína ; erro kcal:0% p:0% c:0% g:0% ; Café da manhã: Pão francês 121g, Ovo de galinha cozido 139g, Iogurte natural 126g | Almoço: Arroz branco cozido 118g, Feijão carioca cozido 117g, Cuscuz de milho cozido 119g | Lanche: Aveia em flocos 131g, Banana prata 116g | Jantar: Peito de frango grelhado 105g, Patinho bovino grelhado 117g, Ovo de galinha cozido 139g, Abacate 142g"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 7,
+   "max": 9,
+   "seg": 12.9,
+   "tps": 9.5,
+   "notas": "refeição sem proteína ; erro kcal:0% p:0% c:0% g:0% ; Café da manhã: Pão francês 121g, Ovo de galinha cozido 139g, Iogurte natural 126g | Almoço: Arroz branco cozido 118g, Feijão carioca cozido 117g, Cuscuz de milho cozido 119g | Lanche: Aveia em flocos 131g, Banana prata 116g | Jantar: Peito de frango grelhado 105g, Patinho bovino grelhado 117g, Ovo de galinha cozido 139g, Abacate 142g"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 5.5,
+   "max": 9,
+   "seg": 17.1,
+   "tps": 9.6,
+   "notas": "refeição sem proteína ; erro kcal:2% p:19% c:5% g:9% ; Café da manhã: Abacate 30g, Iogurte natural 350g | Almoço: Arroz branco cozido 30g, Feijão carioca cozido 350g, Queijo minas frescal 90g | Lanche: Aveia em flocos 244g, Maçã 30g | Jantar: Batata-doce cozida 30g, Leite integral 30g | Café da manhã: Iogurte natural 350g, Mamão papaia 30g"
+  },
+  {
+   "modelo": "phi4-mini:latest",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 5.0,
+   "max": 9,
+   "seg": 15.9,
+   "tps": 9.0,
+   "notas": "refeição sem proteína ; erro kcal:2% p:21% c:5% g:10% ; Café da-manhã: Queijo minas frescal 150g, Abacate 30g | Almoço: Arroz branco cozido 30g, Feijão carioca cozido 350g, Leite integral 30g | Lanche: Aveia em flocos 211g, Maçã 30g | Jantar: Batata-doce cozida 30g, Iogurte natural 350g, Mamão papaia 30g | Café da-manhã: Pão francês 30g, Tomate 350g"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Push academia intermediário",
+   "rep": 0,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Push academia intermediário",
+   "rep": 1,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 0,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Legs em casa iniciante",
+   "rep": 1,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Pull academia avançado",
+   "rep": 0,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Pull academia avançado",
+   "rep": 1,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 0,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Onívoro 2400 kcal 4 ref.",
+   "rep": 1,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 0,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  },
+  {
+   "modelo": "qwen3.5:4b",
+   "tarefa": "Vegetariano 2000 kcal 5 ref.",
+   "rep": 1,
+   "pts": 0,
+   "max": 9,
+   "seg": 0,
+   "tps": 0,
+   "notas": "ERRO HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=900)"
+  }
+ ]
+}

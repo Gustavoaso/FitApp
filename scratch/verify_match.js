@@ -2,13 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 
 const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL,
-  process.env.EXPO_PUBLIC_SUPABASE_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
 )
 
 async function run() {
   const json = JSON.parse(fs.readFileSync('/Users/gustavosoares/Documents/Projetos/FitApp/scratch/exercicios-bd-ptbr/exercises/exercises-ptbr-full-translation.json', 'utf8'))
-  
+
   const { data: exerciciosDb, error } = await supabase.from('base_exercicios').select('id, nome, id_externo')
   if (error) throw error
 
@@ -24,7 +24,7 @@ async function run() {
 
   for (const exDb of exerciciosDb) {
     const normalizedName = exDb.nome.toLowerCase().replace(/-/g, ' ')
-    
+
     // try to find in map
     let found = null
     // some might have dashes instead of spaces
@@ -34,7 +34,7 @@ async function run() {
         break
       }
     }
-    
+
     if (found) {
       matches++
     } else {
