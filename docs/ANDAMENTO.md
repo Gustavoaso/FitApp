@@ -27,7 +27,7 @@ Fluxo: novo-projeto
 | 2. Reorganizar por funcionalidade | Concluída (testador: APROVADO) | 1 | a5228ff |
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
 | 4. Navegação nativa e telas no tema novo | Concluída (testador: APROVADO) | 1 | 028b004 |
-| 5. Segredos fora do app | Pendente | | |
+| 5. Segredos fora do app | Implementada, aguardando o testador | 1 | |
 | 6. Banco versionado (local) | Pendente | | |
 | 7. Base de conhecimento | Pendente | | |
 | 8. Motor de geração assistida | Pendente | | |
@@ -97,6 +97,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 4: macros por significado em gráfico, legenda e barras: carbo `#10B981`→`CoresMacros.carboidrato`, gordura `#A855F7`→`gordura`, proteína `#EAB308`→`proteina`.
 - Etapa 4: erro de carregamento → `EstadoErro` (gerar plano no questionário, com "Revisar respostas"; inspetor JSON do perfil). Erro de envio (login, cadastro, aceitar plano) → texto inline em `cores.erro` com `accessibilityRole="alert"` (alternativa: `EstadoErro` de tela cheia, que apagaria o formulário). `ActivityIndicator` → `Skeleton`. Alertas de validação, confirmação e sucesso ficaram.
 - Etapa 4: `BlurView` dos modais segue o tema (`tint` claro/escuro).
+- Etapa 5: caminho Groq removido; `chamarIA` em `questionario/ia-local-servico.ts` lança "geração indisponível" até a etapa 9 (Ollama). Gerar plano fica fora do ar entre as etapas 5 e 9.
+- Etapa 5: `taco-sincronizacao-servico.ts` não fala mais com a RapidAPI nem sincroniza; o inspetor de dev lê `base_alimentos` do banco. `sincronizarAlimentosTaco` (sem uso) saiu.
+- Etapa 5: chave RapidAPI escrita no código removida também da function `sincronizar-bases` (só `Deno.env`) e de `scripts/test-sync.ts` (lê `RAPIDAPI_KEY` do `.env`); `.env.example` ganhou `RAPIDAPI_KEY`.
+- Etapa 5: o cliente do app não lê mais `SUPABASE_KEY` (é dos scripts e pode ser `service_role`); só `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Etapa 5: grep no bundle (`expo export --platform ios`) por groq/rapidapi/chave antiga/service_role: só um falso positivo em bytes de uma fonte OpenType.
 
 ## Pendências
 
@@ -111,3 +116,4 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 4: o título grande não encolhe ao rolar, porque o `ScrollView` está dentro de um `View` (os modais são irmãos dele); resolver junto com a troca dos modais por sheets nativas.
 - Etapa 4: sobraram cores soltas sem par no tema (amarelo do raio/IA `#EAB308`, azul `#3B82F6`, botão amarelo do treino ao vivo, cores do inspetor JSON, overlays `rgba(0,0,0,…)`); e `Cores`/`Fonte`/`Glass` antigos ainda exportados em `tema.ts`, usados só pelo `IconesFitApp` (sem uso).
 - Etapa 4: `Alert` de sucesso (copiar refeição, plano salvo, treino concluído) deveria virar confirmação discreta com haptic (VISUAL); fica para a etapa 10 ou outra.
+- A chave RapidAPI `b7ad…` e a do Groq estiveram no histórico do git: revogar/trocar no painel da RapidAPI e do Groq (dono).

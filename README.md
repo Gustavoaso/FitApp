@@ -11,7 +11,7 @@ Aplicativo fitness mobile de alta performance para o público brasileiro, gerand
 | **Mobile** | React Native (0.81) + Expo SDK 54 (Expo Router v6) |
 | **Estilização** | Liquid Glass Design (Apple iOS HIG / SF Symbols / Expo Blur) |
 | **Backend & Banco** | Supabase (PostgreSQL + Auth + Edge Functions) |
-| **IA / LLM** | Groq LPU (Llama 3.3 70B Versatile — inferência em ~2s) |
+| **IA / LLM** | Ollama local (etapa 9; geração indisponível até lá) |
 | **Linguagem** | TypeScript 5.7 (Modo estrito) |
 
 ---
@@ -44,7 +44,7 @@ FitApp/
 │
 ├── servicos/             # ⚡ INTEGRAÇÕES, BANCO E IA
 │   ├── supabase.ts       # Cliente oficial Supabase
-│   ├── iaLocalServico.ts # Geração de Planos com IA (Groq Llama 3.3)
+│   ├── iaLocalServico.ts # Geração de Planos com IA
 │   ├── repositorio.ts    # Persistência e repositório de dados
 │   ├── planoGestaoServico.ts # Gestão e edição de treinos ativos
 │   ├── progressoServico.ts   # Métricas de adesão, cargas e evolução

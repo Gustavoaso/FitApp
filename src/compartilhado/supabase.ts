@@ -10,8 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Variáveis de ambiente do Expo
 const supabaseUrl = process.env.SUPABASE_URL || 'https://asuxqjbwgetdcldjoaqm.supabase.co';
+// SUPABASE_KEY é dos scripts (pode ser service_role): o app só usa a anon key.
 const supabaseAnonKey =
-  process.env.SUPABASE_KEY ||
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
   'sb_publishable_s97SsJOHdU0myvXzWT26DA_PBaFe95D';
 

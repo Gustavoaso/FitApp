@@ -13,11 +13,8 @@ import type { PlanoIAGerado, ObjetivoTreino, NivelAtividade, SexoBiologico } fro
 import { supabase } from '@/compartilhado/supabase';
 import { validarPlanoIA, sanitizarPlanoIA } from './validador-plano-ia';
 
-// Groq: hardware LPU customizado — inferência em ~2-3s, free tier generoso, sem fila
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_KEY = process.env.EXPO_PUBLIC_GROQ_KEY ?? '';
-const MODELO = 'llama-3.3-70b-versatile';
-const TIMEOUT_MS = 60_000; // 1 minuto (Groq é muito mais rápido)
+// Groq removido (etapa 5): a chave ia dentro do app. A geração volta com o Ollama local (etapa 9).
+const MODELO = 'indisponivel';
 
 // ============================================================
 // INTERFACES PÚBLICAS
@@ -321,58 +318,11 @@ RETORNE EXATAMENTE ESTE FORMATO JSON:
 }
 
 // ============================================================
-// CHAMADA AO OPENROUTER
+// CHAMADA À IA
 // ============================================================
 
-async function chamarGroq(system: string, user: string): Promise<RespostaIA> {
-  if (!GROQ_KEY) {
-    throw new Error('EXPO_PUBLIC_GROQ_KEY não configurada. Crie em: console.groq.com (gratuito, sem cartão)');
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  let response: Response;
-  try {
-    response = await fetch(GROQ_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_KEY}`,
-      },
-      body: JSON.stringify({
-        model: MODELO,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: user },
-        ],
-        temperature: 0.1,
-        max_tokens: 3500,
-      }),
-    });
-  } finally {
-    clearTimeout(timer);
-  }
-
-  if (!response.ok) {
-    const erro = await response.text().catch(() => response.statusText);
-    throw new Error(`Groq erro ${response.status}: ${erro}`);
-  }
-
-  const data = await response.json();
-  const conteudo: string = data?.choices?.[0]?.message?.content ?? '';
-
-  if (!conteudo) throw new Error('OpenRouter retornou conteúdo vazio.');
-
-  // Remove markdown code blocks se o modelo envolver em ```json ... ```
-  const semMarkdown = conteudo.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-
-  try {
-    return JSON.parse(semMarkdown) as RespostaIA;
-  } catch {
-    throw new Error(`JSON inválido retornado pelo modelo:\n${conteudo.slice(0, 300)}`);
-  }
+async function chamarIA(_system: string, _user: string): Promise<RespostaIA> {
+  throw new Error('A geração de plano está temporariamente indisponível.');
 }
 
 // ============================================================
@@ -505,13 +455,13 @@ export async function gerarPlanoComIALocal(dados: DadosQuestionario): Promise<Pl
   // 2. Montar prompt com IDs reais
   const { system, user } = montarPrompt(dados, calculo, estrutura, exercicios, alimentos);
 
-  console.log('\n=== PROMPT → IA (Groq / ' + MODELO + ') ===');
+  console.log('\n=== PROMPT → IA ===');
   console.log('[SYSTEM]', system);
   console.log('[USER]', user.slice(0, 500), '...');
   console.log('=========================================\n');
 
-  // 3. Chamar Groq
-  const respostaIA = await chamarGroq(system, user);
+  // 3. Chamar a IA
+  const respostaIA = await chamarIA(system, user);
 
   // 4. Enrichment determinístico (macros reais do banco, não da IA)
   const planoCompleto = enriquecerPlano(respostaIA, exercicios, alimentos, calculo);

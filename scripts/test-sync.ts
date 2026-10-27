@@ -9,14 +9,15 @@
 // ============================================================
 
 import dotenv from 'dotenv';
-dotenv.config({ path: 'apps/mobile/.env' });
+dotenv.config();
 
 async function testarTacoAPI() {
   console.log('\n========================================');
   console.log('🧪 TESTANDO CONEXÃO E PAGINAÇÃO DINÂMICA: TacoAPI (RapidAPI)');
   console.log('========================================');
 
-  const apiKey = 'b7ad932498mshe71f08cf869dea7p18025ajsnd3fa621703a2';
+  // Chave só no .env local (nunca EXPO_PUBLIC_).
+  const apiKey = process.env.RAPIDAPI_KEY ?? '';
   const rapidHost = 'taco-api-br1.p.rapidapi.com';
 
   let todosAlimentos: any[] = [];
