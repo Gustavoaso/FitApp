@@ -30,7 +30,7 @@ Fluxo: novo-projeto
 | 5. Segredos fora do app | Concluída (testador: APROVADO) | 1 | 092f1e1 |
 | 6. Banco versionado (local) | Pendente | | |
 | 7. Base de conhecimento | Pendente | | |
-| 8. Motor de geração assistida | Implementada, aguardando o testador | 1 | |
+| 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Pendente | | |
 | 10. Resultado e conquistas | Pendente | | |
 | 11. Consentimento e excluir conta | Pendente | | |
