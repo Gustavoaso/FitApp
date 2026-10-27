@@ -30,7 +30,7 @@ Fluxo: novo-projeto
 | 5. Segredos fora do app | Concluída (testador: APROVADO) | 1 | 092f1e1 |
 | 6. Banco versionado (local) | Pendente | | |
 | 7. Base de conhecimento | Pendente | | |
-| 8. Motor de geração assistida | Pendente | | |
+| 8. Motor de geração assistida | Implementada, aguardando o testador | 1 | |
 | 9. Geração com Ollama local | Pendente | | |
 | 10. Resultado e conquistas | Pendente | | |
 | 11. Consentimento e excluir conta | Pendente | | |
@@ -102,6 +102,14 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 5: chave RapidAPI escrita no código removida também da function `sincronizar-bases` (só `Deno.env`) e de `scripts/test-sync.ts` (lê `RAPIDAPI_KEY` do `.env`); `.env.example` ganhou `RAPIDAPI_KEY`.
 - Etapa 5: o cliente do app não lê mais `SUPABASE_KEY` (é dos scripts e pode ser `service_role`); só `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 - Etapa 5: grep no bundle (`expo export --platform ios`) por groq/rapidapi/chave antiga/service_role: só um falso positivo em bytes de uma fonte OpenType.
+- Etapa 8: motor em `plano/motor/` com tipos locais (`tipos.ts`: `ExercicioCandidato`, `AlimentoCandidato`), sem tipos gerados do banco; a etapa 9 mapeia as linhas do SQL para eles.
+- Etapa 8: divisões fixas: 2 Superior/Inferior · 3 Empurrar/Puxar/Pernas · 4 Sup/Inf ×2 · 5 PPL+Sup+Inf · 6 PPL ×2 · 7 PPL ×2 + Condicionamento (`corpo_inteiro`). "Dias seguidos" inclui o último com o primeiro (a semana se repete).
+- Etapa 8: PREMISSA volume: reps/descanso por objetivo (força 3-6/180 s, hipertrofia 8-12/90 s, definição 10-15/60 s, emagrecimento 12-15/60 s, condicionamento 15-20/45 s); séries 3/3/4 e exercícios por sessão 4/5/6 (iniciante/intermediário/avançado), repartidos em rodízio pelos grupos do dia.
+- Etapa 8: PREMISSA dieta: 4 refeições (café 25%, almoço 35%, lanche 15%, jantar 25%), 1 alimento por slot; porção de 5 a 500 g (com 400 g o perfil de ~3.700 kcal não fechava o carboidrato só com arroz).
+- Etapa 8: gramas por descida por coordenadas com corte nos limites, erro relativo em kcal e nos 3 macros (alternativa: NNLS/active-set, mais código para 3 variáveis). Se não fecha ±5%, `montarPlano` devolve erros (entram no retry da etapa 9).
+- Etapa 8: calorias abaixo do piso da RN16 bloqueiam (não sobem para o piso), como pede o critério de pronto; dado de saúde inválido também bloqueia.
+- Etapa 8: `validador.ts:116` usa `as unknown as EscolhaLLM` depois de conferir cada campo (estreitar o objeto inteiro por type guard exigiria repetir a validação).
+- Etapa 8: o validador antigo `questionario/validador-plano-ia.ts` ficou; sai com o fluxo antigo na etapa 9.
 
 ## Pendências
 
