@@ -59,7 +59,9 @@ export function AnelProgresso({
       accessibilityLabel={`${titulo ? `${titulo}: ` : ''}${atual}${unidade} de ${meta}${unidade}`}
       accessibilityValue={{ min: 0, max: 100, now: Math.round(porcentagem * 100) }}
     >
-      {titulo ? <Text style={[estilos.tituloLabel, { color: cores.textoSecundario }]}>{titulo}</Text> : null}
+      {titulo ? (
+        <Text style={[estilos.tituloLabel, { color: cores.textoSecundario }]}>{titulo}</Text>
+      ) : null}
 
       <View style={[estilos.ringWrapper, { width: tamanho, height: tamanho }]}>
         <Svg width={tamanho} height={tamanho}>
@@ -94,7 +96,10 @@ export function AnelProgresso({
             <Text
               style={[
                 estilos.valorTexto,
-                { fontSize: tamanho > 80 ? Tipografia.titulo3 : Tipografia.legenda, color: cores.texto },
+                {
+                  fontSize: tamanho > 80 ? Tipografia.titulo3 : Tipografia.legenda,
+                  color: cores.texto,
+                },
               ]}
               numberOfLines={1}
             >
@@ -104,7 +109,9 @@ export function AnelProgresso({
         )}
       </View>
 
-      {textoAbaixo ? <Text style={[estilos.metaTexto, { color: cores.texto }]}>{textoAbaixo}</Text> : null}
+      {textoAbaixo ? (
+        <Text style={[estilos.metaTexto, { color: cores.texto }]}>{textoAbaixo}</Text>
+      ) : null}
     </View>
   );
 }

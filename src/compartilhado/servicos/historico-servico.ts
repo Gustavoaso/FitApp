@@ -40,7 +40,7 @@ const CHAVE_HISTORICO_TREINO = '@fitapp_historico_treino_v1';
  */
 export async function salvarHistoricoDieta(
   data: string,
-  refeicoes: RegistroRefeicaoDiaria[]
+  refeicoes: RegistroRefeicaoDiaria[],
 ): Promise<void> {
   try {
     const dadosExistentes = await obterHistoricoDietaCompleto();
@@ -67,7 +67,9 @@ export async function obterHistoricoDieta(data: string): Promise<RegistroRefeica
 /**
  * Obtém todo o mapa de histórico de dieta.
  */
-export async function obterHistoricoDietaCompleto(): Promise<Record<string, RegistroRefeicaoDiaria[]>> {
+export async function obterHistoricoDietaCompleto(): Promise<
+  Record<string, RegistroRefeicaoDiaria[]>
+> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_HISTORICO_DIETA);
     return json ? JSON.parse(json) : {};
@@ -82,7 +84,7 @@ export async function obterHistoricoDietaCompleto(): Promise<Record<string, Regi
  */
 export async function salvarHistoricoTreino(
   data: string,
-  treino: RegistroTreinoDiario
+  treino: RegistroTreinoDiario,
 ): Promise<void> {
   try {
     const dadosExistentes = await obterHistoricoTreinoCompleto();
@@ -109,7 +111,9 @@ export async function obterHistoricoTreino(data: string): Promise<RegistroTreino
 /**
  * Obtém todo o mapa de histórico de treinos.
  */
-export async function obterHistoricoTreinoCompleto(): Promise<Record<string, RegistroTreinoDiario>> {
+export async function obterHistoricoTreinoCompleto(): Promise<
+  Record<string, RegistroTreinoDiario>
+> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_HISTORICO_TREINO);
     return json ? JSON.parse(json) : {};

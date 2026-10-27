@@ -15,7 +15,7 @@
 /** Categorias de alimentos (para filtro na busca) */
 export type CategoriaAlimento =
   | 'cereais'
-  | 'leguminosas'       // Feijão, lentilha, grão-de-bico
+  | 'leguminosas' // Feijão, lentilha, grão-de-bico
   | 'carnes'
   | 'peixes_frutos_mar'
   | 'ovos_laticinios'
@@ -30,20 +30,15 @@ export type CategoriaAlimento =
 
 /** Tipo de refeição (para organizar o dia) */
 export type TipoRefeicao =
-  | 'cafe_da_manha'
-  | 'lanche_manha'
-  | 'almoco'
-  | 'lanche_tarde'
-  | 'jantar'
-  | 'ceia';
+  'cafe_da_manha' | 'lanche_manha' | 'almoco' | 'lanche_tarde' | 'jantar' | 'ceia';
 
 /** Macronutrientes por 100g */
 export interface Macros {
-  calorias: number;     // kcal
-  proteinas: number;    // gramas
+  calorias: number; // kcal
+  proteinas: number; // gramas
   carboidratos: number; // gramas
-  gorduras: number;     // gramas
-  fibras?: number;      // gramas (opcional)
+  gorduras: number; // gramas
+  fibras?: number; // gramas (opcional)
 }
 
 /** Alimento na base de dados (TACO ou curado) */
@@ -51,30 +46,30 @@ export interface Alimento {
   id: string;
   nome: string;
   categoria: CategoriaAlimento;
-  macrosPor100g: Macros;         // Valores nutricionais por 100g
+  macrosPor100g: Macros; // Valores nutricionais por 100g
   porcaoPadrao?: {
-    descricao: string;           // Ex: "1 unidade", "1 colher de sopa"
-    pesoGramas: number;          // Ex: 30 (30g = 1 colher de sopa)
+    descricao: string; // Ex: "1 unidade", "1 colher de sopa"
+    pesoGramas: number; // Ex: 30 (30g = 1 colher de sopa)
   };
 }
 
 /** Alimento dentro de uma refeição no plano */
 export interface AlimentoRefeicao {
   id: string;
-  alimentoId: string;     // Referência ao Alimento da base
-  nome: string;           // Nome do alimento (copiado para exibição rápida)
-  porcaoGramas: number;   // Porção em gramas
-  macros: Macros;         // Macros calculados para esta porção
+  alimentoId: string; // Referência ao Alimento da base
+  nome: string; // Nome do alimento (copiado para exibição rápida)
+  porcaoGramas: number; // Porção em gramas
+  macros: Macros; // Macros calculados para esta porção
 }
 
 /** Uma refeição dentro do plano alimentar */
 export interface RefeicaoPlano {
   id: string;
   tipo: TipoRefeicao;
-  nome: string;          // Ex: "Café da Manhã"
+  nome: string; // Ex: "Café da Manhã"
   horarioSugerido?: string; // Ex: "07:00"
   alimentos: AlimentoRefeicao[];
-  totalMacros: Macros;   // Soma dos macros de todos os alimentos
+  totalMacros: Macros; // Soma dos macros de todos os alimentos
 }
 
 /** Plano alimentar diário completo */
@@ -83,7 +78,7 @@ export interface PlanoDieta {
   usuarioId: string;
   caloriasAlvo: number;
   macrosAlvo: Macros;
-  metaAguaMl: number;       // Meta de água em mililitros
+  metaAguaMl: number; // Meta de água em mililitros
   refeicoes: RefeicaoPlano[];
   criadoEm: string;
   ativo: boolean;
@@ -97,11 +92,11 @@ export interface PlanoDieta {
 export interface RefeicaoRegistrada {
   id: string;
   usuarioId: string;
-  data: string;             // ISO 8601 (dia)
+  data: string; // ISO 8601 (dia)
   tipo: TipoRefeicao;
   alimentos: AlimentoRefeicao[];
   totalMacros: Macros;
-  registradoEm: string;    // Timestamp do registro
+  registradoEm: string; // Timestamp do registro
 }
 
 /** Registro de consumo de água do dia */
@@ -109,8 +104,8 @@ export interface RegistroAgua {
   id: string;
   usuarioId: string;
   data: string;
-  totalMl: number;         // Total consumido no dia
-  metaMl: number;          // Meta do dia
+  totalMl: number; // Total consumido no dia
+  metaMl: number; // Meta do dia
 }
 
 /** Resumo nutricional do dia (calculado a partir dos registros) */

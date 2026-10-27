@@ -33,7 +33,7 @@ export function GraficoDonutMacros({
   const raio = (tamanho - espessura) / 2;
   const circunferencia = 2 * Math.PI * raio;
 
-  const totalGramas = (carbosGramas + gordurasGramas + proteinasGramas) || 1;
+  const totalGramas = carbosGramas + gordurasGramas + proteinasGramas || 1;
   const pctCarbos = carbosGramas / totalGramas;
   const pctGorduras = gordurasGramas / totalGramas;
   const pctProteinas = proteinasGramas / totalGramas;
@@ -124,26 +124,26 @@ export function GraficoDonutMacros({
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  centro: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  caloriasValor: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 16,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    letterSpacing: -0.5,
-  },
-  caloriasLabel: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 10,
-    color: cores.textoSecundario,
-    marginTop: -2,
-  },
-});
+    container: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    centro: {
+      position: 'absolute',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    caloriasValor: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 16,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      letterSpacing: -0.5,
+    },
+    caloriasLabel: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 10,
+      color: cores.textoSecundario,
+      marginTop: -2,
+    },
+  });

@@ -29,7 +29,11 @@ jest.mock('@/compartilhado/servicos/repositorio', () => ({
 jest.mock('./gerar-plano-servico', () => ({ gerarPlano: jest.fn() }));
 
 // Dados fictícios.
-const FUNDAMENTO = { titulo: 'Proteína para hipertrofia', fonte: 'Morton et al., 2018', conteudo: 'Trecho fictício.' };
+const FUNDAMENTO = {
+  titulo: 'Proteína para hipertrofia',
+  fonte: 'Morton et al., 2018',
+  conteudo: 'Trecho fictício.',
+};
 const PLANO: PlanoIAGerado = {
   resumo: {
     tmb: 1800,
@@ -82,7 +86,9 @@ it('aceitar salva e mostra o momento de conquista', async () => {
   (repositorioPlano.salvarPlanoComoAtivo as jest.Mock).mockResolvedValue(undefined);
   render(<TelaResultadoQuestionario />);
   fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
-  expect(await screen.findByLabelText('Plano ativado. Seu primeiro dia começa agora.')).toBeTruthy();
+  expect(
+    await screen.findByLabelText('Plano ativado. Seu primeiro dia começa agora.'),
+  ).toBeTruthy();
   expect(repositorioPlano.salvarPlanoComoAtivo).toHaveBeenCalledTimes(1);
 });
 

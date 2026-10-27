@@ -41,7 +41,11 @@ const criarEstilos = (cores: CoresTema) =>
       fontSize: Tipografia.titulo3,
       color: cores.texto,
     },
-    fonte: { fontFamily: FamiliaFonte.medio, fontSize: Tipografia.subtitulo, color: cores.textoSecundario },
+    fonte: {
+      fontFamily: FamiliaFonte.medio,
+      fontSize: Tipografia.subtitulo,
+      color: cores.textoSecundario,
+    },
     texto: {
       fontFamily: FamiliaFonte.regular,
       fontSize: Tipografia.corpo,

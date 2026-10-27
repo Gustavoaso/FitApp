@@ -10,28 +10,21 @@ import type { SexoBiologico, NivelExperiencia, NivelAtividade } from './usuario'
 
 /** Objetivos de treino suportados pelo app */
 export type ObjetivoTreino =
-  | 'hipertrofia'       // Ganho de massa muscular
-  | 'definicao'         // Perda de gordura mantendo músculo
-  | 'forca'             // Aumento de força máxima
-  | 'emagrecimento'     // Perda de peso geral
-  | 'condicionamento';  // Melhora da resistência e saúde
+  | 'hipertrofia' // Ganho de massa muscular
+  | 'definicao' // Perda de gordura mantendo músculo
+  | 'forca' // Aumento de força máxima
+  | 'emagrecimento' // Perda de peso geral
+  | 'condicionamento'; // Melhora da resistência e saúde
 
 /** Restrições alimentares do usuário */
 export type RestricaoAlimentar =
-  | 'nenhuma'
-  | 'vegetariano'
-  | 'vegano'
-  | 'sem_lactose'
-  | 'sem_gluten';
+  'nenhuma' | 'vegetariano' | 'vegano' | 'sem_lactose' | 'sem_gluten';
 
 /** Preferência de tipo de treino */
 export type PreferenciaTreino = 'musculacao' | 'calistenia' | 'misto';
 
 /** Equipamentos disponíveis para treino */
-export type EquipamentosDisponiveis =
-  | 'academia_completa'
-  | 'home_gym'
-  | 'peso_corporal';
+export type EquipamentosDisponiveis = 'academia_completa' | 'home_gym' | 'peso_corporal';
 
 /** Todas as respostas do questionário reunidas */
 export interface RespostaQuestionario {

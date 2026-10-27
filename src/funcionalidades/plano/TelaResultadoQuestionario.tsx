@@ -61,7 +61,9 @@ function lerJson<T>(texto: string | undefined): T | null {
 function useReduzirTransparencia() {
   const [reduzir, setReduzir] = useState(false);
   useEffect(() => {
-    AccessibilityInfo.isReduceTransparencyEnabled().then(setReduzir).catch(() => {});
+    AccessibilityInfo.isReduceTransparencyEnabled()
+      .then(setReduzir)
+      .catch(() => {});
     const assinatura = AccessibilityInfo.addEventListener('reduceTransparencyChanged', setReduzir);
     return () => assinatura.remove();
   }, []);
@@ -70,7 +72,11 @@ function useReduzirTransparencia() {
 
 // PREMISSA (textos): fases mostradas enquanto o Ollama trabalha. O serviço não
 // avisa o progresso real; o texto avança pelo tempo, até a última fase.
-export const FASES_GERACAO = ['Montando seu treino…', 'Escolhendo alimentos…', 'Conferindo as contas…'];
+export const FASES_GERACAO = [
+  'Montando seu treino…',
+  'Escolhendo alimentos…',
+  'Conferindo as contas…',
+];
 const INTERVALO_FASE_MS = 20_000;
 
 function useFaseGeracao(ativo: boolean) {
@@ -78,7 +84,10 @@ function useFaseGeracao(ativo: boolean) {
   useEffect(() => {
     if (!ativo) return;
     setFase(0);
-    const relogio = setInterval(() => setFase((f) => Math.min(f + 1, FASES_GERACAO.length - 1)), INTERVALO_FASE_MS);
+    const relogio = setInterval(
+      () => setFase((f) => Math.min(f + 1, FASES_GERACAO.length - 1)),
+      INTERVALO_FASE_MS,
+    );
     return () => clearInterval(relogio);
   }, [ativo]);
   return fase;
@@ -97,7 +106,9 @@ export default function TelaResultadoQuestionario() {
 
   const dadosRespostas = useMemo(() => lerJson<DadosQuestionario>(respostas), [respostas]);
   // Sem plano pronto nos parâmetros, a tela gera a partir das respostas.
-  const [dadosPlano, setDadosPlano] = useState<PlanoIAGerado | null>(() => lerJson<PlanoIAGerado>(plano));
+  const [dadosPlano, setDadosPlano] = useState<PlanoIAGerado | null>(() =>
+    lerJson<PlanoIAGerado>(plano),
+  );
   const [gerarAoAbrir] = useState(!dadosPlano && !!dadosRespostas);
   const [gerando, setGerando] = useState(gerarAoAbrir);
   const [erroGeracao, setErroGeracao] = useState<string | null>(null);
@@ -175,7 +186,9 @@ export default function TelaResultadoQuestionario() {
       await repositorioPlano.salvarPlanoComoAtivo(dadosPlano, dadosRespostas);
       setConquista(true);
     } catch (erro) {
-      setErroSalvar(erro instanceof Error ? erro.message : 'Erro desconhecido ao salvar o planejamento.');
+      setErroSalvar(
+        erro instanceof Error ? erro.message : 'Erro desconhecido ao salvar o planejamento.',
+      );
     } finally {
       setSalvando(false);
     }
@@ -191,13 +204,29 @@ export default function TelaResultadoQuestionario() {
   const agua = formatarAgua(resumo.metaAguaMl || 0);
 
   const nos = [
-    { rotulo: 'Proteína', valor: String(macros.proteinas), unidade: 'g', cor: CoresMacros.proteina },
-    { rotulo: 'Carboidrato', valor: String(macros.carboidratos), unidade: 'g', cor: CoresMacros.carboidrato },
+    {
+      rotulo: 'Proteína',
+      valor: String(macros.proteinas),
+      unidade: 'g',
+      cor: CoresMacros.proteina,
+    },
+    {
+      rotulo: 'Carboidrato',
+      valor: String(macros.carboidratos),
+      unidade: 'g',
+      cor: CoresMacros.carboidrato,
+    },
     { rotulo: 'Gordura', valor: String(macros.gorduras), unidade: 'g', cor: CoresMacros.gordura },
-    { rotulo: 'Água', valor: agua.replace(/(ml|L)$/, ''), unidade: agua.endsWith('ml') ? 'ml' : 'L', cor: CoresMacros.agua },
+    {
+      rotulo: 'Água',
+      valor: agua.replace(/(ml|L)$/, ''),
+      unidade: agua.endsWith('ml') ? 'ml' : 'L',
+      cor: CoresMacros.agua,
+    },
   ];
 
-  const proteinaPorRefeicao = refeicoes.length > 0 ? Math.round(macros.proteinas / refeicoes.length) : 0;
+  const proteinaPorRefeicao =
+    refeicoes.length > 0 ? Math.round(macros.proteinas / refeicoes.length) : 0;
   const passos: { simbolo: SFSymbol; cor: string; rotulo: string; texto: string }[] = [
     {
       simbolo: 'fork.knife',
@@ -211,7 +240,12 @@ export default function TelaResultadoQuestionario() {
       rotulo: dia.nome,
       texto: `${dia.exercicios.length} exercícios`,
     })),
-    { simbolo: 'drop.fill', cor: CoresMacros.agua, rotulo: 'Hidratação', texto: `${agua} ao longo do dia` },
+    {
+      simbolo: 'drop.fill',
+      cor: CoresMacros.agua,
+      rotulo: 'Hidratação',
+      texto: `${agua} ao longo do dia`,
+    },
   ];
 
   const objetivo = dadosRespostas?.objetivo?.objetivo_principal;
@@ -347,9 +381,7 @@ export default function TelaResultadoQuestionario() {
                   accessibilityHint="Abre o trecho que embasa este número"
                   hitSlop={8}
                   style={estilos.fonte}
-                  onPress={() =>
-                    router.push({ pathname: '/questionario/fonte', params: { ...f } })
-                  }
+                  onPress={() => router.push({ pathname: '/questionario/fonte', params: { ...f } })}
                 >
                   <Text style={estilos.fonteTexto}>{f.fonte} ›</Text>
                 </Pressable>
@@ -365,7 +397,11 @@ export default function TelaResultadoQuestionario() {
 
         {(dadosPlano.avisos ?? []).map((aviso) => (
           <View key={aviso} style={estilos.aviso} accessible>
-            <SymbolView name="exclamationmark.triangle" size={18} tintColor={cores.textoSecundario} />
+            <SymbolView
+              name="exclamationmark.triangle"
+              size={18}
+              tintColor={cores.textoSecundario}
+            />
             <Text style={[estilos.legenda, estilos.avisoTexto]}>{aviso}</Text>
           </View>
         ))}
@@ -406,7 +442,11 @@ const criarEstilos = (cores: CoresTema) =>
       gap: Espacamento.md,
     },
     rolagem: { paddingHorizontal: Espacamento.lg, paddingBottom: 180 },
-    contexto: { fontFamily: FamiliaFonte.regular, fontSize: Tipografia.rodape, color: cores.textoSecundario },
+    contexto: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Tipografia.rodape,
+      color: cores.textoSecundario,
+    },
     titulo: {
       fontFamily: FamiliaFonte.bold,
       fontWeight: PesoFonte.bold,
@@ -421,7 +461,11 @@ const criarEstilos = (cores: CoresTema) =>
       color: cores.texto,
       textAlign: 'center',
     },
-    legenda: { fontFamily: FamiliaFonte.regular, fontSize: Tipografia.legenda, color: cores.textoSecundario },
+    legenda: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Tipografia.legenda,
+      color: cores.textoSecundario,
+    },
 
     orbe: {
       width: ORBE,
@@ -465,7 +509,11 @@ const criarEstilos = (cores: CoresTema) =>
       color: cores.texto,
       fontVariant: ['tabular-nums'],
     },
-    noUnidade: { fontFamily: FamiliaFonte.semibold, fontSize: Tipografia.legenda, color: cores.textoSecundario },
+    noUnidade: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: Tipografia.legenda,
+      color: cores.textoSecundario,
+    },
 
     card: {
       backgroundColor: cores.superficie,
@@ -527,7 +575,12 @@ const criarEstilos = (cores: CoresTema) =>
       textDecorationLine: 'underline',
     },
 
-    aviso: { flexDirection: 'row', gap: 10, paddingVertical: Espacamento.lg, paddingHorizontal: Espacamento.xs },
+    aviso: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingVertical: Espacamento.lg,
+      paddingHorizontal: Espacamento.xs,
+    },
     avisoTexto: { flex: 1, lineHeight: 18 },
 
     barra: {

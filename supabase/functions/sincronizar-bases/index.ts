@@ -85,11 +85,15 @@ Deno.serve(async (req) => {
 
       if (todosAlimentos.length < 500) {
         try {
-          const respUnicamp = await fetch('https://raw.githubusercontent.com/marcelosanto/tabela_taco/main/TACO.json');
+          const respUnicamp = await fetch(
+            'https://raw.githubusercontent.com/marcelosanto/tabela_taco/main/TACO.json',
+          );
           if (respUnicamp.ok) {
             const dadosU = await respUnicamp.json();
             if (Array.isArray(dadosU)) {
-              const existentes = new Set(todosAlimentos.map((a) => String(a.id || a.description || a.nome)));
+              const existentes = new Set(
+                todosAlimentos.map((a) => String(a.id || a.description || a.nome)),
+              );
               for (const item of dadosU) {
                 const chave = String(item.id || item.description || item.nome);
                 if (!existentes.has(chave)) {
@@ -103,12 +107,17 @@ Deno.serve(async (req) => {
 
       if (todosAlimentos.length > 0) {
         const payloadAlimentos = todosAlimentos.map((item: any, index: number) => {
-          const nome = item.nome || item.name || item.description || item.descricao || `Alimento ${index + 1}`;
+          const nome =
+            item.nome || item.name || item.description || item.descricao || `Alimento ${index + 1}`;
 
           let categoria = 'Geral';
           if (typeof item.category === 'object' && item.category !== null && item.category.name) {
             categoria = item.category.name;
-          } else if (typeof item.categoria === 'object' && item.categoria !== null && item.categoria.name) {
+          } else if (
+            typeof item.categoria === 'object' &&
+            item.categoria !== null &&
+            item.categoria.name
+          ) {
             categoria = item.categoria.name;
           } else if (typeof item.categoria === 'string') {
             categoria = item.categoria;
@@ -188,12 +197,12 @@ Deno.serve(async (req) => {
         totalExercicios,
         executadoEm: new Date().toISOString(),
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
     );
   } catch (erro: any) {
-    return new Response(
-      JSON.stringify({ sucesso: false, erro: erro.message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ sucesso: false, erro: erro.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 });

@@ -46,7 +46,7 @@ export function GraficoEvolucao({
     );
   }
 
-  const valores = dados.map(d => d.valor);
+  const valores = dados.map((d) => d.valor);
   const minValor = Math.min(...valores);
   const maxValor = Math.max(...valores);
   const faixa = maxValor - minValor === 0 ? 1 : maxValor - minValor;
@@ -59,8 +59,7 @@ export function GraficoEvolucao({
     const x =
       paddingHorizontal +
       (dados.length > 1 ? (index / (dados.length - 1)) * larguraGrafico : larguraGrafico / 2);
-    const y =
-      altura - paddingVertical - ((d.valor - minValor) / faixa) * alturaGrafico;
+    const y = altura - paddingVertical - ((d.valor - minValor) / faixa) * alturaGrafico;
     return { x, y, valor: d.valor, label: d.label };
   });
 
@@ -152,29 +151,29 @@ export function GraficoEvolucao({
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: {
-    marginVertical: 8,
-  },
-  titulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 14,
-    color: cores.texto,
-    fontWeight: PesoFonte.bold,
-    marginBottom: 8,
-  },
-  svgWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  containerVazio: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: cores.superficie,
-    borderRadius: 12,
-  },
-  textoVazio: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-  },
-});
+    container: {
+      marginVertical: 8,
+    },
+    titulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 14,
+      color: cores.texto,
+      fontWeight: PesoFonte.bold,
+      marginBottom: 8,
+    },
+    svgWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    containerVazio: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: cores.superficie,
+      borderRadius: 12,
+    },
+    textoVazio: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+    },
+  });

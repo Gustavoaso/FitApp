@@ -21,7 +21,7 @@ export type GrupoMuscular =
   | 'biceps'
   | 'triceps'
   | 'quadriceps'
-  | 'posterior'     // Posterior de coxa (isquiotibiais)
+  | 'posterior' // Posterior de coxa (isquiotibiais)
   | 'gluteos'
   | 'panturrilha'
   | 'abdomen'
@@ -53,26 +53,26 @@ export interface Exercicio {
 
 /** Uma série de um exercício (dentro do plano) */
 export interface Serie {
-  numero: number;      // 1, 2, 3...
-  repeticoes: number | string;  // Quantidade de repetições
-  cargaKg?: number;    // Carga sugerida (opcional no plano, preenchida no registro)
+  numero: number; // 1, 2, 3...
+  repeticoes: number | string; // Quantidade de repetições
+  cargaKg?: number; // Carga sugerida (opcional no plano, preenchida no registro)
   descansoSegundos: number; // Tempo de descanso após esta série
 }
 
 /** Exercício dentro de um plano de treino (com séries específicas) */
 export interface ExercicioPlano {
   id: string;
-  exercicioId: string;  // Referência ao Exercicio da base
-  nome: string;         // Nome do exercício (copiado para exibição rápida)
-  ordem: number;        // Posição no dia (1, 2, 3...)
+  exercicioId: string; // Referência ao Exercicio da base
+  nome: string; // Nome do exercício (copiado para exibição rápida)
+  ordem: number; // Posição no dia (1, 2, 3...)
   series: Serie[];
 }
 
 /** Um dia de treino dentro do plano */
 export interface DiaTreino {
   id: string;
-  diaSemana: number;    // 0=domingo, 1=segunda... 6=sábado
-  nome: string;         // Ex: "Peito + Tríceps", "Costas + Bíceps"
+  diaSemana: number; // 0=domingo, 1=segunda... 6=sábado
+  nome: string; // Ex: "Peito + Tríceps", "Costas + Bíceps"
   exercicios: ExercicioPlano[];
 }
 
@@ -80,11 +80,11 @@ export interface DiaTreino {
 export interface PlanoTreino {
   id: string;
   usuarioId: string;
-  nome: string;          // Ex: "Push Pull Legs 5x"
+  nome: string; // Ex: "Push Pull Legs 5x"
   diasPorSemana: number; // 2 a 6
   dias: DiaTreino[];
   criadoEm: string;
-  ativo: boolean;        // Apenas 1 plano ativo por vez
+  ativo: boolean; // Apenas 1 plano ativo por vez
 }
 
 // ============================================================
@@ -94,8 +94,8 @@ export interface PlanoTreino {
 /** Uma série executada pelo usuário (registro real) */
 export interface SerieExecutada {
   numero: number;
-  repeticoes: number;  // Quantas reps o usuário fez de fato
-  cargaKg: number;     // Carga que usou de fato
+  repeticoes: number; // Quantas reps o usuário fez de fato
+  cargaKg: number; // Carga que usou de fato
   concluida: boolean;
 }
 
@@ -105,9 +105,9 @@ export interface SessaoTreino {
   usuarioId: string;
   planoTreinoId: string;
   diaTreinoId: string;
-  data: string;            // ISO 8601 (dia da sessão)
-  iniciadoEm: string;      // Timestamp de início
-  finalizadoEm?: string;   // Timestamp de fim (null se em andamento)
+  data: string; // ISO 8601 (dia da sessão)
+  iniciadoEm: string; // Timestamp de início
+  finalizadoEm?: string; // Timestamp de fim (null se em andamento)
   exerciciosExecutados: {
     exercicioPlanoId: string;
     nome: string;

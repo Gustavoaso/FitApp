@@ -102,7 +102,7 @@ export async function calcularMetaDoCronograma(inicioSemana: string): Promise<Me
   for (const abrev of diasAbrev) {
     const idTreinoAlocado = mapSemana[abrev];
     if (idTreinoAlocado && idTreinoAlocado !== 'descanso') {
-      const tObj = treinos.find(p => p.id === idTreinoAlocado);
+      const tObj = treinos.find((p) => p.id === idTreinoAlocado);
       if (tObj && tObj.foco && !tObj.foco.toLowerCase().includes('descanso')) {
         treinosPlanejados++;
         if (Array.isArray(tObj.exercicios)) {
@@ -117,7 +117,10 @@ export async function calcularMetaDoCronograma(inicioSemana: string): Promise<Me
     const jsonQtd = await AsyncStorage.getItem('@fitapp_cronograma_refeicoes_v1');
     if (jsonQtd) {
       const mapaRef = JSON.parse(jsonQtd);
-      refeicoesPlanejadas = Object.values(mapaRef).reduce((acc: number, v: any) => acc + Number(v || 0), 0);
+      refeicoesPlanejadas = Object.values(mapaRef).reduce(
+        (acc: number, v: any) => acc + Number(v || 0),
+        0,
+      );
     }
   } catch {
     refeicoesPlanejadas = 20;
@@ -154,7 +157,7 @@ export async function obterOuGerarMetaSemanal(inicioSemanaStr?: string): Promise
  */
 export async function recalcularMetaSemanalAuto(
   inicioSemanaStr?: string,
-  forcarRecalculo: boolean = false
+  forcarRecalculo: boolean = false,
 ): Promise<MetaSemanal> {
   const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
   const todasMetas = await obterMetasSemanaisTodas();
@@ -177,7 +180,7 @@ export async function salvarMetaSemanalManual(
   inicioSemanaStr: string,
   treinos: number,
   exercicios: number,
-  refeicoes: number
+  refeicoes: number,
 ): Promise<MetaSemanal> {
   const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
   const todasMetas = await obterMetasSemanaisTodas();
@@ -208,7 +211,9 @@ export async function obterProgressoSemanalTodos(): Promise<Record<string, Progr
   }
 }
 
-export async function obterProgressoSemanal(inicioSemanaStr?: string): Promise<ProgressoSemanalReal> {
+export async function obterProgressoSemanal(
+  inicioSemanaStr?: string,
+): Promise<ProgressoSemanalReal> {
   const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
   const todos = await obterProgressoSemanalTodos();
 
@@ -261,7 +266,7 @@ export async function incrementarExercicioRealizado(inicioSemanaStr?: string): P
 export async function atualizarContagemRefeicao(
   dataStr: string,
   nomeRefeicao: string,
-  possuiAlimentos: boolean
+  possuiAlimentos: boolean,
 ): Promise<void> {
   const inicioSemana = obterInicioSemanaAtual(dataStr);
   const todos = await obterProgressoSemanalTodos();
@@ -278,7 +283,9 @@ export async function atualizarContagemRefeicao(
     progresso.refeicoesContabilizadasPorDia[dataStr] = [...refeicoesDoDia, nomeRefeicao];
     progresso.refeicoesRealizadas += 1;
   } else if (!possuiAlimentos && jaContada) {
-    progresso.refeicoesContabilizadasPorDia[dataStr] = refeicoesDoDia.filter(r => r !== nomeRefeicao);
+    progresso.refeicoesContabilizadasPorDia[dataStr] = refeicoesDoDia.filter(
+      (r) => r !== nomeRefeicao,
+    );
     progresso.refeicoesRealizadas = Math.max(0, progresso.refeicoesRealizadas - 1);
   }
 
@@ -348,7 +355,10 @@ export async function obterHistoricoPeso(): Promise<EntradaPeso[]> {
   }
 }
 
-export async function adicionarEntradaPeso(pesoKg: number, dataStr?: string): Promise<EntradaPeso[]> {
+export async function adicionarEntradaPeso(
+  pesoKg: number,
+  dataStr?: string,
+): Promise<EntradaPeso[]> {
   try {
     const data = dataStr || new Date().toISOString().split('T')[0];
     const historicoAtual = await obterHistoricoPeso();
@@ -357,8 +367,8 @@ export async function adicionarEntradaPeso(pesoKg: number, dataStr?: string): Pr
       data,
       pesoKg,
     };
-    const atualizado = [...historicoAtual.filter(p => p.data !== data), novo].sort(
-      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+    const atualizado = [...historicoAtual.filter((p) => p.data !== data), novo].sort(
+      (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime(),
     );
     await AsyncStorage.setItem(CHAVE_PESO, JSON.stringify(atualizado));
     return atualizado;
@@ -374,7 +384,7 @@ export async function registrarExecucaoSerie(
   numeroSerie: number,
   cargaKg: number,
   repeticoes: number,
-  dataStr?: string
+  dataStr?: string,
 ): Promise<void> {
   try {
     const data = dataStr || new Date().toISOString().split('T')[0];
@@ -411,7 +421,7 @@ export async function registrarCargaExercicio(
   nomeExercicio: string,
   cargaKg: number,
   repeticoes: number,
-  dataStr?: string
+  dataStr?: string,
 ): Promise<void> {
   return registrarExecucaoSerie(idExercicio, nomeExercicio, 1, cargaKg, repeticoes, dataStr);
 }
@@ -428,10 +438,12 @@ export async function obterEvolucaoCargas(): Promise<EvolucaoCargaExercicio[]> {
   }
 }
 
-export async function obterSeriesUltimaExecucao(idExercicio: string): Promise<Record<number, { cargaKg: number; repeticoes: number }> | null> {
+export async function obterSeriesUltimaExecucao(
+  idExercicio: string,
+): Promise<Record<number, { cargaKg: number; repeticoes: number }> | null> {
   try {
     const evolucoes = await obterEvolucaoCargas();
-    const ex = evolucoes.find(e => e.idExercicio === idExercicio);
+    const ex = evolucoes.find((e) => e.idExercicio === idExercicio);
     if (ex && ex.seriesUltimaExecucao) {
       return ex.seriesUltimaExecucao;
     }

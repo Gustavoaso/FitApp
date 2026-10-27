@@ -1,7 +1,8 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from '@/compartilhado/supabase';
 
-export type ResultadoApple = { status: 'ok' } | { status: 'cancelado' } | { status: 'erro'; mensagem: string };
+export type ResultadoApple =
+  { status: 'ok' } | { status: 'cancelado' } | { status: 'erro'; mensagem: string };
 
 const MENSAGEM_ERRO = 'Não foi possível entrar com a Apple. Tente de novo.';
 

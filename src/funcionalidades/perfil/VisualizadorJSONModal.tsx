@@ -6,14 +6,7 @@
 // ============================================================
 
 import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  ScrollView,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
@@ -124,7 +117,13 @@ export function VisualizadorJSONModal({
   };
 
   return (
-    <Modal visible={visivel} animationType="slide" transparent statusBarTranslucent onRequestClose={aoFechar}>
+    <Modal
+      visible={visivel}
+      animationType="slide"
+      transparent
+      statusBarTranslucent
+      onRequestClose={aoFechar}
+    >
       <View style={estilos.overlay}>
         <BlurView intensity={95} tint={escuro ? 'dark' : 'light'} style={estilos.modalContent}>
           <SafeAreaView style={{ flex: 1 }}>
@@ -152,8 +151,16 @@ export function VisualizadorJSONModal({
                 }}
               >
                 <View style={estilos.segmentLabel}>
-                  <SymbolView name="leaf.fill" size={14} tintColor={abaAtiva === 'taco' ? cores.destaque : cores.textoSecundario} />
-                  <Text style={[estilos.segmentTxt, abaAtiva === 'taco' && estilos.segmentTxtAtivo]}>TacoAPI ({dadosTaco.length})</Text>
+                  <SymbolView
+                    name="leaf.fill"
+                    size={14}
+                    tintColor={abaAtiva === 'taco' ? cores.destaque : cores.textoSecundario}
+                  />
+                  <Text
+                    style={[estilos.segmentTxt, abaAtiva === 'taco' && estilos.segmentTxtAtivo]}
+                  >
+                    TacoAPI ({dadosTaco.length})
+                  </Text>
                 </View>
               </TouchableOpacity>
 
@@ -165,8 +172,19 @@ export function VisualizadorJSONModal({
                 }}
               >
                 <View style={estilos.segmentLabel}>
-                  <SymbolView name="dumbbell.fill" size={14} tintColor={abaAtiva === 'exercisedb' ? cores.destaque : cores.textoSecundario} />
-                  <Text style={[estilos.segmentTxt, abaAtiva === 'exercisedb' && estilos.segmentTxtAtivo]}>ExerciseDB ({dadosExerciseDB.length})</Text>
+                  <SymbolView
+                    name="dumbbell.fill"
+                    size={14}
+                    tintColor={abaAtiva === 'exercisedb' ? cores.destaque : cores.textoSecundario}
+                  />
+                  <Text
+                    style={[
+                      estilos.segmentTxt,
+                      abaAtiva === 'exercisedb' && estilos.segmentTxtAtivo,
+                    ]}
+                  >
+                    ExerciseDB ({dadosExerciseDB.length})
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -195,14 +213,16 @@ export function VisualizadorJSONModal({
                 scrollEventThrottle={400}
                 onScroll={({ nativeEvent }) => {
                   const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-                  const estaNoFim = layoutMeasurement.height + contentOffset.y >= contentSize.height - 300;
+                  const estaNoFim =
+                    layoutMeasurement.height + contentOffset.y >= contentSize.height - 300;
                   if (estaNoFim) {
                     carregarMaisItens();
                   }
                 }}
               >
                 {dadosFatiados.map((item, index) => {
-                  const tituloItem = item.nome || item.name || item.description || `Item #${index + 1}`;
+                  const tituloItem =
+                    item.nome || item.name || item.description || `Item #${index + 1}`;
                   return (
                     <View key={index} style={estilos.cardItemJSON}>
                       <ItemTreeJSON label={`Item [${index}] — ${tituloItem}`} valor={item} />
@@ -228,160 +248,160 @@ export function VisualizadorJSONModal({
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-  },
-  modalContent: {
-    flex: 1,
-    paddingHorizontal: Espacamento.lg,
-    paddingTop: 20,
-    backgroundColor: cores.elevada,
-  },
-  topHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  tituloModal: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  subtituloModal: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
-  btnFechar: {
-    padding: 4,
-  },
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.7)',
+    },
+    modalContent: {
+      flex: 1,
+      paddingHorizontal: Espacamento.lg,
+      paddingTop: 20,
+      backgroundColor: cores.elevada,
+    },
+    topHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    tituloModal: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    subtituloModal: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
+    btnFechar: {
+      padding: 4,
+    },
 
-  segmentContainer: {
-    flexDirection: 'row',
-    backgroundColor: cores.elevada,
-    borderRadius: Raio.md,
-    padding: 4,
-    marginBottom: 16,
-  },
-  segmentBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: Raio.sm,
-  },
-  segmentBtnAtivo: {
-    backgroundColor: cores.destaque,
-  },
-  segmentLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  segmentTxt: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-  },
-  segmentTxtAtivo: {
-    color: cores.textoSobreDestaque,
-  },
+    segmentContainer: {
+      flexDirection: 'row',
+      backgroundColor: cores.elevada,
+      borderRadius: Raio.md,
+      padding: 4,
+      marginBottom: 16,
+    },
+    segmentBtn: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: Raio.sm,
+    },
+    segmentBtnAtivo: {
+      backgroundColor: cores.destaque,
+    },
+    segmentLabel: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    segmentTxt: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+    },
+    segmentTxtAtivo: {
+      color: cores.textoSobreDestaque,
+    },
 
-  scrollArea: {
-    flex: 1,
-  },
-  cardItemJSON: {
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: Raio.md,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    padding: 12,
-    marginBottom: 12,
-  },
+    scrollArea: {
+      flex: 1,
+    },
+    cardItemJSON: {
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: Raio.md,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      padding: 12,
+      marginBottom: 12,
+    },
 
-  rowHeaderNo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  txtChaveNo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 13,
-    color: cores.destaque,
-  },
-  txtTipoNo: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-  },
-  blocoFilhos: {
-    borderLeftWidth: 1,
-    borderLeftColor: 'rgba(234, 179, 8, 0.2)',
-    marginLeft: 6,
-    paddingLeft: 6,
-    marginTop: 4,
-  },
+    rowHeaderNo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+    },
+    txtChaveNo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 13,
+      color: cores.destaque,
+    },
+    txtTipoNo: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+    },
+    blocoFilhos: {
+      borderLeftWidth: 1,
+      borderLeftColor: 'rgba(234, 179, 8, 0.2)',
+      marginLeft: 6,
+      paddingLeft: 6,
+      marginTop: 4,
+    },
 
-  linhaProp: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  txtChave: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 12,
-    color: cores.texto,
-  },
-  txtValor: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-  },
+    linhaProp: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      paddingVertical: 2,
+    },
+    txtChave: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 12,
+      color: cores.texto,
+    },
+    txtValor: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+    },
 
-  boxVazio: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  txtVazio: {
-    fontFamily: FamiliaFonte.regular,
-    color: cores.textoSecundario,
-  },
+    boxVazio: {
+      alignItems: 'center',
+      padding: 40,
+    },
+    txtVazio: {
+      fontFamily: FamiliaFonte.regular,
+      color: cores.textoSecundario,
+    },
 
-  boxCarregando: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
-    gap: Espacamento.md,
-  },
-  txtCarregando: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-    marginTop: 16,
-  },
-  txtSubCarregando: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    marginTop: 6,
-    textAlign: 'center',
-  },
+    boxCarregando: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 30,
+      gap: Espacamento.md,
+    },
+    txtCarregando: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+      marginTop: 16,
+    },
+    txtSubCarregando: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      marginTop: 6,
+      textAlign: 'center',
+    },
 
-  btnMais: {
-    backgroundColor: cores.elevada,
-    paddingVertical: 12,
-    borderRadius: Raio.md,
-    alignItems: 'center',
-    marginVertical: 12,
-    borderWidth: 1,
-    borderColor: cores.separador,
-  },
-  txtBtnMais: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.label,
-    color: cores.destaque,
-  },
-});
+    btnMais: {
+      backgroundColor: cores.elevada,
+      paddingVertical: 12,
+      borderRadius: Raio.md,
+      alignItems: 'center',
+      marginVertical: 12,
+      borderWidth: 1,
+      borderColor: cores.separador,
+    },
+    txtBtnMais: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.label,
+      color: cores.destaque,
+    },
+  });

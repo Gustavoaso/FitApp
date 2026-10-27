@@ -11,20 +11,8 @@ export type { InfoObjetivo } from './objetivos';
 export { GRUPOS_MUSCULARES } from './grupos-musculares';
 export type { InfoGrupoMuscular } from './grupos-musculares';
 
-export {
-  kgParaLb,
-  lbParaKg,
-  cmParaFtIn,
-  ftInParaCm,
-} from './unidades';
+export { kgParaLb, lbParaKg, cmParaFtIn, ftInParaCm } from './unidades';
 
 export type { UnidadePeso, UnidadeAltura } from './unidades';
 
-export {
-  Cores,
-  Espacamento,
-  Fonte,
-  PesoFonte,
-  Raio,
-  FamiliaFonte,
-} from '../tema';
+export { Cores, Espacamento, Fonte, PesoFonte, Raio, FamiliaFonte } from '../tema';

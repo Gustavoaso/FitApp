@@ -77,7 +77,8 @@ export function validarEscolha(
         erros.push(`Dia ${d + 1}: ${grupo} precisa de ${esperado} exercício(s).`);
         continue;
       }
-      if (new Set(ids).size !== ids.length) erros.push(`Dia ${d + 1}: exercício repetido em ${grupo}.`);
+      if (new Set(ids).size !== ids.length)
+        erros.push(`Dia ${d + 1}: exercício repetido em ${grupo}.`);
       for (const id of ids) {
         const ex = exercicioPorId.get(id);
         if (!ex) erros.push(`Dia ${d + 1}: exercício ${id} não existe na base.`);
@@ -94,7 +95,10 @@ export function validarEscolha(
   for (let d = 0; d < gruposPorDia.length && gruposPorDia.length > 1; d++) {
     const proximo = gruposPorDia[(d + 1) % gruposPorDia.length];
     for (const g of gruposPorDia[d]) {
-      if (proximo.has(g)) erros.push(`Grupo ${g} em dias seguidos (${d + 1} e ${((d + 1) % gruposPorDia.length) + 1}).`);
+      if (proximo.has(g))
+        erros.push(
+          `Grupo ${g} em dias seguidos (${d + 1} e ${((d + 1) % gruposPorDia.length) + 1}).`,
+        );
     }
   }
 
@@ -144,8 +148,9 @@ export function montarPlano(
   });
 
   const refeicoes = REFEICOES.map((refeicao) => {
-    const escolhidos = SLOTS.map((s: SlotAlimento) => alimentoPorId.get(escolha.refeicoes[refeicao][s]))
-      .filter((a): a is AlimentoCandidato => a !== undefined);
+    const escolhidos = SLOTS.map((s: SlotAlimento) =>
+      alimentoPorId.get(escolha.refeicoes[refeicao][s]),
+    ).filter((a): a is AlimentoCandidato => a !== undefined);
     const gramas = calcularGramas(escolhidos, metaDaRefeicao(meta, refeicao));
     return { refeicao, itens: escolhidos.map((alimento, i) => ({ alimento, gramas: gramas[i] })) };
   });

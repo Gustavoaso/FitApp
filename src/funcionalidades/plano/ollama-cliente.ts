@@ -57,7 +57,8 @@ export async function gerarComSchema(prompt: string, schema: object): Promise<un
     options: OPCOES_GERACAO,
     keep_alive: MANTER_CARREGADO,
   });
-  const texto = typeof corpo === 'object' && corpo !== null && 'response' in corpo ? corpo.response : undefined;
+  const texto =
+    typeof corpo === 'object' && corpo !== null && 'response' in corpo ? corpo.response : undefined;
   if (typeof texto !== 'string') throw new ErroOllama('resposta sem "response"');
   try {
     return JSON.parse(texto);
@@ -69,7 +70,10 @@ export async function gerarComSchema(prompt: string, schema: object): Promise<un
 
 export async function gerarEmbedding(texto: string): Promise<number[]> {
   const corpo = await postar('/api/embed', { model: MODELO_EMBEDDING, input: texto });
-  const lista = typeof corpo === 'object' && corpo !== null && 'embeddings' in corpo ? corpo.embeddings : undefined;
+  const lista =
+    typeof corpo === 'object' && corpo !== null && 'embeddings' in corpo
+      ? corpo.embeddings
+      : undefined;
   const vetor: unknown = Array.isArray(lista) ? lista[0] : undefined;
   if (!Array.isArray(vetor) || !vetor.every((v) => typeof v === 'number')) {
     throw new ErroOllama('resposta sem "embeddings"');

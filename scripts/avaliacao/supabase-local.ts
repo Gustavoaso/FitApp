@@ -10,6 +10,7 @@ const chave = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!HOSTS_LOCAIS.includes(new URL(url).hostname)) {
   throw new Error(`SUPABASE_URL precisa ser local (localhost/127.0.0.1); recebido ${url}.`);
 }
-if (!chave) throw new Error('Defina SUPABASE_SERVICE_ROLE_KEY (SERVICE_ROLE_KEY de `npx supabase status`).');
+if (!chave)
+  throw new Error('Defina SUPABASE_SERVICE_ROLE_KEY (SERVICE_ROLE_KEY de `npx supabase status`).');
 
 export const supabase = createClient(url, chave, { auth: { persistSession: false } });

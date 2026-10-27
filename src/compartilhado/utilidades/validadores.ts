@@ -8,9 +8,7 @@
 // ============================================================
 
 /** Resultado de uma validação: ok ou erro com mensagem */
-export type ResultadoValidacao =
-  | { valido: true }
-  | { valido: false; mensagem: string };
+export type ResultadoValidacao = { valido: true } | { valido: false; mensagem: string };
 
 /**
  * Valida a idade do usuário.

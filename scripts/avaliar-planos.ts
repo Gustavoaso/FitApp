@@ -21,7 +21,12 @@ import {
 } from '@/funcionalidades/plano/mapear-plano';
 import { conferirTolerancia } from '@/funcionalidades/plano/motor/gramas';
 import { EQUIPAMENTOS_PERMITIDOS } from '@/funcionalidades/plano/motor/validador';
-import { MODELO_EMBEDDING, MODELO_GERACAO, OLLAMA_URL, TIMEOUT_MS } from '@/funcionalidades/plano/ollama-cliente';
+import {
+  MODELO_EMBEDDING,
+  MODELO_GERACAO,
+  OLLAMA_URL,
+  TIMEOUT_MS,
+} from '@/funcionalidades/plano/ollama-cliente';
 
 interface Perfil {
   rotulo: string;
@@ -31,15 +36,33 @@ interface Perfil {
 // Perfis fictícios. O nome nunca chega ao prompt (RN12), mas fica vazio mesmo assim.
 function perfil(
   rotulo: string,
-  p: { sexo: string; idade: number; peso: number; altura: number; objetivo: string; atividade: string; nivel: string },
+  p: {
+    sexo: string;
+    idade: number;
+    peso: number;
+    altura: number;
+    objetivo: string;
+    atividade: string;
+    nivel: string;
+  },
   t: { dias: number; local: string; restricaoFisica?: string[] },
   restricaoAlimentar: string[] = ['Nenhuma'],
 ): Perfil {
   return {
     rotulo,
     dados: {
-      perfil: { nome: '', sexo_biologico: p.sexo, idade: p.idade, peso_atual: p.peso, altura: p.altura },
-      objetivo: { objetivo_principal: p.objetivo, atividade_fora_treino: p.atividade, nivel_experiencia: p.nivel },
+      perfil: {
+        nome: '',
+        sexo_biologico: p.sexo,
+        idade: p.idade,
+        peso_atual: p.peso,
+        altura: p.altura,
+      },
+      objetivo: {
+        objetivo_principal: p.objetivo,
+        atividade_fora_treino: p.atividade,
+        nivel_experiencia: p.nivel,
+      },
       treino: {
         dias_disponiveis_semana: t.dias,
         local_treino: t.local,
@@ -53,19 +76,128 @@ function perfil(
 }
 
 const PERFIS: Perfil[] = [
-  perfil('Iniciante em casa', { sexo: 'Masculino', idade: 28, peso: 78, altura: 176, objetivo: 'Hipertrofia', atividade: 'Sedentário', nivel: 'Iniciante' }, { dias: 3, local: 'Casa' }),
-  perfil('Avançado 6x', { sexo: 'Masculino', idade: 31, peso: 85, altura: 182, objetivo: 'Hipertrofia', atividade: 'Moderado', nivel: 'Avançado' }, { dias: 6, local: 'Academia' }),
-  perfil('Mulher 50+ emagrecimento', { sexo: 'Feminino', idade: 54, peso: 76, altura: 162, objetivo: 'Emagrecimento', atividade: 'Leve', nivel: 'Iniciante' }, { dias: 3, local: 'Academia' }),
-  perfil('Vegano', { sexo: 'Feminino', idade: 26, peso: 60, altura: 165, objetivo: 'Definição', atividade: 'Moderado', nivel: 'Intermediário' }, { dias: 4, local: 'Academia' }, ['Vegano']),
-  perfil('Sem lactose', { sexo: 'Masculino', idade: 40, peso: 90, altura: 178, objetivo: 'Força', atividade: 'Leve', nivel: 'Intermediário' }, { dias: 4, local: 'Academia' }, ['Lactose']),
-  perfil('2x por semana', { sexo: 'Feminino', idade: 35, peso: 68, altura: 168, objetivo: 'Condicionamento', atividade: 'Leve', nivel: 'Iniciante' }, { dias: 2, local: 'Academia' }),
-  perfil('Restrição no joelho', { sexo: 'Masculino', idade: 45, peso: 92, altura: 175, objetivo: 'Emagrecimento', atividade: 'Sedentário', nivel: 'Iniciante' }, { dias: 3, local: 'Academia', restricaoFisica: ['Joelho'] }),
-  perfil('Peso do corpo intermediário', { sexo: 'Feminino', idade: 30, peso: 58, altura: 160, objetivo: 'Condicionamento', atividade: 'Moderado', nivel: 'Intermediário' }, { dias: 4, local: 'Peso do corpo' }),
+  perfil(
+    'Iniciante em casa',
+    {
+      sexo: 'Masculino',
+      idade: 28,
+      peso: 78,
+      altura: 176,
+      objetivo: 'Hipertrofia',
+      atividade: 'Sedentário',
+      nivel: 'Iniciante',
+    },
+    { dias: 3, local: 'Casa' },
+  ),
+  perfil(
+    'Avançado 6x',
+    {
+      sexo: 'Masculino',
+      idade: 31,
+      peso: 85,
+      altura: 182,
+      objetivo: 'Hipertrofia',
+      atividade: 'Moderado',
+      nivel: 'Avançado',
+    },
+    { dias: 6, local: 'Academia' },
+  ),
+  perfil(
+    'Mulher 50+ emagrecimento',
+    {
+      sexo: 'Feminino',
+      idade: 54,
+      peso: 76,
+      altura: 162,
+      objetivo: 'Emagrecimento',
+      atividade: 'Leve',
+      nivel: 'Iniciante',
+    },
+    { dias: 3, local: 'Academia' },
+  ),
+  perfil(
+    'Vegano',
+    {
+      sexo: 'Feminino',
+      idade: 26,
+      peso: 60,
+      altura: 165,
+      objetivo: 'Definição',
+      atividade: 'Moderado',
+      nivel: 'Intermediário',
+    },
+    { dias: 4, local: 'Academia' },
+    ['Vegano'],
+  ),
+  perfil(
+    'Sem lactose',
+    {
+      sexo: 'Masculino',
+      idade: 40,
+      peso: 90,
+      altura: 178,
+      objetivo: 'Força',
+      atividade: 'Leve',
+      nivel: 'Intermediário',
+    },
+    { dias: 4, local: 'Academia' },
+    ['Lactose'],
+  ),
+  perfil(
+    '2x por semana',
+    {
+      sexo: 'Feminino',
+      idade: 35,
+      peso: 68,
+      altura: 168,
+      objetivo: 'Condicionamento',
+      atividade: 'Leve',
+      nivel: 'Iniciante',
+    },
+    { dias: 2, local: 'Academia' },
+  ),
+  perfil(
+    'Restrição no joelho',
+    {
+      sexo: 'Masculino',
+      idade: 45,
+      peso: 92,
+      altura: 175,
+      objetivo: 'Emagrecimento',
+      atividade: 'Sedentário',
+      nivel: 'Iniciante',
+    },
+    { dias: 3, local: 'Academia', restricaoFisica: ['Joelho'] },
+  ),
+  perfil(
+    'Peso do corpo intermediário',
+    {
+      sexo: 'Feminino',
+      idade: 30,
+      peso: 58,
+      altura: 160,
+      objetivo: 'Condicionamento',
+      atividade: 'Moderado',
+      nivel: 'Intermediário',
+    },
+    { dias: 4, local: 'Peso do corpo' },
+  ),
 ];
 
 // PREMISSA: nomes que carregam o joelho. Lista própria (não a do motor), para a
 // reconferência não herdar um furo do motor. Desde a etapa 13b, reprova.
-const CARGA_JOELHO = ['agachamento', 'afundo', 'avanco', 'leg press', 'extensora', 'salto', 'pliometr', 'passada', 'lunge', 'squat'];
+const CARGA_JOELHO = [
+  'agachamento',
+  'afundo',
+  'avanco',
+  'leg press',
+  'extensora',
+  'salto',
+  'pliometr',
+  'passada',
+  'lunge',
+  'squat',
+];
 
 // O app desiste em TIMEOUT_MS (180 s desde a etapa 13b; meta de 60 s). Aqui o limite é maior para medir a qualidade
 // mesmo quando a geração é lenta; o que passa de TIMEOUT_MS vira problema no relatório.
@@ -73,7 +205,12 @@ const LIMITE_AVALIACAO_MS = 300_000;
 const META_SEGUNDOS = 60;
 const fetchOriginal = globalThis.fetch;
 globalThis.fetch = (url, init) =>
-  fetchOriginal(url, String(url).startsWith(OLLAMA_URL) ? { ...init, signal: AbortSignal.timeout(LIMITE_AVALIACAO_MS) } : init);
+  fetchOriginal(
+    url,
+    String(url).startsWith(OLLAMA_URL)
+      ? { ...init, signal: AbortSignal.timeout(LIMITE_AVALIACAO_MS) }
+      : init,
+  );
 
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
@@ -95,16 +232,20 @@ async function conferirOllama() {
   const corpo = (await resposta.json()) as { models?: { name: string }[] };
   const nomes = (corpo.models ?? []).map((m) => m.name.split(':')[0]);
   for (const modelo of [MODELO_GERACAO, MODELO_EMBEDDING]) {
-    if (!nomes.includes(modelo)) falhar(`modelo ${modelo} ausente. Baixe com \`ollama pull ${modelo}\`.`);
+    if (!nomes.includes(modelo))
+      falhar(`modelo ${modelo} ausente. Baixe com \`ollama pull ${modelo}\`.`);
   }
 }
 
 async function conferirBases() {
   for (const tabela of ['base_exercicios', 'base_alimentos', 'base_conhecimento'] as const) {
     const consulta = supabase.from(tabela).select('id', { count: 'exact', head: true });
-    const { count, error } = tabela === 'base_conhecimento' ? await consulta : await consulta.eq('is_curado', true);
-    if (error) falhar(`Supabase local não respondeu (${error.message}). Rode \`npx supabase start\`.`);
-    if (!count) falhar(`${tabela} vazia no banco local. Rode \`bash scripts/preparar-bases-locais.sh\`.`);
+    const { count, error } =
+      tabela === 'base_conhecimento' ? await consulta : await consulta.eq('is_curado', true);
+    if (error)
+      falhar(`Supabase local não respondeu (${error.message}). Rode \`npx supabase start\`.`);
+    if (!count)
+      falhar(`${tabela} vazia no banco local. Rode \`bash scripts/preparar-bases-locais.sh\`.`);
   }
 }
 
@@ -114,9 +255,12 @@ async function checar(dados: DadosQuestionario, plano: PlanoIAGerado) {
   const problemas: string[] = [];
   const alertas: string[] = [];
   const dias = plano.treino.dias;
-  if (dias.length !== entrada.diasPorSemana) problemas.push(`${dias.length} dias de treino (pedidos ${entrada.diasPorSemana}).`);
+  if (dias.length !== entrada.diasPorSemana)
+    problemas.push(`${dias.length} dias de treino (pedidos ${entrada.diasPorSemana}).`);
 
-  const idsExercicios = [...new Set(dias.flatMap((d) => d.exercicios.map((e) => e.exercicioId ?? '')))];
+  const idsExercicios = [
+    ...new Set(dias.flatMap((d) => d.exercicios.map((e) => e.exercicioId ?? ''))),
+  ];
   const { data: linhasEx } = await supabase
     .from('base_exercicios')
     .select('id, nome, grupo_primario, equipamento, tipo_movimento')
@@ -124,35 +268,50 @@ async function checar(dados: DadosQuestionario, plano: PlanoIAGerado) {
   const permitidos = EQUIPAMENTOS_PERMITIDOS[entrada.equipamentos];
   for (const linha of (linhasEx ?? []) as LinhaExercicio[]) {
     const ex = mapearExercicio(linha);
-    if (ex && !permitidos.includes(ex.equipamento)) problemas.push(`${linha.nome}: equipamento ${linha.equipamento} fora de ${entrada.equipamentos}.`);
+    if (ex && !permitidos.includes(ex.equipamento))
+      problemas.push(
+        `${linha.nome}: equipamento ${linha.equipamento} fora de ${entrada.equipamentos}.`,
+      );
   }
   for (const d of dias) {
     const ids = d.exercicios.map((e) => e.exercicioId);
-    if (new Set(ids).size !== ids.length) problemas.push(`${d.nome}: exercício repetido no mesmo dia.`);
+    if (new Set(ids).size !== ids.length)
+      problemas.push(`${d.nome}: exercício repetido no mesmo dia.`);
   }
 
   const alimentos = plano.dieta.refeicoes.flatMap((r) => r.alimentos);
   const { data: linhasAl } = await supabase
     .from('base_alimentos')
     .select('id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g')
-    .in('id', alimentos.map((a) => Number(a.alimentoId)));
+    .in(
+      'id',
+      alimentos.map((a) => Number(a.alimentoId)),
+    );
   for (const linha of (linhasAl ?? []) as LinhaAlimento[]) {
     const al = mapearAlimento(linha);
     const quebradas = entrada.restricoes.filter((r) => !al?.restricoesAtendidas.includes(r));
     if (quebradas.length) problemas.push(`${linha.nome} quebra ${quebradas.join(', ')}.`);
   }
 
-  const soma = (k: 'calorias' | 'proteinas' | 'carboidratos' | 'gorduras') => alimentos.reduce((t, a) => t + (a[k] ?? 0), 0);
+  const soma = (k: 'calorias' | 'proteinas' | 'carboidratos' | 'gorduras') =>
+    alimentos.reduce((t, a) => t + (a[k] ?? 0), 0);
   const { caloriasAlvo, macros } = plano.resumo;
   problemas.push(
     ...conferirTolerancia(
-      { calorias: soma('calorias'), proteinas: soma('proteinas'), carboidratos: soma('carboidratos'), gorduras: soma('gorduras') },
+      {
+        calorias: soma('calorias'),
+        proteinas: soma('proteinas'),
+        carboidratos: soma('carboidratos'),
+        gorduras: soma('gorduras'),
+      },
       { calorias: caloriasAlvo, ...macros },
     ),
   );
 
   if (dados.treino.restricao_fisica.includes('Joelho')) {
-    const pesados = dias.flatMap((d) => d.exercicios.map((e) => e.nome)).filter((n) => CARGA_JOELHO.some((p) => semAcento(n).includes(p)));
+    const pesados = dias
+      .flatMap((d) => d.exercicios.map((e) => e.nome))
+      .filter((n) => CARGA_JOELHO.some((p) => semAcento(n).includes(p)));
     if (pesados.length) problemas.push(`Joelho: saíram ${[...new Set(pesados)].join(', ')}.`);
   }
   if (!plano.fundamentos?.length) alertas.push('Sem fundamentos da base de conhecimento.');
@@ -172,20 +331,34 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
   // O serviço só loga o motivo da recusa (console.warn): guardamos para o relatório.
   const avisos: string[] = [];
   const warnOriginal = console.warn;
-  console.warn = (...args: unknown[]) => avisos.push(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' '));
+  console.warn = (...args: unknown[]) =>
+    avisos.push(args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' '));
   const inicio = Date.now();
   try {
     const plano = await montarPlanoGerado(dados);
     const segundos = Math.round((Date.now() - inicio) / 1000);
     const { problemas, alertas } = await checar(dados, plano);
-    if (segundos * 1000 > TIMEOUT_MS) problemas.push(`Levou ${segundos} s: no app estouraria o limite de ${TIMEOUT_MS / 1000} s.`);
-    else if (segundos > META_SEGUNDOS) alertas.push(`Levou ${segundos} s: acima da meta de ${META_SEGUNDOS} s.`);
+    if (segundos * 1000 > TIMEOUT_MS)
+      problemas.push(`Levou ${segundos} s: no app estouraria o limite de ${TIMEOUT_MS / 1000} s.`);
+    else if (segundos > META_SEGUNDOS)
+      alertas.push(`Levou ${segundos} s: acima da meta de ${META_SEGUNDOS} s.`);
     const exercicios = plano.treino.dias.reduce((t, d) => t + d.exercicios.length, 0);
     const resumo = `${plano.treino.nomeDivisao}; ${plano.treino.dias.length} dias, ${exercicios} exercícios; ${plano.resumo.caloriasAlvo} kcal; ${plano.fundamentos?.length ?? 0} fundamentos`;
-    return { rotulo, segundos, situacao: problemas.length ? 'reprovado' : 'aprovado', detalhes: [...problemas, ...alertas], resumo };
+    return {
+      rotulo,
+      segundos,
+      situacao: problemas.length ? 'reprovado' : 'aprovado',
+      detalhes: [...problemas, ...alertas],
+      resumo,
+    };
   } catch (erro) {
     const segundos = Math.round((Date.now() - inicio) / 1000);
-    return { rotulo, segundos, situacao: 'falhou', detalhes: [erro instanceof Error ? erro.message : String(erro), ...avisos] };
+    return {
+      rotulo,
+      segundos,
+      situacao: 'falhou',
+      detalhes: [erro instanceof Error ? erro.message : String(erro), ...avisos],
+    };
   } finally {
     console.warn = warnOriginal;
   }
@@ -194,7 +367,9 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
 function relatorio(resultados: Resultado[], data: string): string {
   const aprovados = resultados.filter((r) => r.situacao === 'aprovado').length;
   const comPlano = resultados.filter((r) => r.situacao !== 'falhou');
-  const media = comPlano.length ? Math.round(comPlano.reduce((t, r) => t + r.segundos, 0) / comPlano.length) : 0;
+  const media = comPlano.length
+    ? Math.round(comPlano.reduce((t, r) => t + r.segundos, 0) / comPlano.length)
+    : 0;
   const linhas = [
     `# Avaliação dos planos: ${data}`,
     '',
@@ -204,12 +379,18 @@ function relatorio(resultados: Resultado[], data: string): string {
     '',
     '| Perfil | Situação | Tempo | Plano |',
     '|---|---|---|---|',
-    ...resultados.map((r) => `| ${r.rotulo} | ${r.situacao} | ${r.segundos} s | ${r.resumo ?? '-'} |`),
+    ...resultados.map(
+      (r) => `| ${r.rotulo} | ${r.situacao} | ${r.segundos} s | ${r.resumo ?? '-'} |`,
+    ),
     '',
     '## Detalhes',
   ];
   for (const r of resultados) {
-    linhas.push('', `### ${r.rotulo}`, ...(r.detalhes.length ? r.detalhes.map((d) => `- ${d}`) : ['- Sem observações.']));
+    linhas.push(
+      '',
+      `### ${r.rotulo}`,
+      ...(r.detalhes.length ? r.detalhes.map((d) => `- ${d}`) : ['- Sem observações.']),
+    );
   }
   return linhas.join('\n') + '\n';
 }

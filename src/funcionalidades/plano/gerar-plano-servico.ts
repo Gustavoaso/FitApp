@@ -28,7 +28,8 @@ import { montarPlano, validarEscolha } from './motor/validador';
 import { ErroOllama, gerarComSchema, gerarEmbedding, MODELO_GERACAO } from './ollama-cliente';
 
 // PREMISSA (textos): mensagens da tela de geração.
-export const MENSAGEM_FALHA = 'Não consegui montar um plano válido agora. Tente de novo em alguns minutos.';
+export const MENSAGEM_FALHA =
+  'Não consegui montar um plano válido agora. Tente de novo em alguns minutos.';
 export const MENSAGEM_LIMITE = 'Você já gerou 5 planos hoje. Tente de novo amanhã.';
 export const MENSAGEM_SALVAR = 'Não consegui salvar o seu plano. Tente de novo.';
 
@@ -106,7 +107,11 @@ function apelidar(exercicios: ExercicioCandidato[]) {
   return { apelidados: exercicios.map((e, i) => ({ ...e, id: `e${i + 1}` })), original };
 }
 
-async function escolherComRetry(entrada: EntradaMotor, meta: ReturnType<typeof metaDe>, diretrizes: string[]) {
+async function escolherComRetry(
+  entrada: EntradaMotor,
+  meta: ReturnType<typeof metaDe>,
+  diretrizes: string[],
+) {
   const divisao = montarDivisaoSemanal(entrada.diasPorSemana);
   const [linhas, alimentos] = await Promise.all([buscarExercicios(), buscarAlimentos(entrada)]);
   const selecao = selecionarExercicios(
@@ -126,17 +131,30 @@ async function escolherComRetry(entrada: EntradaMotor, meta: ReturnType<typeof m
     restricoes: entrada.restricoes,
     diretrizes,
   };
-  const restricoes = { equipamentos: entrada.equipamentos, restricoesAlimentares: entrada.restricoes };
+  const restricoes = {
+    equipamentos: entrada.equipamentos,
+    restricoesAlimentares: entrada.restricoes,
+  };
 
   let erros: string[] = [];
   for (let tentativa = 0; tentativa < TENTATIVAS; tentativa++) {
-    const bruta = await gerarComSchema(montarPrompt(contexto, exercicios, alimentos, erros), schema);
+    const bruta = await gerarComSchema(
+      montarPrompt(contexto, exercicios, alimentos, erros),
+      schema,
+    );
     const validacao = validarEscolha(bruta, slots, exercicios, alimentos, restricoes);
     if (!validacao.escolha) {
       erros = validacao.erros;
       continue;
     }
-    const montagem = montarPlano(validacao.escolha, slots, exercicios, alimentos, prescrever(entrada.objetivo, entrada.nivel), meta);
+    const montagem = montarPlano(
+      validacao.escolha,
+      slots,
+      exercicios,
+      alimentos,
+      prescrever(entrada.objetivo, entrada.nivel),
+      meta,
+    );
     if (montagem.plano) {
       const dias = montagem.plano.dias.map((d) => ({
         ...d,
@@ -162,7 +180,9 @@ async function salvar(dados: DadosQuestionario, plano: PlanoIAGerado): Promise<s
   });
   if (error) {
     console.warn('[geracao] RPC salvar_plano_gerado:', error.message);
-    throw new ErroGeracao(error.message.includes('limite_diario') ? MENSAGEM_LIMITE : MENSAGEM_SALVAR);
+    throw new ErroGeracao(
+      error.message.includes('limite_diario') ? MENSAGEM_LIMITE : MENSAGEM_SALVAR,
+    );
   }
   return String(data);
 }
@@ -170,21 +190,39 @@ async function salvar(dados: DadosQuestionario, plano: PlanoIAGerado): Promise<s
 /** Passos 1 a 3 sem gravar nada. Exportado para o script de avaliação (etapa 13). */
 export async function montarPlanoGerado(dados: DadosQuestionario): Promise<PlanoIAGerado> {
   const entrada = mapearRespostas(dados);
-  const calculo = calcularTudo(entrada.pesoKg, entrada.alturaCm, entrada.idade, entrada.sexo, entrada.nivelAtividade, entrada.objetivo);
+  const calculo = calcularTudo(
+    entrada.pesoKg,
+    entrada.alturaCm,
+    entrada.idade,
+    entrada.sexo,
+    entrada.nivelAtividade,
+    entrada.objetivo,
+  );
   const travas = verificarTravasSaude({ ...entrada, caloriasAlvo: calculo.caloriasAlvo });
   if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
 
   const trechos = await buscarDiretrizes(entrada);
-  const { plano, divisao, avisos } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
+  const { plano, divisao, avisos } = await escolherComRetry(
+    entrada,
+    metaDe(calculo),
+    trechos.map((t) => t.conteudo),
+  );
   const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
   return {
-    ...paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`)),
+    ...paraPlanoGerado(
+      plano,
+      calculo,
+      nomeDivisao,
+      trechos.map((t) => `${t.titulo} (${t.fonte})`),
+    ),
     fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
     ...(avisos.length > 0 ? { avisos } : {}),
   };
 }
 
-export async function gerarPlano(dados: DadosQuestionario): Promise<{ plano: PlanoIAGerado; planoIaId: string }> {
+export async function gerarPlano(
+  dados: DadosQuestionario,
+): Promise<{ plano: PlanoIAGerado; planoIaId: string }> {
   try {
     const gerado = await montarPlanoGerado(dados);
     return { plano: gerado, planoIaId: await salvar(dados, gerado) };

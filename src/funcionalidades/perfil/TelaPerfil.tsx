@@ -91,7 +91,7 @@ export default function TelaPerfil() {
   useFocusEffect(
     useCallback(() => {
       carregarPerfilReal();
-    }, [])
+    }, []),
   );
 
   const carregarPerfilReal = async () => {
@@ -113,7 +113,10 @@ export default function TelaPerfil() {
 
     setDadosFisicos({
       peso: sistemaUnidades === 'metrico' ? `${peso} kg` : `${Math.round(peso * 2.20462)} lbs`,
-      altura: sistemaUnidades === 'metrico' ? `${altura} cm` : `${Math.floor(altura / 30.48)} ft ${Math.round((altura % 30.48) / 2.54)} in`,
+      altura:
+        sistemaUnidades === 'metrico'
+          ? `${altura} cm`
+          : `${Math.floor(altura / 30.48)} ft ${Math.round((altura % 30.48) / 2.54)} in`,
       idade: `${idade} anos`,
       objetivo: mapaObjetivo[objRaw] || 'Hipertrofia',
     });
@@ -142,7 +145,10 @@ export default function TelaPerfil() {
       router.replace('/(auth)/login');
     } catch {
       setExcluindo(false);
-      Alert.alert('Não foi possível excluir', 'Verifique a conexão e tente de novo. Nada foi apagado.');
+      Alert.alert(
+        'Não foi possível excluir',
+        'Verifique a conexão e tente de novo. Nada foi apagado.',
+      );
     }
   };
 
@@ -157,9 +163,8 @@ export default function TelaPerfil() {
     );
   };
 
-  const iniciais = (usuario?.user_metadata?.nome as string | undefined)
-    ?.substring(0, 2)
-    .toUpperCase() || 'AT';
+  const iniciais =
+    (usuario?.user_metadata?.nome as string | undefined)?.substring(0, 2).toUpperCase() || 'AT';
 
   const nome = (usuario?.user_metadata?.nome as string | undefined) || 'Atleta';
   const email = usuario?.email || 'atleta@fitapp.com';
@@ -167,21 +172,28 @@ export default function TelaPerfil() {
   const lidarComRecalcularPlano = async () => {
     const perfilBanco = await repositorioPlano.obterPerfilUsuario();
     const respostasSalvas = await repositorioPlano.obterUltimasRespostasQuestionario();
-    
+
     const payload = {
       perfil: {
         sexo_biologico: respostasSalvas?.perfil?.sexo_biologico || perfilBanco?.sexo || 'Masculino',
         idade: respostasSalvas?.perfil?.idade || perfilBanco?.idade || 25,
         peso_atual: respostasSalvas?.perfil?.peso_atual || perfilBanco?.peso_kg || 75,
-        altura: respostasSalvas?.perfil?.altura || perfilBanco?.altura_cm || 175
+        altura: respostasSalvas?.perfil?.altura || perfilBanco?.altura_cm || 175,
       },
       objetivo: {
-        objetivo_principal: respostasSalvas?.objetivo?.objetivo_principal || perfilBanco?.objetivo || 'Hipertrofia',
-        atividade_fora_treino: respostasSalvas?.objetivo?.atividade_fora_treino || perfilBanco?.nivel_atividade || 'Moderado',
-        nivel_experiencia: respostasSalvas?.objetivo?.nivel_experiencia || perfilBanco?.nivel_experiencia || 'Intermediário'
+        objetivo_principal:
+          respostasSalvas?.objetivo?.objetivo_principal || perfilBanco?.objetivo || 'Hipertrofia',
+        atividade_fora_treino:
+          respostasSalvas?.objetivo?.atividade_fora_treino ||
+          perfilBanco?.nivel_atividade ||
+          'Moderado',
+        nivel_experiencia:
+          respostasSalvas?.objetivo?.nivel_experiencia ||
+          perfilBanco?.nivel_experiencia ||
+          'Intermediário',
       },
       treino: respostasSalvas?.treino || {},
-      dieta: respostasSalvas?.dieta || {}
+      dieta: respostasSalvas?.dieta || {},
     };
 
     router.push({
@@ -200,7 +212,6 @@ export default function TelaPerfil() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-
         {/* ── Cabeçalho do perfil ───────────────────────────── */}
         <View style={estilos.perfilHeader}>
           <View style={estilos.avatar}>
@@ -243,7 +254,6 @@ export default function TelaPerfil() {
         {/* ── Preferências (Ajuste 5) ───────────────────────── */}
         <Text style={estilos.secaoTitulo}>Preferências</Text>
         <CardVidro semBorda estilo={estilos.cardOpcoes}>
-
           {/* Notificações */}
           <TouchableOpacity
             style={[estilos.itemOpcao, estilos.itemBorda]}
@@ -274,7 +284,9 @@ export default function TelaPerfil() {
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloOpcao}>Unidades de Medida</Text>
               <Text style={estilos.subOpcao}>
-                {sistemaUnidades === 'metrico' ? 'Sistema Métrico (kg / cm / ml)' : 'Sistema Imperial (lbs / in / fl oz)'}
+                {sistemaUnidades === 'metrico'
+                  ? 'Sistema Métrico (kg / cm / ml)'
+                  : 'Sistema Imperial (lbs / in / fl oz)'}
               </Text>
             </View>
             <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
@@ -303,27 +315,30 @@ export default function TelaPerfil() {
             disabled={carregandoJSON}
             activeOpacity={0.7}
           >
-            <View style={[estilos.iconeOpcaoContainer, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}>
+            <View
+              style={[estilos.iconeOpcaoContainer, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}
+            >
               <SymbolView name="terminal.fill" size={18} tintColor={cores.destaque} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[estilos.tituloOpcao, { color: cores.destaque }]}>
                 {carregandoJSON ? 'Buscando JSON...' : 'Dev: Inspetor de JSON das APIs'}
               </Text>
-              <Text style={estilos.subOpcao}>Abre modal interativo para expandir/colapsar os objetos brutos</Text>
+              <Text style={estilos.subOpcao}>
+                Abre modal interativo para expandir/colapsar os objetos brutos
+              </Text>
             </View>
             <SymbolView name="chevron.right" size={14} tintColor={cores.destaque} />
           </TouchableOpacity>
-
         </CardVidro>
 
         {/* ── Logout ────────────────────────────────────────── */}
-        <TouchableOpacity
-          style={estilos.botaoSair}
-          onPress={lidarComSair}
-          activeOpacity={0.6}
-        >
-          <SymbolView name="rectangle.portrait.and.arrow.right" size={16} tintColor={cores.textoSecundario} />
+        <TouchableOpacity style={estilos.botaoSair} onPress={lidarComSair} activeOpacity={0.6}>
+          <SymbolView
+            name="rectangle.portrait.and.arrow.right"
+            size={16}
+            tintColor={cores.textoSecundario}
+          />
           <Text style={estilos.textoSair}>Sair da Conta</Text>
         </TouchableOpacity>
 
@@ -342,7 +357,9 @@ export default function TelaPerfil() {
               <Text style={[estilos.tituloOpcao, { color: cores.erro }]}>
                 {excluindo ? 'Excluindo conta...' : 'Excluir conta'}
               </Text>
-              <Text style={estilos.subOpcao}>Apaga sua conta, planos e histórico. Não tem volta.</Text>
+              <Text style={estilos.subOpcao}>
+                Apaga sua conta, planos e histórico. Não tem volta.
+              </Text>
             </View>
           </TouchableOpacity>
         </CardVidro>
@@ -351,8 +368,17 @@ export default function TelaPerfil() {
       </ScrollView>
 
       {/* ── Modal Notificações ──────────────────────────────── */}
-      <Modal visible={modalNotificacoesVisivel} animationType="slide" transparent statusBarTranslucent>
-        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalNotificacoesVisivel(false)} />
+      <Modal
+        visible={modalNotificacoesVisivel}
+        animationType="slide"
+        transparent
+        statusBarTranslucent
+      >
+        <TouchableOpacity
+          style={estilos.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalNotificacoesVisivel(false)}
+        />
         <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Preferências de Notificação</Text>
@@ -362,7 +388,11 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembretes de Treino</Text>
               <Text style={estilos.txtSwitchSub}>Notificar no horário do treino planejado</Text>
             </View>
-            <Switch value={lembreteTreino} onValueChange={setLembreteTreino} trackColor={{ true: cores.destaque }} />
+            <Switch
+              value={lembreteTreino}
+              onValueChange={setLembreteTreino}
+              trackColor={{ true: cores.destaque }}
+            />
           </View>
 
           <View style={estilos.rowSwitch}>
@@ -370,7 +400,11 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembrete de Hidratação</Text>
               <Text style={estilos.txtSwitchSub}>Lembretes periódicos para beber água</Text>
             </View>
-            <Switch value={lembreteAgua} onValueChange={setLembreteAgua} trackColor={{ true: cores.destaque }} />
+            <Switch
+              value={lembreteAgua}
+              onValueChange={setLembreteAgua}
+              trackColor={{ true: cores.destaque }}
+            />
           </View>
 
           <View style={estilos.rowSwitch}>
@@ -378,11 +412,18 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembrete de Refeições</Text>
               <Text style={estilos.txtSwitchSub}>Alertas para registrar refeições</Text>
             </View>
-            <Switch value={lembreteRefeicao} onValueChange={setLembreteRefeicao} trackColor={{ true: cores.destaque }} />
+            <Switch
+              value={lembreteRefeicao}
+              onValueChange={setLembreteRefeicao}
+              trackColor={{ true: cores.destaque }}
+            />
           </View>
 
           <View style={estilos.modalAcoes}>
-            <TouchableOpacity onPress={() => setModalNotificacoesVisivel(false)} style={estilos.btnSalvar}>
+            <TouchableOpacity
+              onPress={() => setModalNotificacoesVisivel(false)}
+              style={estilos.btnSalvar}
+            >
               <Text style={estilos.txtSalvar}>Concluído</Text>
             </TouchableOpacity>
           </View>
@@ -391,7 +432,11 @@ export default function TelaPerfil() {
 
       {/* ── Modal Unidades de Medida ────────────────────────── */}
       <Modal visible={modalUnidadesVisivel} animationType="slide" transparent statusBarTranslucent>
-        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalUnidadesVisivel(false)} />
+        <TouchableOpacity
+          style={estilos.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalUnidadesVisivel(false)}
+        />
         <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Unidades de Medida</Text>
@@ -402,9 +447,13 @@ export default function TelaPerfil() {
           >
             <View style={{ flex: 1 }}>
               <Text style={estilos.txtSelectTitulo}>Sistema Métrico (Padrão)</Text>
-              <Text style={estilos.txtSelectSub}>Quilogramas (kg), Centímetros (cm), Mililitros (ml)</Text>
+              <Text style={estilos.txtSelectSub}>
+                Quilogramas (kg), Centímetros (cm), Mililitros (ml)
+              </Text>
             </View>
-            {sistemaUnidades === 'metrico' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
+            {sistemaUnidades === 'metrico' && (
+              <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -415,11 +464,16 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSelectTitulo}>Sistema Imperial</Text>
               <Text style={estilos.txtSelectSub}>Libras (lbs), Polegadas (in), Onças (fl oz)</Text>
             </View>
-            {sistemaUnidades === 'imperial' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
+            {sistemaUnidades === 'imperial' && (
+              <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />
+            )}
           </TouchableOpacity>
 
           <View style={estilos.modalAcoes}>
-            <TouchableOpacity onPress={() => setModalUnidadesVisivel(false)} style={estilos.btnSalvar}>
+            <TouchableOpacity
+              onPress={() => setModalUnidadesVisivel(false)}
+              style={estilos.btnSalvar}
+            >
               <Text style={estilos.txtSalvar}>Salvar</Text>
             </TouchableOpacity>
           </View>
@@ -428,24 +482,33 @@ export default function TelaPerfil() {
 
       {/* ── Modal Aparência ─────────────────────────────────── */}
       <Modal visible={modalAparenciaVisivel} animationType="slide" transparent statusBarTranslucent>
-        <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalAparenciaVisivel(false)} />
+        <TouchableOpacity
+          style={estilos.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalAparenciaVisivel(false)}
+        />
         <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Preferências de Aparência</Text>
 
-          {['OLED Preto Puro', 'Liquid Glass Dark', 'Modo Automático (Sistema)'].map(t => (
+          {['OLED Preto Puro', 'Liquid Glass Dark', 'Modo Automático (Sistema)'].map((t) => (
             <TouchableOpacity
               key={t}
               style={[estilos.itemSelect, temaSelecionado === t && estilos.itemSelectAtivo]}
               onPress={() => setTemaSelecionado(t)}
             >
               <Text style={estilos.txtSelectTitulo}>{t}</Text>
-              {temaSelecionado === t && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
+              {temaSelecionado === t && (
+                <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />
+              )}
             </TouchableOpacity>
           ))}
 
           <View style={estilos.modalAcoes}>
-            <TouchableOpacity onPress={() => setModalAparenciaVisivel(false)} style={estilos.btnSalvar}>
+            <TouchableOpacity
+              onPress={() => setModalAparenciaVisivel(false)}
+              style={estilos.btnSalvar}
+            >
               <Text style={estilos.txtSalvar}>Concluído</Text>
             </TouchableOpacity>
           </View>
@@ -468,219 +531,228 @@ export default function TelaPerfil() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: { flex: 1, backgroundColor: cores.fundo },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: Espacamento.sm, // o título grande fica no header nativo
-    paddingBottom: 120,
-  },
+    container: { flex: 1, backgroundColor: cores.fundo },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingTop: Espacamento.sm, // o título grande fica no header nativo
+      paddingBottom: 120,
+    },
 
-  perfilHeader: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: cores.elevada,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  avatarTexto: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 22,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    letterSpacing: 1,
-  },
-  nome: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  email: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-    marginTop: 3,
-  },
+    perfilHeader: {
+      alignItems: 'center',
+      marginBottom: 24,
+    },
+    avatar: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+      backgroundColor: cores.elevada,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    avatarTexto: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 22,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      letterSpacing: 1,
+    },
+    nome: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.titulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    email: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+      marginTop: 3,
+    },
 
-  secaoTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.bold,
-    color: cores.textoSecundario,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: Espacamento.md,
-    marginTop: 4,
-  },
+    secaoTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.label,
+      fontWeight: PesoFonte.bold,
+      color: cores.textoSecundario,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginBottom: Espacamento.md,
+      marginTop: 4,
+    },
 
-  cardDados: { marginBottom: 20, marginHorizontal: -20 },
-  gridDados: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: Espacamento.lg,
-  },
-  dadoItem: {
-    width: '50%',
-    marginBottom: Espacamento.md,
-  },
-  dadoLabel: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-  },
-  dadoValor: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    marginTop: 2,
-  },
-  divisor: {
-    height: 1,
-    backgroundColor: cores.separador,
-    marginHorizontal: Espacamento.lg,
-  },
-  botaoRecalcular: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: Espacamento.md,
-  },
-  textoRecalcular: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-    fontWeight: PesoFonte.bold,
-  },
+    cardDados: { marginBottom: 20, marginHorizontal: -20 },
+    gridDados: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      padding: Espacamento.lg,
+    },
+    dadoItem: {
+      width: '50%',
+      marginBottom: Espacamento.md,
+    },
+    dadoLabel: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+    },
+    dadoValor: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      marginTop: 2,
+    },
+    divisor: {
+      height: 1,
+      backgroundColor: cores.separador,
+      marginHorizontal: Espacamento.lg,
+    },
+    botaoRecalcular: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: Espacamento.md,
+    },
+    textoRecalcular: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+      fontWeight: PesoFonte.bold,
+    },
 
-  cardOpcoes: { marginBottom: 24, marginHorizontal: -20 },
-  itemOpcao: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Espacamento.md,
-    padding: Espacamento.lg,
-  },
-  itemBorda: {
-    borderBottomWidth: 1,
-    borderBottomColor: cores.separador,
-  },
-  iconeOpcaoContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: Raio.sm,
-    backgroundColor: cores.elevada,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tituloOpcao: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  subOpcao: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
+    cardOpcoes: { marginBottom: 24, marginHorizontal: -20 },
+    itemOpcao: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Espacamento.md,
+      padding: Espacamento.lg,
+    },
+    itemBorda: {
+      borderBottomWidth: 1,
+      borderBottomColor: cores.separador,
+    },
+    iconeOpcaoContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: Raio.sm,
+      backgroundColor: cores.elevada,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tituloOpcao: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    subOpcao: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
 
-  botaoSair: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: Espacamento.md,
-    marginBottom: Espacamento.lg,
-  },
-  textoSair: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-  },
-  versao: {
-    fontFamily: FamiliaFonte.regular,
-    textAlign: 'center',
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-  },
+    botaoSair: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: Espacamento.md,
+      marginBottom: Espacamento.lg,
+    },
+    textoSair: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+    },
+    versao: {
+      fontFamily: FamiliaFonte.regular,
+      textAlign: 'center',
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+    },
 
-  // Modal & Sheet
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: cores.separador,
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  modalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    backgroundColor: cores.elevada,
-    borderTopWidth: 1,
-    borderColor: cores.separador,
-  },
-  modalTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    color: cores.texto,
-    marginBottom: 20,
-  },
-  rowSwitch: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: cores.destaqueSuave,
-  },
-  txtSwitchTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-  },
-  txtSwitchSub: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
-  itemSelect: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    backgroundColor: cores.elevada,
-    borderRadius: Raio.md,
-    marginBottom: 10,
-  },
-  itemSelectAtivo: {
-    borderWidth: 1,
-    borderColor: cores.destaque,
-  },
-  txtSelectTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-  },
-  txtSelectSub: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
-  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 },
-  btnSalvar: { backgroundColor: cores.destaque, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
-  txtSalvar: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: Fonte.corpo },
-});
+    // Modal & Sheet
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+    modalHandle: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: cores.separador,
+      alignSelf: 'center',
+      marginBottom: 16,
+    },
+    modalCard: {
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      backgroundColor: cores.elevada,
+      borderTopWidth: 1,
+      borderColor: cores.separador,
+    },
+    modalTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      color: cores.texto,
+      marginBottom: 20,
+    },
+    rowSwitch: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: cores.destaqueSuave,
+    },
+    txtSwitchTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+    },
+    txtSwitchSub: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
+    itemSelect: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 14,
+      backgroundColor: cores.elevada,
+      borderRadius: Raio.md,
+      marginBottom: 10,
+    },
+    itemSelectAtivo: {
+      borderWidth: 1,
+      borderColor: cores.destaque,
+    },
+    txtSelectTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+    },
+    txtSelectSub: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
+    modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 },
+    btnSalvar: {
+      backgroundColor: cores.destaque,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: Raio.md,
+    },
+    txtSalvar: {
+      fontFamily: FamiliaFonte.bold,
+      color: cores.textoSobreDestaque,
+      fontSize: Fonte.corpo,
+    },
+  });

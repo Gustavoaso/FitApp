@@ -19,7 +19,7 @@ export async function obterDadosRawTacoAPI(): Promise<unknown[]> {
 
 export async function buscarAlimentosParaPrompt(
   filtros: { restricoesAlimentares: string[]; objetivoPrincipal: string },
-  limite: number = 50
+  limite: number = 50,
 ): Promise<string[]> {
   try {
     let query = supabase
@@ -27,16 +27,20 @@ export async function buscarAlimentosParaPrompt(
       .select('id, nome, categoria, calorias_100g, proteinas_100g');
 
     if (filtros.restricoesAlimentares && filtros.restricoesAlimentares.length > 0) {
-      const rest = filtros.restricoesAlimentares.map(r => r.toLowerCase());
-      
+      const rest = filtros.restricoesAlimentares.map((r) => r.toLowerCase());
+
       if (rest.includes('vegetariano')) {
         query = query.not('categoria', 'in', '("Carnes", "Aves", "Pescados")');
       }
-      
+
       if (rest.includes('vegano')) {
-        query = query.not('categoria', 'in', '("Carnes", "Aves", "Pescados", "Ovos", "Leite e derivados")');
+        query = query.not(
+          'categoria',
+          'in',
+          '("Carnes", "Aves", "Pescados", "Ovos", "Leite e derivados")',
+        );
       }
-      
+
       if (rest.includes('lactose')) {
         query = query.neq('categoria', 'Leite e derivados');
       }
@@ -48,8 +52,8 @@ export async function buscarAlimentosParaPrompt(
       return [];
     }
 
-    return data.map(a =>
-      `[ID: ${a.id}] ${a.nome} (${a.categoria}) - ${a.calorias_100g} kcal/100g`
+    return data.map(
+      (a) => `[ID: ${a.id}] ${a.nome} (${a.categoria}) - ${a.calorias_100g} kcal/100g`,
     );
   } catch {
     return [];

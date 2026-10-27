@@ -33,7 +33,10 @@ import {
   EstatisticasAderencia,
 } from '@/compartilhado/servicos/progresso-servico';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
-import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '@/compartilhado/servicos/plano-gestao-servico';
+import {
+  obterPlanoTreinoCustomizado,
+  obterMapeamentoSemanal,
+} from '@/compartilhado/servicos/plano-gestao-servico';
 
 export default function TelaInicio() {
   const { cores, escuro } = useTema();
@@ -81,7 +84,11 @@ export default function TelaInicio() {
 
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
-  const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const diaSemana = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
   const diasemana = diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
 
   const porcentagemCalorias = Math.round((caloriasConsumidas / (caloriasMeta || 1)) * 100);
@@ -89,7 +96,7 @@ export default function TelaInicio() {
   useFocusEffect(
     useCallback(() => {
       carregarDadosProgresso();
-    }, [])
+    }, []),
   );
 
   const carregarDadosProgresso = async () => {
@@ -146,7 +153,7 @@ export default function TelaInicio() {
       const idTreinoHoje = mapSemana[abrevHoje];
 
       if (idTreinoHoje && idTreinoHoje !== 'descanso') {
-        const treinoEncontrado = planos.find(p => p.id === idTreinoHoje);
+        const treinoEncontrado = planos.find((p) => p.id === idTreinoHoje);
         if (treinoEncontrado) {
           setTreinoHojeTitulo(treinoEncontrado.foco || treinoEncontrado.diaSemana);
           setTreinoHojeSub(`${treinoEncontrado.exercicios.length} exercícios · ~45 min`);
@@ -171,7 +178,7 @@ export default function TelaInicio() {
     }
 
     const historicoPesos = await obterHistoricoPeso();
-    const pontos: PontoGrafico[] = historicoPesos.map(p => ({
+    const pontos: PontoGrafico[] = historicoPesos.map((p) => ({
       label: p.data.slice(8, 10) + '/' + p.data.slice(5, 7),
       valor: p.pesoKg,
     }));
@@ -185,7 +192,7 @@ export default function TelaInicio() {
     const valor = parseFloat(novoPesoStr.replace(',', '.'));
     if (!isNaN(valor) && valor > 30 && valor < 300) {
       const atualizados = await adicionarEntradaPeso(valor);
-      const pontos: PontoGrafico[] = atualizados.map(p => ({
+      const pontos: PontoGrafico[] = atualizados.map((p) => ({
         label: p.data.slice(8, 10) + '/' + p.data.slice(5, 7),
         valor: p.pesoKg,
       }));
@@ -227,7 +234,6 @@ export default function TelaInicio() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-
         {/* ── Top Bar ────────────────────────────────────────── */}
         <View style={estilos.topBar}>
           <View>
@@ -261,12 +267,7 @@ export default function TelaInicio() {
                 <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
 
                 <View style={estilos.barraFundo}>
-                  <View
-                    style={[
-                      estilos.barraProgresso,
-                      { width: `${porcentagemCalorias}%` },
-                    ]}
-                  />
+                  <View style={[estilos.barraProgresso, { width: `${porcentagemCalorias}%` }]} />
                 </View>
                 <Text style={estilos.textoPorcentagem}>{porcentagemCalorias}% concluído</Text>
               </View>
@@ -279,16 +280,34 @@ export default function TelaInicio() {
         <View>
           <View style={estilos.gridMacros}>
             {[
-              { icone: <SymbolView name="fork.knife" size={16} tintColor={cores.textoSecundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
-              { icone: <SymbolView name="leaf" size={16} tintColor={cores.textoSecundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
-              { icone: <SymbolView name="drop" size={16} tintColor={cores.textoSecundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
+              {
+                icone: <SymbolView name="fork.knife" size={16} tintColor={cores.textoSecundario} />,
+                nome: 'Proteína',
+                atual: proteina,
+                meta: proteinaMeta,
+              },
+              {
+                icone: <SymbolView name="leaf" size={16} tintColor={cores.textoSecundario} />,
+                nome: 'Carbos',
+                atual: carboidrato,
+                meta: carboidratoMeta,
+              },
+              {
+                icone: <SymbolView name="drop" size={16} tintColor={cores.textoSecundario} />,
+                nome: 'Gordura',
+                atual: gordura,
+                meta: gorduraMeta,
+              },
             ].map((macro, i) => (
               <CardVidro key={i} semBorda estilo={estilos.cardMacro}>
                 <View style={estilos.rowMacroTopo}>
                   {macro.icone}
                   <Text style={estilos.macroNome}>{macro.nome}</Text>
                 </View>
-                <Text style={estilos.macroValor}>{macro.atual}<Text style={estilos.macroUnidade}>g</Text></Text>
+                <Text style={estilos.macroValor}>
+                  {macro.atual}
+                  <Text style={estilos.macroUnidade}>g</Text>
+                </Text>
                 <View style={estilos.barraFundoMacro}>
                   <View
                     style={[
@@ -328,7 +347,10 @@ export default function TelaInicio() {
               <SymbolView name="drop.fill" size={18} tintColor={cores.destaque} />
               <Text style={estilos.aguaLabel}>Meta de Água</Text>
             </View>
-            <TouchableOpacity onPress={() => setModalMetaAguaVisivel(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <TouchableOpacity
+              onPress={() => setModalMetaAguaVisivel(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+            >
               <Text style={estilos.aguaValor}>
                 {aguaConsumidaMl}
                 <Text style={estilos.aguaUnidade}> / {metaAguaMl}ml</Text>
@@ -359,7 +381,10 @@ export default function TelaInicio() {
             <TouchableOpacity style={estilos.btnIncrementoAgua} onPress={() => adicionarAgua(1000)}>
               <Text style={estilos.txtIncrementoAgua}>+ 1L</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={estilos.btnEditarMetaAgua} onPress={() => setModalMetaAguaVisivel(true)}>
+            <TouchableOpacity
+              style={estilos.btnEditarMetaAgua}
+              onPress={() => setModalMetaAguaVisivel(true)}
+            >
               <Text style={estilos.txtEditarMetaAgua}>Meta</Text>
             </TouchableOpacity>
           </View>
@@ -405,8 +430,15 @@ export default function TelaInicio() {
 
       {/* ── Modal Editar Meta de Água ─────────────────────── */}
       <Modal visible={modalMetaAguaVisivel} animationType="slide" transparent statusBarTranslucent>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMetaAguaVisivel(false)} />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableOpacity
+            style={estilos.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalMetaAguaVisivel(false)}
+          />
           <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Editar Meta de Água</Text>
@@ -422,7 +454,10 @@ export default function TelaInicio() {
             />
 
             <View style={estilos.modalAcoes}>
-              <TouchableOpacity onPress={() => setModalMetaAguaVisivel(false)} style={estilos.btnCancelar}>
+              <TouchableOpacity
+                onPress={() => setModalMetaAguaVisivel(false)}
+                style={estilos.btnCancelar}
+              >
                 <Text style={estilos.txtCancelar}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={salvarMetaAgua} style={estilos.btnSalvar}>
@@ -435,8 +470,15 @@ export default function TelaInicio() {
 
       {/* ── Modal Registrar Peso ────────────────────────────── */}
       <Modal visible={modalPesoVisivel} animationType="slide" transparent statusBarTranslucent>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalPesoVisivel(false)} />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <TouchableOpacity
+            style={estilos.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalPesoVisivel(false)}
+          />
           <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Registrar Peso Atual</Text>
@@ -452,7 +494,10 @@ export default function TelaInicio() {
             />
 
             <View style={estilos.modalAcoes}>
-              <TouchableOpacity onPress={() => setModalPesoVisivel(false)} style={estilos.btnCancelar}>
+              <TouchableOpacity
+                onPress={() => setModalPesoVisivel(false)}
+                style={estilos.btnCancelar}
+              >
                 <Text style={estilos.txtCancelar}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={lidarComSalvarPeso} style={estilos.btnSalvar}>
@@ -468,382 +513,395 @@ export default function TelaInicio() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: Espacamento.sm, // o título grande fica no header nativo
-    paddingBottom: 120,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    scrollContent: {
+      paddingHorizontal: 20,
+      paddingTop: Espacamento.sm, // o título grande fica no header nativo
+      paddingBottom: 120,
+    },
 
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  saudacao: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  dataAtual: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-    marginTop: 3,
-  },
-  topBarDireita: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: cores.superficie,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: Raio.full,
-    borderWidth: 1,
-    borderColor: cores.separador,
-  },
-  streakTexto: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 13,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 24,
+    },
+    saudacao: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.titulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    dataAtual: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+      marginTop: 3,
+    },
+    topBarDireita: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    streakBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: cores.superficie,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: Raio.full,
+      borderWidth: 1,
+      borderColor: cores.separador,
+    },
+    streakTexto: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 13,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
 
-  cardCalorias: {
-    marginBottom: 20,
-    marginHorizontal: -20,
-  },
-  rowCalorias: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-  },
-  colInfoCalorias: {
-    flex: 1,
-  },
-  labelCalorias: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    fontWeight: PesoFonte.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 4,
-  },
-  valorCalorias: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    letterSpacing: -0.5,
-  },
-  metaCalorias: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    marginBottom: 10,
-  },
-  barraFundo: {
-    height: 3,
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 5,
-  },
-  barraProgresso: {
-    height: '100%',
-    backgroundColor: cores.destaque,
-    borderRadius: 2,
-  },
-  textoPorcentagem: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-  },
+    cardCalorias: {
+      marginBottom: 20,
+      marginHorizontal: -20,
+    },
+    rowCalorias: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 20,
+    },
+    colInfoCalorias: {
+      flex: 1,
+    },
+    labelCalorias: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      fontWeight: PesoFonte.semibold,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      marginBottom: 4,
+    },
+    valorCalorias: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.display,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      letterSpacing: -0.5,
+    },
+    metaCalorias: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      marginBottom: 10,
+    },
+    barraFundo: {
+      height: 3,
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: 2,
+      overflow: 'hidden',
+      marginBottom: 5,
+    },
+    barraProgresso: {
+      height: '100%',
+      backgroundColor: cores.destaque,
+      borderRadius: 2,
+    },
+    textoPorcentagem: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+    },
 
-  secaoTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.bold,
-    color: cores.textoSecundario,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: Espacamento.md,
-    marginTop: 12,
-  },
-  gridMacros: {
-    flexDirection: 'row',
-    gap: Espacamento.sm,
-    marginBottom: 16,
-  },
-  cardMacro: {
-    flex: 1,
-    padding: Espacamento.md,
-  },
-  rowMacroTopo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginBottom: 6,
-  },
-  macroNome: {
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    fontFamily: FamiliaFonte.regular,
-  },
-  macroValor: {
-    fontSize: 18,
-    fontFamily: FamiliaFonte.bold,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  macroUnidade: {
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    fontFamily: FamiliaFonte.regular,
-  },
-  barraFundoMacro: {
-    height: 2,
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: 1,
-    overflow: 'hidden',
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  barraProgressoMacro: {
-    height: '100%',
-    backgroundColor: cores.destaque,
-    borderRadius: 1,
-  },
-  macroMeta: {
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    fontFamily: FamiliaFonte.regular,
-  },
+    secaoTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.label,
+      fontWeight: PesoFonte.bold,
+      color: cores.textoSecundario,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+      marginBottom: Espacamento.md,
+      marginTop: 12,
+    },
+    gridMacros: {
+      flexDirection: 'row',
+      gap: Espacamento.sm,
+      marginBottom: 16,
+    },
+    cardMacro: {
+      flex: 1,
+      padding: Espacamento.md,
+    },
+    rowMacroTopo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      marginBottom: 6,
+    },
+    macroNome: {
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      fontFamily: FamiliaFonte.regular,
+    },
+    macroValor: {
+      fontSize: 18,
+      fontFamily: FamiliaFonte.bold,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    macroUnidade: {
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      fontFamily: FamiliaFonte.regular,
+    },
+    barraFundoMacro: {
+      height: 2,
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: 1,
+      overflow: 'hidden',
+      marginTop: 8,
+      marginBottom: 4,
+    },
+    barraProgressoMacro: {
+      height: '100%',
+      backgroundColor: cores.destaque,
+      borderRadius: 1,
+    },
+    macroMeta: {
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      fontFamily: FamiliaFonte.regular,
+    },
 
-  cardEvolucao: {
-    marginVertical: 12,
-    marginHorizontal: -20,
-    padding: 16,
-  },
-  headerEvolucao: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  tituloEvolucao: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 15,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  btnNovoPeso: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: cores.elevada,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  txtNovoPeso: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 11,
-    color: cores.destaque,
-  },
+    cardEvolucao: {
+      marginVertical: 12,
+      marginHorizontal: -20,
+      padding: 16,
+    },
+    headerEvolucao: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    tituloEvolucao: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 15,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    btnNovoPeso: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: cores.elevada,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 8,
+    },
+    txtNovoPeso: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 11,
+      color: cores.destaque,
+    },
 
-  cardAgua: {
-    marginBottom: 16,
-    marginHorizontal: -20,
-  },
-  rowAguaTopo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  rowAguaInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  aguaLabel: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-  },
-  aguaValor: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.destaque,
-  },
-  aguaUnidade: {
-    fontFamily: FamiliaFonte.regular,
-    color: cores.textoSecundario,
-    fontSize: Fonte.label,
-  },
-  barraFundoAgua: {
-    height: 6,
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 14,
-  },
-  barraProgressoAgua: {
-    height: '100%',
-    backgroundColor: cores.destaque,
-    borderRadius: 3,
-  },
-  subtituloAguaAcao: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 11,
-    color: cores.textoSecundario,
-    marginBottom: 6,
-  },
-  subtituloAguaAcaoRemover: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 11,
-    color: cores.textoSecundario,
-    marginTop: 10,
-    marginBottom: 6,
-  },
-  rowIncrementosAgua: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  btnIncrementoAgua: {
-    flex: 1,
-    backgroundColor: cores.destaqueSuave,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    paddingVertical: 8,
-    borderRadius: Raio.sm,
-    alignItems: 'center',
-  },
-  txtIncrementoAgua: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 12,
-    color: cores.destaque,
-  },
-  btnRemoverAgua: {
-    flex: 1,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    paddingVertical: 8,
-    borderRadius: Raio.sm,
-    alignItems: 'center',
-  },
-  txtRemoverAgua: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 12,
-    color: cores.erro,
-  },
-  btnEditarMetaAgua: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: cores.elevada,
-    borderRadius: Raio.sm,
-    alignItems: 'center',
-  },
-  txtEditarMetaAgua: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 12,
-    color: cores.textoSecundario,
-  },
+    cardAgua: {
+      marginBottom: 16,
+      marginHorizontal: -20,
+    },
+    rowAguaTopo: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    rowAguaInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    aguaLabel: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+    },
+    aguaValor: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.destaque,
+    },
+    aguaUnidade: {
+      fontFamily: FamiliaFonte.regular,
+      color: cores.textoSecundario,
+      fontSize: Fonte.label,
+    },
+    barraFundoAgua: {
+      height: 6,
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: 3,
+      overflow: 'hidden',
+      marginBottom: 14,
+    },
+    barraProgressoAgua: {
+      height: '100%',
+      backgroundColor: cores.destaque,
+      borderRadius: 3,
+    },
+    subtituloAguaAcao: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 11,
+      color: cores.textoSecundario,
+      marginBottom: 6,
+    },
+    subtituloAguaAcaoRemover: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 11,
+      color: cores.textoSecundario,
+      marginTop: 10,
+      marginBottom: 6,
+    },
+    rowIncrementosAgua: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    btnIncrementoAgua: {
+      flex: 1,
+      backgroundColor: cores.destaqueSuave,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      paddingVertical: 8,
+      borderRadius: Raio.sm,
+      alignItems: 'center',
+    },
+    txtIncrementoAgua: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 12,
+      color: cores.destaque,
+    },
+    btnRemoverAgua: {
+      flex: 1,
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      borderWidth: 1,
+      borderColor: 'rgba(239, 68, 68, 0.3)',
+      paddingVertical: 8,
+      borderRadius: Raio.sm,
+      alignItems: 'center',
+    },
+    txtRemoverAgua: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 12,
+      color: cores.erro,
+    },
+    btnEditarMetaAgua: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: cores.elevada,
+      borderRadius: Raio.sm,
+      alignItems: 'center',
+    },
+    txtEditarMetaAgua: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 12,
+      color: cores.textoSecundario,
+    },
 
-  cardTreino: {
-    marginBottom: 24,
-    marginHorizontal: -20,
-  },
-  rowTreino: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Espacamento.lg,
-  },
-  colTreino: {
-    flex: 1,
-  },
-  badgeTreino: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.micro,
-    color: cores.destaque,
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  treinoTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    color: cores.texto,
-  },
-  treinoSub: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-    marginTop: 3,
-  },
-  iconeTreinoContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: cores.destaqueSuave,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  botaoIniciar: {
-    marginTop: 12,
-  },
+    cardTreino: {
+      marginBottom: 24,
+      marginHorizontal: -20,
+    },
+    rowTreino: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: Espacamento.lg,
+    },
+    colTreino: {
+      flex: 1,
+    },
+    badgeTreino: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.micro,
+      color: cores.destaque,
+      letterSpacing: 1,
+      marginBottom: 4,
+    },
+    treinoTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      color: cores.texto,
+    },
+    treinoSub: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+      marginTop: 3,
+    },
+    iconeTreinoContainer: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: cores.destaqueSuave,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    botaoIniciar: {
+      marginTop: 12,
+    },
 
-  // Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: cores.separador,
-    alignSelf: 'center',
-    marginBottom: 16,
-  },
-  modalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    backgroundColor: cores.elevada,
-    borderTopWidth: 1,
-    borderColor: cores.separador,
-  },
-  modalTitulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    color: cores.texto,
-    marginBottom: 16,
-  },
-  input: {
-    backgroundColor: cores.elevada,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    borderRadius: Raio.md,
-    padding: 12,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-    fontFamily: FamiliaFonte.regular,
-    marginBottom: 20,
-  },
-  modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-  btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
-  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: cores.textoSecundario, fontSize: Fonte.corpo },
-  btnSalvar: { backgroundColor: cores.destaque, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
-  txtSalvar: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: Fonte.corpo },
-});
+    // Modal
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+    modalHandle: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: cores.separador,
+      alignSelf: 'center',
+      marginBottom: 16,
+    },
+    modalCard: {
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 24,
+      backgroundColor: cores.elevada,
+      borderTopWidth: 1,
+      borderColor: cores.separador,
+    },
+    modalTitulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      color: cores.texto,
+      marginBottom: 16,
+    },
+    input: {
+      backgroundColor: cores.elevada,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      borderRadius: Raio.md,
+      padding: 12,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+      fontFamily: FamiliaFonte.regular,
+      marginBottom: 20,
+    },
+    modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
+    btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
+    txtCancelar: {
+      fontFamily: FamiliaFonte.semibold,
+      color: cores.textoSecundario,
+      fontSize: Fonte.corpo,
+    },
+    btnSalvar: {
+      backgroundColor: cores.destaque,
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      borderRadius: Raio.md,
+    },
+    txtSalvar: {
+      fontFamily: FamiliaFonte.bold,
+      color: cores.textoSobreDestaque,
+      fontSize: Fonte.corpo,
+    },
+  });

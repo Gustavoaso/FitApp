@@ -36,10 +36,42 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
     diaSemana: 'Segunda-feira',
     foco: 'Peito & Tríceps',
     exercicios: [
-      { id: 'ex-1', nome: 'Supino Reto com Barra', grupoMuscular: 'Peito', series: 4, repeticoes: 10, cargaKg: 60, tempoDescansoSegundos: 90 },
-      { id: 'ex-2', nome: 'Supino Inclinado com Halteres', grupoMuscular: 'Peito', series: 3, repeticoes: 12, cargaKg: 22, tempoDescansoSegundos: 60 },
-      { id: 'ex-3', nome: 'Crossover com Cabo', grupoMuscular: 'Peito', series: 3, repeticoes: 15, cargaKg: 15, tempoDescansoSegundos: 45 },
-      { id: 'ex-4', nome: 'Tríceps Pulley na Corda', grupoMuscular: 'Tríceps', series: 4, repeticoes: 12, cargaKg: 25, tempoDescansoSegundos: 60 },
+      {
+        id: 'ex-1',
+        nome: 'Supino Reto com Barra',
+        grupoMuscular: 'Peito',
+        series: 4,
+        repeticoes: 10,
+        cargaKg: 60,
+        tempoDescansoSegundos: 90,
+      },
+      {
+        id: 'ex-2',
+        nome: 'Supino Inclinado com Halteres',
+        grupoMuscular: 'Peito',
+        series: 3,
+        repeticoes: 12,
+        cargaKg: 22,
+        tempoDescansoSegundos: 60,
+      },
+      {
+        id: 'ex-3',
+        nome: 'Crossover com Cabo',
+        grupoMuscular: 'Peito',
+        series: 3,
+        repeticoes: 15,
+        cargaKg: 15,
+        tempoDescansoSegundos: 45,
+      },
+      {
+        id: 'ex-4',
+        nome: 'Tríceps Pulley na Corda',
+        grupoMuscular: 'Tríceps',
+        series: 4,
+        repeticoes: 12,
+        cargaKg: 25,
+        tempoDescansoSegundos: 60,
+      },
     ],
   },
   {
@@ -47,10 +79,42 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
     diaSemana: 'Terça-feira',
     foco: 'Costas & Bíceps',
     exercicios: [
-      { id: 'ex-5', nome: 'Puxada Frontal', grupoMuscular: 'Costas', series: 4, repeticoes: 10, cargaKg: 55, tempoDescansoSegundos: 90 },
-      { id: 'ex-6', nome: 'Remada Curvada com Barra', grupoMuscular: 'Costas', series: 4, repeticoes: 10, cargaKg: 50, tempoDescansoSegundos: 75 },
-      { id: 'ex-7', nome: 'Rosca Direta com Barra W', grupoMuscular: 'Bíceps', series: 3, repeticoes: 12, cargaKg: 24, tempoDescansoSegundos: 60 },
-      { id: 'ex-8', nome: 'Rosca Martelo', grupoMuscular: 'Bíceps', series: 3, repeticoes: 12, cargaKg: 14, tempoDescansoSegundos: 60 },
+      {
+        id: 'ex-5',
+        nome: 'Puxada Frontal',
+        grupoMuscular: 'Costas',
+        series: 4,
+        repeticoes: 10,
+        cargaKg: 55,
+        tempoDescansoSegundos: 90,
+      },
+      {
+        id: 'ex-6',
+        nome: 'Remada Curvada com Barra',
+        grupoMuscular: 'Costas',
+        series: 4,
+        repeticoes: 10,
+        cargaKg: 50,
+        tempoDescansoSegundos: 75,
+      },
+      {
+        id: 'ex-7',
+        nome: 'Rosca Direta com Barra W',
+        grupoMuscular: 'Bíceps',
+        series: 3,
+        repeticoes: 12,
+        cargaKg: 24,
+        tempoDescansoSegundos: 60,
+      },
+      {
+        id: 'ex-8',
+        nome: 'Rosca Martelo',
+        grupoMuscular: 'Bíceps',
+        series: 3,
+        repeticoes: 12,
+        cargaKg: 14,
+        tempoDescansoSegundos: 60,
+      },
     ],
   },
   {
@@ -58,10 +122,42 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
     diaSemana: 'Quarta-feira',
     foco: 'Pernas & Ombros',
     exercicios: [
-      { id: 'ex-9', nome: 'Agachamento Livre com Barra', grupoMuscular: 'Pernas', series: 4, repeticoes: 8, cargaKg: 80, tempoDescansoSegundos: 120 },
-      { id: 'ex-10', nome: 'Leg Press 45°', grupoMuscular: 'Pernas', series: 4, repeticoes: 12, cargaKg: 160, tempoDescansoSegundos: 90 },
-      { id: 'ex-11', nome: 'Desenvolvimento com Halteres', grupoMuscular: 'Ombros', series: 4, repeticoes: 10, cargaKg: 18, tempoDescansoSegundos: 60 },
-      { id: 'ex-12', nome: 'Elevação Lateral', grupoMuscular: 'Ombros', series: 4, repeticoes: 15, cargaKg: 10, tempoDescansoSegundos: 45 },
+      {
+        id: 'ex-9',
+        nome: 'Agachamento Livre com Barra',
+        grupoMuscular: 'Pernas',
+        series: 4,
+        repeticoes: 8,
+        cargaKg: 80,
+        tempoDescansoSegundos: 120,
+      },
+      {
+        id: 'ex-10',
+        nome: 'Leg Press 45°',
+        grupoMuscular: 'Pernas',
+        series: 4,
+        repeticoes: 12,
+        cargaKg: 160,
+        tempoDescansoSegundos: 90,
+      },
+      {
+        id: 'ex-11',
+        nome: 'Desenvolvimento com Halteres',
+        grupoMuscular: 'Ombros',
+        series: 4,
+        repeticoes: 10,
+        cargaKg: 18,
+        tempoDescansoSegundos: 60,
+      },
+      {
+        id: 'ex-12',
+        nome: 'Elevação Lateral',
+        grupoMuscular: 'Ombros',
+        series: 4,
+        repeticoes: 15,
+        cargaKg: 10,
+        tempoDescansoSegundos: 45,
+      },
     ],
   },
 ];
@@ -123,7 +219,10 @@ export async function obterMapeamentoSemanal(): Promise<Record<string, string>> 
   try {
     const json = await AsyncStorage.getItem(CHAVE_MAPEAMENTO_SEMANAL);
     if (!json) {
-      await AsyncStorage.setItem(CHAVE_MAPEAMENTO_SEMANAL, JSON.stringify(MAPEAMENTO_INICIAL_SEMANAL));
+      await AsyncStorage.setItem(
+        CHAVE_MAPEAMENTO_SEMANAL,
+        JSON.stringify(MAPEAMENTO_INICIAL_SEMANAL),
+      );
       return MAPEAMENTO_INICIAL_SEMANAL;
     }
     return JSON.parse(json);
@@ -135,7 +234,10 @@ export async function obterMapeamentoSemanal(): Promise<Record<string, string>> 
 /**
  * Permite trocar o treino planejado para uma data específica.
  */
-export async function definirTreinoEspecialParaData(dataStr: string, idTreino: string): Promise<void> {
+export async function definirTreinoEspecialParaData(
+  dataStr: string,
+  idTreino: string,
+): Promise<void> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_TROCAS_DIARIAS);
     const mapa: Record<string, string> = json ? JSON.parse(json) : {};
@@ -163,10 +265,12 @@ export async function obterTreinoEspecialParaData(dataStr: string): Promise<stri
 /**
  * Obtém a última carga e repetições utilizadas em um exercício.
  */
-export async function obterUltimaCargaExercicio(idExercicio: string): Promise<{ cargaKg: number; repeticoes: number; data: string } | null> {
+export async function obterUltimaCargaExercicio(
+  idExercicio: string,
+): Promise<{ cargaKg: number; repeticoes: number; data: string } | null> {
   try {
     const evolucoes = await obterEvolucaoCargas();
-    const ex = evolucoes.find(e => e.idExercicio === idExercicio);
+    const ex = evolucoes.find((e) => e.idExercicio === idExercicio);
     if (ex && ex.historicoCargas.length > 0) {
       const ultimo = ex.historicoCargas[ex.historicoCargas.length - 1];
       return { cargaKg: ultimo.cargaKg, repeticoes: ultimo.repeticoes, data: ultimo.data };
@@ -182,10 +286,10 @@ export async function obterUltimaCargaExercicio(idExercicio: string): Promise<{ 
  */
 export async function adicionarExercicioAoDia(
   idDia: string,
-  novoExercicio: Omit<ExercicioCustomizado, 'id'>
+  novoExercicio: Omit<ExercicioCustomizado, 'id'>,
 ): Promise<DiaTreinoCustomizado[]> {
   const planos = await obterPlanoTreinoCustomizado();
-  const atualizado = planos.map(dia => {
+  const atualizado = planos.map((dia) => {
     if (dia.id === idDia) {
       const exercicioCompleto: ExercicioCustomizado = {
         ...novoExercicio,
@@ -207,14 +311,16 @@ export async function adicionarExercicioAoDia(
  */
 export async function atualizarExercicio(
   idDia: string,
-  exercicioAtualizado: ExercicioCustomizado
+  exercicioAtualizado: ExercicioCustomizado,
 ): Promise<DiaTreinoCustomizado[]> {
   const planos = await obterPlanoTreinoCustomizado();
-  const atualizado = planos.map(dia => {
+  const atualizado = planos.map((dia) => {
     if (dia.id === idDia) {
       return {
         ...dia,
-        exercicios: dia.exercicios.map(ex => (ex.id === exercicioAtualizado.id ? exercicioAtualizado : ex)),
+        exercicios: dia.exercicios.map((ex) =>
+          ex.id === exercicioAtualizado.id ? exercicioAtualizado : ex,
+        ),
       };
     }
     return dia;
@@ -227,13 +333,16 @@ export async function atualizarExercicio(
 /**
  * Remove um exercício de um dia de treino.
  */
-export async function removerExercicio(idDia: string, idExercicio: string): Promise<DiaTreinoCustomizado[]> {
+export async function removerExercicio(
+  idDia: string,
+  idExercicio: string,
+): Promise<DiaTreinoCustomizado[]> {
   const planos = await obterPlanoTreinoCustomizado();
-  const atualizado = planos.map(dia => {
+  const atualizado = planos.map((dia) => {
     if (dia.id === idDia) {
       return {
         ...dia,
-        exercicios: dia.exercicios.filter(ex => ex.id !== idExercicio),
+        exercicios: dia.exercicios.filter((ex) => ex.id !== idExercicio),
       };
     }
     return dia;

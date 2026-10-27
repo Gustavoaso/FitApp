@@ -5,13 +5,7 @@
 //   import type { Usuario, PlanoTreino, Alimento } from '@/compartilhado/tipos';
 // ============================================================
 
-export type {
-  SexoBiologico,
-  NivelExperiencia,
-  NivelAtividade,
-  Usuario,
-  Perfil,
-} from './usuario';
+export type { SexoBiologico, NivelExperiencia, NivelAtividade, Usuario, Perfil } from './usuario';
 
 export type {
   ObjetivoTreino,

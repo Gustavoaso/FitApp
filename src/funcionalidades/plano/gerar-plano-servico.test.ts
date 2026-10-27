@@ -11,8 +11,17 @@ const rpc = supabase.rpc as jest.Mock;
 
 // Dados fictícios. Nomes de grupo como estão na base (traduzidos do free-exercise-db).
 const GRUPOS_BASE = [
-  'peito', 'dorsais', 'ombros', 'biceps', 'triceps', 'quadriceps',
-  'isquiotibiais', 'gluteos', 'panturrilhas', 'abdominais', 'antebracos',
+  'peito',
+  'dorsais',
+  'ombros',
+  'biceps',
+  'triceps',
+  'quadriceps',
+  'isquiotibiais',
+  'gluteos',
+  'panturrilhas',
+  'abdominais',
+  'antebracos',
 ];
 const EXERCICIOS = GRUPOS_BASE.flatMap((grupo) =>
   [1, 2, 3].map((n) => ({
@@ -24,31 +33,87 @@ const EXERCICIOS = GRUPOS_BASE.flatMap((grupo) =>
   })),
 );
 const ALIMENTOS = [
-  { id: 1, nome: 'Frango grelhado', categoria: 'carnes', calorias_100g: 159, proteinas_100g: 32, carboidratos_100g: 0, gorduras_100g: 3.2 },
-  { id: 2, nome: 'Arroz cozido', categoria: 'cereais', calorias_100g: 128, proteinas_100g: 2.5, carboidratos_100g: 28, gorduras_100g: 0.2 },
-  { id: 3, nome: 'Azeite', categoria: 'gorduras_oleos', calorias_100g: 884, proteinas_100g: 0, carboidratos_100g: 0, gorduras_100g: 100 },
+  {
+    id: 1,
+    nome: 'Frango grelhado',
+    categoria: 'carnes',
+    calorias_100g: 159,
+    proteinas_100g: 32,
+    carboidratos_100g: 0,
+    gorduras_100g: 3.2,
+  },
+  {
+    id: 2,
+    nome: 'Arroz cozido',
+    categoria: 'cereais',
+    calorias_100g: 128,
+    proteinas_100g: 2.5,
+    carboidratos_100g: 28,
+    gorduras_100g: 0.2,
+  },
+  {
+    id: 3,
+    nome: 'Azeite',
+    categoria: 'gorduras_oleos',
+    calorias_100g: 884,
+    proteinas_100g: 0,
+    carboidratos_100g: 0,
+    gorduras_100g: 100,
+  },
 ];
-const TRECHO = { titulo: 'Volume semanal', fonte: 'Schoenfeld 2017', conteudo: 'Diretriz fictícia de volume.' };
+const TRECHO = {
+  titulo: 'Volume semanal',
+  fonte: 'Schoenfeld 2017',
+  conteudo: 'Diretriz fictícia de volume.',
+};
 
 const RESPOSTAS: DadosQuestionario = {
-  perfil: { nome: 'Pessoa Teste', sexo_biologico: 'Masculino', idade: 30, peso_atual: 80, altura: 180 },
-  objetivo: { objetivo_principal: 'Hipertrofia', atividade_fora_treino: 'Moderado', nivel_experiencia: 'Intermediário' },
-  treino: { dias_disponiveis_semana: 4, local_treino: 'Academia', tempo_sessao: '1h', divisao_preferida: 'Deixar a IA decidir', restricao_fisica: ['Nenhuma'] },
+  perfil: {
+    nome: 'Pessoa Teste',
+    sexo_biologico: 'Masculino',
+    idade: 30,
+    peso_atual: 80,
+    altura: 180,
+  },
+  objetivo: {
+    objetivo_principal: 'Hipertrofia',
+    atividade_fora_treino: 'Moderado',
+    nivel_experiencia: 'Intermediário',
+  },
+  treino: {
+    dias_disponiveis_semana: 4,
+    local_treino: 'Academia',
+    tempo_sessao: '1h',
+    divisao_preferida: 'Deixar a IA decidir',
+    restricao_fisica: ['Nenhuma'],
+  },
   dieta: { restricao_alimentar: ['Nenhuma'], refeicoes_por_dia: 4 },
 };
 
-type Schema = { properties?: Record<string, Schema>; prefixItems?: Schema[]; items?: Schema; enum?: string[]; minItems?: number };
+type Schema = {
+  properties?: Record<string, Schema>;
+  prefixItems?: Schema[];
+  items?: Schema;
+  enum?: string[];
+  minItems?: number;
+};
 
 /** O que a LLM daria: os primeiros IDs de cada `enum` do schema pedido (os apelidos e1, e2...). */
 function escolherDoSchema(schema: Schema): unknown {
   const props = (s: Schema) => Object.entries(s.properties ?? {});
   const dias = (schema.properties?.dias.prefixItems ?? []).map((dia) => ({
     exercicios: Object.fromEntries(
-      props(dia.properties?.exercicios ?? {}).map(([g, lista]) => [g, (lista.items?.enum ?? []).slice(0, lista.minItems)]),
+      props(dia.properties?.exercicios ?? {}).map(([g, lista]) => [
+        g,
+        (lista.items?.enum ?? []).slice(0, lista.minItems),
+      ]),
     ),
   }));
   const refeicoes = Object.fromEntries(
-    props(schema.properties?.refeicoes ?? {}).map(([r, slots]) => [r, Object.fromEntries(props(slots).map(([k, v]) => [k, v.enum?.[0]]))]),
+    props(schema.properties?.refeicoes ?? {}).map(([r, slots]) => [
+      r,
+      Object.fromEntries(props(slots).map(([k, v]) => [k, v.enum?.[0]])),
+    ]),
   );
   return { dias, refeicoes };
 }
@@ -56,7 +121,12 @@ const VALIDA = 'VALIDA';
 const ESCOLHA_INVALIDA = { dias: [], refeicoes: {} };
 
 function consulta(data: unknown[]) {
-  const q = { select: jest.fn(), eq: jest.fn(), in: jest.fn(), limit: jest.fn().mockResolvedValue({ data, error: null }) };
+  const q = {
+    select: jest.fn(),
+    eq: jest.fn(),
+    in: jest.fn(),
+    limit: jest.fn().mockResolvedValue({ data, error: null }),
+  };
   q.select.mockReturnValue(q);
   q.eq.mockReturnValue(q);
   q.in.mockReturnValue(q);
@@ -70,7 +140,11 @@ function simularOllama(respostas: unknown[]) {
     const proxima = fila.shift();
     const corpo = url.endsWith('/api/embed')
       ? (fila.unshift(proxima), { embeddings: [[0.1, 0.2, 0.3]] })
-      : { response: JSON.stringify(proxima === VALIDA ? escolherDoSchema(JSON.parse(init.body).format) : proxima) };
+      : {
+          response: JSON.stringify(
+            proxima === VALIDA ? escolherDoSchema(JSON.parse(init.body).format) : proxima,
+          ),
+        };
     return { ok: true, status: 200, json: async () => corpo };
   });
   global.fetch = fetchMock as unknown as typeof fetch;
@@ -87,10 +161,18 @@ const salvou = () => rpc.mock.calls.some(([nome]) => nome === 'salvar_plano_gera
 
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
-  from.mockReset().mockImplementation((tabela: string) => consulta(tabela === 'base_exercicios' ? EXERCICIOS : ALIMENTOS));
-  rpc.mockReset().mockImplementation(async (nome: string) =>
-    nome === 'buscar_conhecimento_rag' ? { data: [TRECHO], error: null } : { data: 'plano-ia-1', error: null },
-  );
+  from
+    .mockReset()
+    .mockImplementation((tabela: string) =>
+      consulta(tabela === 'base_exercicios' ? EXERCICIOS : ALIMENTOS),
+    );
+  rpc
+    .mockReset()
+    .mockImplementation(async (nome: string) =>
+      nome === 'buscar_conhecimento_rag'
+        ? { data: [TRECHO], error: null }
+        : { data: 'plano-ia-1', error: null },
+    );
 });
 
 afterEach(() => jest.restoreAllMocks());
@@ -169,9 +251,19 @@ describe('gerarPlano com o Ollama simulado', () => {
   });
 
   it('vegano: leguminosa (39% das kcal em proteína) entra como proteína e o plano sai', async () => {
-    const tempeh = { id: 7, nome: 'Soja cozida', categoria: 'leguminosas', calorias_100g: 165, proteinas_100g: 16, carboidratos_100g: 20, gorduras_100g: 1 };
+    const tempeh = {
+      id: 7,
+      nome: 'Soja cozida',
+      categoria: 'leguminosas',
+      calorias_100g: 165,
+      proteinas_100g: 16,
+      carboidratos_100g: 20,
+      gorduras_100g: 1,
+    };
     const veganos = [tempeh, ALIMENTOS[1], ALIMENTOS[2]];
-    from.mockImplementation((tabela: string) => consulta(tabela === 'base_exercicios' ? EXERCICIOS : [ALIMENTOS[0], ...veganos]));
+    from.mockImplementation((tabela: string) =>
+      consulta(tabela === 'base_exercicios' ? EXERCICIOS : [ALIMENTOS[0], ...veganos]),
+    );
     simularOllama([VALIDA]);
     const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
     const { plano } = await gerarPlano(vegano);
@@ -183,11 +275,15 @@ describe('gerarPlano com o Ollama simulado', () => {
   it('peso do corpo: grupo sem exercício possível sai do dia com aviso e o plano sai', async () => {
     // Só peito, costas e pernas têm versão sem equipamento; o resto exige barra.
     const comCorpo = EXERCICIOS.map((e) =>
-      ['peito', 'dorsais', 'quadriceps', 'isquiotibiais', 'gluteos', 'abdominais'].some((g) => e.id.startsWith(g))
+      ['peito', 'dorsais', 'quadriceps', 'isquiotibiais', 'gluteos', 'abdominais'].some((g) =>
+        e.id.startsWith(g),
+      )
         ? { ...e, equipamento: 'peso-do-corpo' }
         : e,
     );
-    from.mockImplementation((tabela: string) => consulta(tabela === 'base_exercicios' ? comCorpo : ALIMENTOS));
+    from.mockImplementation((tabela: string) =>
+      consulta(tabela === 'base_exercicios' ? comCorpo : ALIMENTOS),
+    );
     const fetchMock = simularOllama([VALIDA]);
     const corpo = { ...RESPOSTAS, treino: { ...RESPOSTAS.treino, local_treino: 'Peso do corpo' } };
     const { plano } = await gerarPlano(corpo);

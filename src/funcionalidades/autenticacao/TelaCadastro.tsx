@@ -68,7 +68,7 @@ export default function TelaCadastro() {
       Alert.alert(
         'Conta Criada!',
         'Sua conta foi criada no Supabase.\n\nPara entrar sem precisar abrir o e-mail, desative a opção "Confirm email" no seu painel do Supabase (Authentication > Providers > Email).\n\nOu acesse sua caixa de entrada e clique no link de confirmação.',
-        [{ text: 'Entendido', onPress: () => router.replace('/(auth)/login') }]
+        [{ text: 'Entendido', onPress: () => router.replace('/(auth)/login') }],
       );
     } else if (resposta.erro) {
       setErro(resposta.erro);
@@ -153,70 +153,75 @@ export default function TelaCadastro() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  textoErro: { color: cores.erro, fontSize: Fonte.label, textAlign: 'center', marginBottom: Espacamento.md },
-  container: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: Espacamento.xxl,
-  },
-  cabecalho: {
-    alignItems: 'center',
-    marginBottom: Espacamento.xxxl,
-  },
-  logoEmoji: {
-    fontSize: 48,
-    marginBottom: Espacamento.sm,
-  },
-  titulo: {
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.extrabold,
-    color: cores.texto,
-  },
-  subtitulo: {
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-    marginTop: 4,
-  },
-  cardFormulario: {
-    marginBottom: Espacamento.xxl,
-  },
-  campo: {
-    marginBottom: Espacamento.lg,
-  },
-  label: {
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.medio,
-    color: cores.textoSecundario,
-    marginBottom: Espacamento.sm,
-  },
-  input: {
-    backgroundColor: cores.destaqueSuave,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    borderRadius: Raio.md,
-    padding: Espacamento.md,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-  },
-  botaoCadastro: {
-    marginTop: Espacamento.md,
-  },
-  rodape: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  textoRodape: {
-    color: cores.textoSecundario,
-    fontSize: Fonte.corpo,
-  },
-  linkLogin: {
-    color: cores.destaque,
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
-  },
-});
+    textoErro: {
+      color: cores.erro,
+      fontSize: Fonte.label,
+      textAlign: 'center',
+      marginBottom: Espacamento.md,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: Espacamento.xxl,
+    },
+    cabecalho: {
+      alignItems: 'center',
+      marginBottom: Espacamento.xxxl,
+    },
+    logoEmoji: {
+      fontSize: 48,
+      marginBottom: Espacamento.sm,
+    },
+    titulo: {
+      fontSize: Fonte.display,
+      fontWeight: PesoFonte.extrabold,
+      color: cores.texto,
+    },
+    subtitulo: {
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+      marginTop: 4,
+    },
+    cardFormulario: {
+      marginBottom: Espacamento.xxl,
+    },
+    campo: {
+      marginBottom: Espacamento.lg,
+    },
+    label: {
+      fontSize: Fonte.label,
+      fontWeight: PesoFonte.medio,
+      color: cores.textoSecundario,
+      marginBottom: Espacamento.sm,
+    },
+    input: {
+      backgroundColor: cores.destaqueSuave,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      borderRadius: Raio.md,
+      padding: Espacamento.md,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+    },
+    botaoCadastro: {
+      marginTop: Espacamento.md,
+    },
+    rodape: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    textoRodape: {
+      color: cores.textoSecundario,
+      fontSize: Fonte.corpo,
+    },
+    linkLogin: {
+      color: cores.destaque,
+      fontSize: Fonte.corpo,
+      fontWeight: PesoFonte.bold,
+    },
+  });

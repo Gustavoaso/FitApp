@@ -41,7 +41,9 @@ export default function TelaLogin() {
 
   // Só iOS tem Sign in with Apple nativo; nas outras plataformas fica só o e-mail.
   useEffect(() => {
-    AppleAuthentication.isAvailableAsync().then(setAppleDisponivel).catch(() => setAppleDisponivel(false));
+    AppleAuthentication.isAvailableAsync()
+      .then(setAppleDisponivel)
+      .catch(() => setAppleDisponivel(false));
   }, []);
 
   const lidarComApple = async () => {
@@ -160,84 +162,89 @@ export default function TelaLogin() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  textoErro: { color: cores.erro, fontSize: Fonte.label, textAlign: 'center', marginBottom: Espacamento.md },
-  container: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: Espacamento.xxl,
-  },
-  cabecalho: {
-    alignItems: 'center',
-    marginBottom: Espacamento.xxxl,
-  },
-  logoEmoji: {
-    fontSize: 48,
-    marginBottom: Espacamento.sm,
-  },
-  titulo: {
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.extrabold,
-    color: cores.texto,
-    letterSpacing: -0.5,
-  },
-  subtitulo: {
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-    marginTop: 4,
-  },
-  botaoApple: { height: 50, width: '100%' },
-  separadorTexto: {
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-    textAlign: 'center',
-    marginVertical: Espacamento.lg,
-  },
-  cardFormulario: {
-    marginBottom: Espacamento.xxl,
-  },
-  cardTitulo: {
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    marginBottom: Espacamento.xl,
-  },
-  campo: {
-    marginBottom: Espacamento.lg,
-  },
-  label: {
-    fontSize: Fonte.label,
-    fontWeight: PesoFonte.medio,
-    color: cores.textoSecundario,
-    marginBottom: Espacamento.sm,
-  },
-  input: {
-    backgroundColor: cores.destaqueSuave,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    borderRadius: Raio.md,
-    padding: Espacamento.md,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-  },
-  botaoEntrar: {
-    marginTop: Espacamento.md,
-  },
-  rodape: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  textoRodape: {
-    color: cores.textoSecundario,
-    fontSize: Fonte.corpo,
-  },
-  linkCadastro: {
-    color: cores.destaque,
-    fontSize: Fonte.corpo,
-    fontWeight: PesoFonte.bold,
-  },
-});
+    textoErro: {
+      color: cores.erro,
+      fontSize: Fonte.label,
+      textAlign: 'center',
+      marginBottom: Espacamento.md,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    scrollContent: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: Espacamento.xxl,
+    },
+    cabecalho: {
+      alignItems: 'center',
+      marginBottom: Espacamento.xxxl,
+    },
+    logoEmoji: {
+      fontSize: 48,
+      marginBottom: Espacamento.sm,
+    },
+    titulo: {
+      fontSize: Fonte.display,
+      fontWeight: PesoFonte.extrabold,
+      color: cores.texto,
+      letterSpacing: -0.5,
+    },
+    subtitulo: {
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+      marginTop: 4,
+    },
+    botaoApple: { height: 50, width: '100%' },
+    separadorTexto: {
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+      textAlign: 'center',
+      marginVertical: Espacamento.lg,
+    },
+    cardFormulario: {
+      marginBottom: Espacamento.xxl,
+    },
+    cardTitulo: {
+      fontSize: Fonte.titulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      marginBottom: Espacamento.xl,
+    },
+    campo: {
+      marginBottom: Espacamento.lg,
+    },
+    label: {
+      fontSize: Fonte.label,
+      fontWeight: PesoFonte.medio,
+      color: cores.textoSecundario,
+      marginBottom: Espacamento.sm,
+    },
+    input: {
+      backgroundColor: cores.destaqueSuave,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      borderRadius: Raio.md,
+      padding: Espacamento.md,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+    },
+    botaoEntrar: {
+      marginTop: Espacamento.md,
+    },
+    rodape: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    textoRodape: {
+      color: cores.textoSecundario,
+      fontSize: Fonte.corpo,
+    },
+    linkCadastro: {
+      color: cores.destaque,
+      fontSize: Fonte.corpo,
+      fontWeight: PesoFonte.bold,
+    },
+  });

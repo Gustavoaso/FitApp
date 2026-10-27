@@ -21,7 +21,11 @@ interface AuthContextoTipo {
   usuario: User | null;
   carregando: boolean;
   entrarComEmail: (email: string, senha: string) => Promise<{ erro: string | null }>;
-  cadastrarComEmail: (nome: string, email: string, senha: string) => Promise<{ erro: string | null }>;
+  cadastrarComEmail: (
+    nome: string,
+    email: string,
+    senha: string,
+  ) => Promise<{ erro: string | null }>;
   sair: () => Promise<void>;
 }
 
@@ -44,36 +48,41 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // 1. Busca a sessão local e confirma que o usuário ainda existe no Auth.
     // Remover um usuário pelo painel não limpa o AsyncStorage do aparelho.
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
+        if (!session) {
+          setSessao(null);
+          setUsuario(null);
+          setCarregando(false);
+          return;
+        }
+
+        const { data: usuarioAtual, error } = await supabase.auth.getUser(session.access_token);
+        const usuarioValido = !error && usuarioAtual.user;
+
+        if (!usuarioValido) {
+          await supabase.auth.signOut({ scope: 'local' });
+          setSessao(null);
+          setUsuario(null);
+          setCarregando(false);
+          return;
+        }
+
+        setSessao(session);
+        setUsuario(usuarioAtual.user);
+        setCarregando(false);
+      })
+      .catch(() => {
         setSessao(null);
         setUsuario(null);
         setCarregando(false);
-        return;
-      }
-
-      const { data: usuarioAtual, error } = await supabase.auth.getUser(session.access_token);
-      const usuarioValido = !error && usuarioAtual.user;
-
-      if (!usuarioValido) {
-        await supabase.auth.signOut({ scope: 'local' });
-        setSessao(null);
-        setUsuario(null);
-        setCarregando(false);
-        return;
-      }
-
-      setSessao(session);
-      setUsuario(usuarioAtual.user);
-      setCarregando(false);
-    }).catch(() => {
-      setSessao(null);
-      setUsuario(null);
-      setCarregando(false);
-    });
+      });
 
     // 2. Escuta mudanças na autenticação (login, logout, refresh token)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSessao(session);
       setUsuario(session?.user ?? null);
       setCarregando(false);
@@ -123,16 +132,21 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
       setUsuario(data.user);
 
       // Cria o perfil inicial com a sessão ativa (passa pela política RLS)
-      await supabase.from('perfis').upsert([{
-        usuario_id: data.user.id,
-        nome,
-        idade: 25,
-        sexo: 'masculino',
-        peso_kg: 70,
-        altura_cm: 175,
-        nivel_experiencia: 'iniciante',
-        nivel_atividade: 'moderado',
-      }], { onConflict: 'usuario_id' });
+      await supabase.from('perfis').upsert(
+        [
+          {
+            usuario_id: data.user.id,
+            nome,
+            idade: 25,
+            sexo: 'masculino',
+            peso_kg: 70,
+            altura_cm: 175,
+            nivel_experiencia: 'iniciante',
+            nivel_atividade: 'moderado',
+          },
+        ],
+        { onConflict: 'usuario_id' },
+      );
 
       return { erro: null };
     }

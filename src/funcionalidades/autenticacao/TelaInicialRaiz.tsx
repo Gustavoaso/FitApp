@@ -11,11 +11,7 @@
 // ============================================================
 
 import React, { useMemo, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
@@ -74,18 +70,18 @@ export default function TelaInicialRaiz() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-  },
-  centralizado: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: Espacamento.xl,
-  },
-  textoStatus: {
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-    marginTop: Espacamento.md,
-  },
-});
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+    },
+    centralizado: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: Espacamento.xl,
+    },
+    textoStatus: {
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+      marginTop: Espacamento.md,
+    },
+  });

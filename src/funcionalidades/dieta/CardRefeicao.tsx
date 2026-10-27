@@ -10,7 +10,15 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
 import { GraficoDonutMacros } from './GraficoDonutMacros';
-import { CoresTema, CoresMacros, FamiliaFonte, Fonte, PesoFonte, Raio, Espacamento } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  CoresMacros,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Espacamento,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
 
@@ -56,28 +64,25 @@ export function CardRefeicao({
       carbos: acc.carbos + item.carbos,
       gorduras: acc.gorduras + item.gorduras,
     }),
-    { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 }
+    { calorias: 0, proteinas: 0, carbos: 0, gorduras: 0 },
   );
 
-  const totalGramas = (totais.carbos + totais.gorduras + totais.proteinas) || 1;
+  const totalGramas = totais.carbos + totais.gorduras + totais.proteinas || 1;
   const pctC = Math.round((totais.carbos / totalGramas) * 100);
   const pctF = Math.round((totais.gorduras / totalGramas) * 100);
   const pctP = Math.round((totais.proteinas / totalGramas) * 100);
 
   const primeiroAlimento = alimentos[0]?.nome || '';
   const restoContagem = alimentos.length > 1 ? ` e mais ${alimentos.length - 1}` : '';
-  const textoSubtituloColapsado = alimentos.length > 0
-    ? `${primeiroAlimento}${restoContagem} • ${totais.calorias} cal`
-    : `Nenhum alimento registrado • ${horario}`;
+  const textoSubtituloColapsado =
+    alimentos.length > 0
+      ? `${primeiroAlimento}${restoContagem} • ${totais.calorias} cal`
+      : `Nenhum alimento registrado • ${horario}`;
 
   return (
     <CardVidro semBorda estilo={estilos.card}>
       {/* ── Top Bar do Card da Refeição ────────────────────────── */}
-      <TouchableOpacity
-        style={estilos.topoClick}
-        onPress={onAlternarExpandir}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={estilos.topoClick} onPress={onAlternarExpandir} activeOpacity={0.7}>
         <View style={estilos.iconeBloco}>
           <SymbolView name={icone as any} size={18} tintColor={cores.destaque} weight="bold" />
         </View>
@@ -105,7 +110,11 @@ export function CardRefeicao({
               </TouchableOpacity>
             ) : null}
 
-            <TouchableOpacity style={estilos.btnLogPilula} onPress={onAdicionar} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={estilos.btnLogPilula}
+              onPress={onAdicionar}
+              activeOpacity={0.8}
+            >
               <Text style={estilos.txtLogPilula}>Log</Text>
             </TouchableOpacity>
           </View>
@@ -192,178 +201,178 @@ export function CardRefeicao({
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  card: {
-    marginBottom: 0,
-    padding: 0,
-  },
-  topoClick: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconeBloco: {
-    width: 38,
-    height: 38,
-    borderRadius: Raio.md,
-    backgroundColor: cores.destaqueSuave,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  colunaTitulo: {
-    flex: 1,
-  },
-  nome: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 16,
-    color: cores.texto,
-    fontWeight: PesoFonte.bold,
-  },
-  subtituloColapsado: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
-  kcalExpandidaHeader: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 15,
-    color: cores.texto,
-    marginRight: 6,
-  },
-  acoesDireitaColapsado: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  btnMaisOpcoes: {
-    width: 32,
-    height: 32,
-    borderRadius: Raio.full,
-    backgroundColor: cores.elevada,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnLogPilula: {
-    backgroundColor: 'rgba(234, 179, 8, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(234, 179, 8, 0.3)',
-    borderRadius: Raio.full,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-  },
-  txtLogPilula: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 12,
-    color: cores.destaque,
-  },
+    card: {
+      marginBottom: 0,
+      padding: 0,
+    },
+    topoClick: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    iconeBloco: {
+      width: 38,
+      height: 38,
+      borderRadius: Raio.md,
+      backgroundColor: cores.destaqueSuave,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    colunaTitulo: {
+      flex: 1,
+    },
+    nome: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 16,
+      color: cores.texto,
+      fontWeight: PesoFonte.bold,
+    },
+    subtituloColapsado: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
+    kcalExpandidaHeader: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 15,
+      color: cores.texto,
+      marginRight: 6,
+    },
+    acoesDireitaColapsado: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    btnMaisOpcoes: {
+      width: 32,
+      height: 32,
+      borderRadius: Raio.full,
+      backgroundColor: cores.elevada,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    btnLogPilula: {
+      backgroundColor: 'rgba(234, 179, 8, 0.15)',
+      borderWidth: 1,
+      borderColor: 'rgba(234, 179, 8, 0.3)',
+      borderRadius: Raio.full,
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+    },
+    txtLogPilula: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 12,
+      color: cores.destaque,
+    },
 
-  // Expandido
-  conteudoExpandido: {
-    marginTop: 16,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderColor: cores.separador,
-  },
-  cardDonutInterno: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: Raio.md,
-    padding: 12,
-    gap: 16,
-    marginBottom: 12,
-  },
-  colLegendaDonut: {
-    flex: 1,
-    gap: 6,
-  },
-  linhaLegendaDonut: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dotCor: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  txtLegendaPct: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 12,
-    color: cores.texto,
-    width: 32,
-  },
-  txtLegendaGramas: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-  },
+    // Expandido
+    conteudoExpandido: {
+      marginTop: 16,
+      paddingTop: 14,
+      borderTopWidth: 1,
+      borderColor: cores.separador,
+    },
+    cardDonutInterno: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: Raio.md,
+      padding: 12,
+      gap: 16,
+      marginBottom: 12,
+    },
+    colLegendaDonut: {
+      flex: 1,
+      gap: 6,
+    },
+    linhaLegendaDonut: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    dotCor: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    txtLegendaPct: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 12,
+      color: cores.texto,
+      width: 32,
+    },
+    txtLegendaGramas: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+    },
 
-  rowAcoesRapidas: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-  },
-  btnAcaoQuadrado: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: cores.elevada,
-    paddingVertical: 8,
-    borderRadius: Raio.sm,
-  },
-  txtAcaoQuadrado: {
-    fontFamily: FamiliaFonte.semibold,
-    fontSize: 12,
-    color: cores.texto,
-  },
+    rowAcoesRapidas: {
+      flexDirection: 'row',
+      gap: 8,
+      marginBottom: 14,
+    },
+    btnAcaoQuadrado: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: cores.elevada,
+      paddingVertical: 8,
+      borderRadius: Raio.sm,
+    },
+    txtAcaoQuadrado: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: 12,
+      color: cores.texto,
+    },
 
-  listaAlimentos: {
-    gap: 12,
-    marginBottom: 14,
-  },
-  itemLinha: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  colInfoItem: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  itemNomeBold: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 14,
-    color: cores.texto,
-  },
-  itemSubCinza: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 12,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
-  itemKcalDireita: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 14,
-    color: cores.texto,
-  },
+    listaAlimentos: {
+      gap: 12,
+      marginBottom: 14,
+    },
+    itemLinha: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    colInfoItem: {
+      flex: 1,
+      paddingRight: 12,
+    },
+    itemNomeBold: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 14,
+      color: cores.texto,
+    },
+    itemSubCinza: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 12,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
+    itemKcalDireita: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 14,
+      color: cores.texto,
+    },
 
-  btnLogMais: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: cores.destaqueSuave,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    paddingVertical: 10,
-    borderRadius: Raio.md,
-  },
-  txtLogMais: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 13,
-    color: cores.destaque,
-  },
-});
+    btnLogMais: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: cores.destaqueSuave,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      paddingVertical: 10,
+      borderRadius: Raio.md,
+    },
+    txtLogMais: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 13,
+      color: cores.destaque,
+    },
+  });

@@ -47,7 +47,9 @@ async function testarTacoAPI() {
 
           if (resp.status === 429) {
             tentativa++;
-            console.log(`⚠️ HTTP 429 Rate Limit na Página ${pagina}. Aguardando 600ms (Tentativa ${tentativa}/3)...`);
+            console.log(
+              `⚠️ HTTP 429 Rate Limit na Página ${pagina}. Aguardando 600ms (Tentativa ${tentativa}/3)...`,
+            );
             await new Promise((r) => setTimeout(r, 600));
             continue;
           }
@@ -71,7 +73,9 @@ async function testarTacoAPI() {
       }
 
       todosAlimentos.push(...resultadosPagina);
-      console.log(`📄 Página ${pagina} (total_pages meta: ${totalMeta}): ${resultadosPagina.length} alimentos obtidos.`);
+      console.log(
+        `📄 Página ${pagina} (total_pages meta: ${totalMeta}): ${resultadosPagina.length} alimentos obtidos.`,
+      );
 
       if (resultadosPagina.length < 100 || (totalMeta > 0 && pagina >= totalMeta)) {
         temMais = false;
@@ -84,7 +88,9 @@ async function testarTacoAPI() {
     if (todosAlimentos.length < 500) {
       console.log('ℹ️ Complementando base via Tabela TACO UNICAMP (597 itens)...');
       try {
-        const respU = await fetch('https://raw.githubusercontent.com/marcelosanto/tabela_taco/main/TACO.json');
+        const respU = await fetch(
+          'https://raw.githubusercontent.com/marcelosanto/tabela_taco/main/TACO.json',
+        );
         if (respU.ok) {
           const dadosU = await respU.json();
           if (Array.isArray(dadosU)) {

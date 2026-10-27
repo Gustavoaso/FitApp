@@ -6,10 +6,10 @@ const { createClient } = require('@supabase/supabase-js');
 // SUPABASE_URL=... SUPABASE_KEY=... node scripts/importar_off.js caminho/para/arquivo.csv
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://asuxqjbwgetdcldjoaqm.supabase.co';
 // ATENÇÃO: Use a "Service Role Key" para ignorar políticas RLS (Row Level Security) durante a importação em massa.
-const SUPABASE_KEY = process.env.SUPABASE_KEY; 
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 if (!SUPABASE_KEY) {
-  console.error("ERRO: Defina a variável de ambiente SUPABASE_KEY antes de rodar o script.");
+  console.error('ERRO: Defina a variável de ambiente SUPABASE_KEY antes de rodar o script.');
   process.exit(1);
 }
 
@@ -17,7 +17,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const FILE_PATH = process.argv[2];
 
 if (!FILE_PATH) {
-  console.error("ERRO: Forneça o caminho do arquivo TSV. Ex: node scripts/importar_off.js dados.csv");
+  console.error(
+    'ERRO: Forneça o caminho do arquivo TSV. Ex: node scripts/importar_off.js dados.csv',
+  );
   process.exit(1);
 }
 
@@ -33,14 +35,14 @@ const parser = parse({
   skip_empty_lines: true,
   relax_quotes: true,
   relax_column_count: true,
-  skip_records_with_error: true
+  skip_records_with_error: true,
 });
 
 async function insertBatch() {
   if (batch.length === 0) return;
   const currentBatch = [...batch];
   batch = []; // Limpa o batch para a próxima iteração
-  
+
   const { error } = await supabase
     .from('base_alimentos')
     .upsert(currentBatch, { onConflict: 'codigo_barras' });
@@ -61,13 +63,13 @@ fs.createReadStream(FILE_PATH)
     let record;
     while ((record = parser.read()) !== null) {
       totalProcessed++;
-      
+
       if (totalProcessed % 50000 === 0) {
         console.log(`Lendo o arquivo... ${totalProcessed} linhas analisadas até agora.`);
       }
 
       // Filtros do Open Food Facts:
-      
+
       // 1. Deve ser vendido no Brasil (para economizar milhões de produtos inúteis no app)
       const countries = (record.countries_tags || '').toLowerCase();
       if (!countries.includes('brazil') && !countries.includes('brasil')) {
@@ -82,7 +84,7 @@ fs.createReadStream(FILE_PATH)
 
       // 3. O produto DEVE ter a tabela nutricional completa preenchida (obrigatório para o app)
       if (isNaN(calorias) || isNaN(proteinas) || isNaN(carboidratos) || isNaN(gorduras)) {
-        continue; 
+        continue;
       }
 
       // Extrai categoria (limpando a string que as vezes vem com prefixos como "en:")
@@ -102,7 +104,7 @@ fs.createReadStream(FILE_PATH)
         gorduras_100g: gorduras,
         fibras_100g: parseFloat(record['fiber_100g']) || null,
         porcao_descricao: record.serving_size || null,
-        porcao_gramas: parseFloat(record.serving_quantity) || null
+        porcao_gramas: parseFloat(record.serving_quantity) || null,
       });
 
       // Se atingiu o limite do batch, faz a inserção no Supabase
@@ -114,10 +116,10 @@ fs.createReadStream(FILE_PATH)
       }
     }
   })
-  .on('error', function(err){
+  .on('error', function (err) {
     console.error('Erro de leitura do arquivo:', err.message);
   })
-  .on('end', async function(){
+  .on('end', async function () {
     // Insere os últimos itens que sobraram no array
     await insertBatch();
     console.log('✅ Finalizado com sucesso!');

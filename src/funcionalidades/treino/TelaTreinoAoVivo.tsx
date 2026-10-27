@@ -7,14 +7,7 @@
 // ============================================================
 
 import React, { useMemo, useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
@@ -23,7 +16,10 @@ import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/
 import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
 import { registrarExecucaoSerie } from '@/compartilhado/servicos/progresso-servico';
-import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '@/compartilhado/servicos/plano-gestao-servico';
+import {
+  obterPlanoTreinoCustomizado,
+  obterMapeamentoSemanal,
+} from '@/compartilhado/servicos/plano-gestao-servico';
 
 interface ExercicioAoVivo {
   id: string;
@@ -35,9 +31,30 @@ interface ExercicioAoVivo {
 }
 
 const EXERCICIOS_PADRAO: ExercicioAoVivo[] = [
-  { id: 'ex-1', nome: 'Supino Reto com Barra', series: 4, reps: 10, cargaSugerida: 60, descansoSegundos: 90 },
-  { id: 'ex-2', nome: 'Supino Inclinado com Halteres', series: 3, reps: 12, cargaSugerida: 24, descansoSegundos: 60 },
-  { id: 'ex-4', nome: 'Tríceps Pulley com Corda', series: 4, reps: 12, cargaSugerida: 35, descansoSegundos: 60 },
+  {
+    id: 'ex-1',
+    nome: 'Supino Reto com Barra',
+    series: 4,
+    reps: 10,
+    cargaSugerida: 60,
+    descansoSegundos: 90,
+  },
+  {
+    id: 'ex-2',
+    nome: 'Supino Inclinado com Halteres',
+    series: 3,
+    reps: 12,
+    cargaSugerida: 24,
+    descansoSegundos: 60,
+  },
+  {
+    id: 'ex-4',
+    nome: 'Tríceps Pulley com Corda',
+    series: 4,
+    reps: 12,
+    cargaSugerida: 35,
+    descansoSegundos: 60,
+  },
 ];
 
 export default function TelaTreinoAoVivo() {
@@ -71,10 +88,10 @@ export default function TelaTreinoAoVivo() {
         const abrevHoje = abrevs[new Date().getDay()];
         const idHoje = mapSemana[abrevHoje];
 
-        const planoHoje = (idHoje && planos.find(p => p.id === idHoje)) || planos[0];
+        const planoHoje = (idHoje && planos.find((p) => p.id === idHoje)) || planos[0];
         if (planoHoje && planoHoje.exercicios && planoHoje.exercicios.length > 0) {
           setTituloTreino(planoHoje.foco || planoHoje.diaSemana);
-          const adaptados: ExercicioAoVivo[] = planoHoje.exercicios.map(ex => ({
+          const adaptados: ExercicioAoVivo[] = planoHoje.exercicios.map((ex) => ({
             id: ex.id,
             nome: ex.nome,
             series: ex.series || 4,
@@ -117,13 +134,7 @@ export default function TelaTreinoAoVivo() {
     const cargaFinal = parseFloat(cargaUsada) || exAtual.cargaSugerida;
 
     // Registra no histórico por série do exercício
-    await registrarExecucaoSerie(
-      exAtual.id,
-      exAtual.nome,
-      serieAtual,
-      cargaFinal,
-      exAtual.reps
-    );
+    await registrarExecucaoSerie(exAtual.id, exAtual.nome, serieAtual, cargaFinal, exAtual.reps);
 
     if (serieAtual < exAtual.series) {
       setSerieAtual(serieAtual + 1);
@@ -136,7 +147,8 @@ export default function TelaTreinoAoVivo() {
         setTempoRestante(listaExercicios[indexExercicio + 1].descansoSegundos);
         setEmDescanso(true);
       } else {
-        const { incrementarTreinoRealizado } = await import('@/compartilhado/servicos/progresso-servico');
+        const { incrementarTreinoRealizado } =
+          await import('@/compartilhado/servicos/progresso-servico');
         await incrementarTreinoRealizado();
         // O MomentoConquista dá o haptic Success e sai do treino ao terminar.
         setConcluido(true);
@@ -158,11 +170,7 @@ export default function TelaTreinoAoVivo() {
     <View style={estilos.container}>
       {/* Topo / Progresso da Sessão */}
       <View style={estilos.topo}>
-        <TouchableOpacity
-          style={estilos.btnSairAmarelo}
-          onPress={sairDoTreino}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={estilos.btnSairAmarelo} onPress={sairDoTreino} activeOpacity={0.8}>
           <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
           <Text style={estilos.txtSairAmarelo}>Sair</Text>
         </TouchableOpacity>
@@ -183,7 +191,8 @@ export default function TelaTreinoAoVivo() {
       {/* Card da Série Atual */}
       <CardVidro semBorda estilo={estilos.cardSerie}>
         <Text style={estilos.serieDetalhes}>
-          Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} · {exAtual.reps} reps · {exAtual.cargaSugerida}kg
+          Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
+          {exAtual.reps} reps · {exAtual.cargaSugerida}kg
         </Text>
       </CardVidro>
 
@@ -241,141 +250,141 @@ export default function TelaTreinoAoVivo() {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: cores.fundo,
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
-  },
-  topo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-  },
-  btnSairAmarelo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#EAB308',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: Raio.full,
-    shadowColor: '#EAB308',
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-  txtSairAmarelo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 13,
-    fontWeight: PesoFonte.bold,
-    color: '#FFFFFF',
-  },
-  tituloTreino: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.subtitulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  progressoTexto: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.micro,
-    color: cores.textoSecundario,
-    marginTop: 2,
-  },
+    container: {
+      flex: 1,
+      backgroundColor: cores.fundo,
+      paddingHorizontal: 20,
+      paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    },
+    topo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 24,
+    },
+    btnSairAmarelo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: '#EAB308',
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: Raio.full,
+      shadowColor: '#EAB308',
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+    txtSairAmarelo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 13,
+      fontWeight: PesoFonte.bold,
+      color: '#FFFFFF',
+    },
+    tituloTreino: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.subtitulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    progressoTexto: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.micro,
+      color: cores.textoSecundario,
+      marginTop: 2,
+    },
 
-  exercicioHeader: {
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  exercicioNome: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.titulo,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    textAlign: 'center',
-  },
+    exercicioHeader: {
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    exercicioNome: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.titulo,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      textAlign: 'center',
+    },
 
-  cardSerie: {
-    alignItems: 'center',
-    paddingVertical: 14,
-    marginBottom: 24,
-  },
-  serieDetalhes: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-  },
-  destaque: {
-    fontFamily: FamiliaFonte.bold,
-    color: cores.destaque,
-    fontWeight: PesoFonte.bold,
-  },
+    cardSerie: {
+      alignItems: 'center',
+      paddingVertical: 14,
+      marginBottom: 24,
+    },
+    serieDetalhes: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+    },
+    destaque: {
+      fontFamily: FamiliaFonte.bold,
+      color: cores.destaque,
+      fontWeight: PesoFonte.bold,
+    },
 
-  timerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 12,
-  },
-  timerTextoAbsolute: {
-    position: 'absolute',
-    alignItems: 'center',
-  },
-  timerTempo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.display,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  timerLabel: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-    marginTop: 4,
-  },
+    timerContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: 12,
+    },
+    timerTextoAbsolute: {
+      position: 'absolute',
+      alignItems: 'center',
+    },
+    timerTempo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.display,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    timerLabel: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+      marginTop: 4,
+    },
 
-  inputCargaContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginTop: 20,
-    marginBottom: 24,
-  },
-  cargaLabel: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.corpo,
-    color: cores.textoSecundario,
-  },
-  inputCarga: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: Fonte.corpo,
-    color: cores.texto,
-    backgroundColor: cores.elevada,
-    borderWidth: 1,
-    borderColor: cores.separador,
-    borderRadius: Raio.sm,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    width: 80,
-    textAlign: 'center',
-  },
+    inputCargaContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      marginTop: 20,
+      marginBottom: 24,
+    },
+    cargaLabel: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.corpo,
+      color: cores.textoSecundario,
+    },
+    inputCarga: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Fonte.corpo,
+      color: cores.texto,
+      backgroundColor: cores.elevada,
+      borderWidth: 1,
+      borderColor: cores.separador,
+      borderRadius: Raio.sm,
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      width: 80,
+      textAlign: 'center',
+    },
 
-  acoesContainer: {
-    gap: 12,
-    marginTop: 'auto',
-    marginBottom: Platform.OS === 'ios' ? 40 : 20,
-  },
-  botaoPular: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  textoPular: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: Fonte.label,
-    color: cores.textoSecundario,
-  },
-  botaoConcluir: {},
-});
+    acoesContainer: {
+      gap: 12,
+      marginTop: 'auto',
+      marginBottom: Platform.OS === 'ios' ? 40 : 20,
+    },
+    botaoPular: {
+      alignItems: 'center',
+      paddingVertical: 12,
+    },
+    textoPular: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Fonte.label,
+      color: cores.textoSecundario,
+    },
+    botaoConcluir: {},
+  });

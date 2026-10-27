@@ -13,7 +13,6 @@ import { useFonts } from 'expo-font';
 import { AuthProvedor } from '@/compartilhado/AuthContexto';
 import { useTema } from '@/compartilhado/useTema';
 
-
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
@@ -61,7 +60,10 @@ export default function RootLayout() {
             sheetGrabberVisible: true,
           }}
         />
-        <Stack.Screen name="treino-ao-vivo/index" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
+        <Stack.Screen
+          name="treino-ao-vivo/index"
+          options={{ headerShown: false, presentation: 'fullScreenModal' }}
+        />
       </Stack>
     </AuthProvedor>
   );

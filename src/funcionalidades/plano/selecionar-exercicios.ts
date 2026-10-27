@@ -57,7 +57,10 @@ export function selecionarExercicios(
   const permitidos = EQUIPAMENTOS_PERMITIDOS[entrada.equipamentos];
   const possiveis = linhas.flatMap((linha) => {
     const ex = mapearExercicio(linha);
-    const ok = ex && permitidos.includes(ex.equipamento) && respeitaRestricoesFisicas(linha.nome, entrada.restricoesFisicas);
+    const ok =
+      ex &&
+      permitidos.includes(ex.equipamento) &&
+      respeitaRestricoesFisicas(linha.nome, entrada.restricoesFisicas);
     return ok ? [{ linha, ex }] : [];
   });
   const aceitos = NIVEIS_ACEITOS[entrada.nivel];
@@ -70,7 +73,9 @@ export function selecionarExercicios(
 
   for (const grupo of grupos) {
     const degraus = [
-      possiveis.filter(({ linha, ex }) => ex.grupo === grupo && aceitos.includes(linha.nivel ?? '')),
+      possiveis.filter(
+        ({ linha, ex }) => ex.grupo === grupo && aceitos.includes(linha.nivel ?? ''),
+      ),
       possiveis.filter(({ ex }) => ex.grupo === grupo),
       possiveis.filter(({ linha }) => secundarios(linha).includes(grupo)),
     ];
@@ -90,7 +95,8 @@ export function selecionarExercicios(
     exercicios,
     slots: slots.map((s) => ({ ...s, porGrupo: s.porGrupo.filter((p) => !vazios.has(p.grupo)) })),
     avisos: [...vazios].map(
-      (g) => `Não achei exercício de ${NOME_GRUPO[g]} para o seu equipamento e as suas restrições; o grupo ficou fora do treino.`,
+      (g) =>
+        `Não achei exercício de ${NOME_GRUPO[g]} para o seu equipamento e as suas restrições; o grupo ficou fora do treino.`,
     ),
   };
 }

@@ -22,17 +22,19 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const pctTreinoVisual = Math.min(
     100,
-    Math.round((estatisticas.diasTreinados / (estatisticas.metaDiasTreino || 1)) * 100)
+    Math.round((estatisticas.diasTreinados / (estatisticas.metaDiasTreino || 1)) * 100),
   );
 
   const pctExVisual = Math.min(
     100,
-    Math.round((estatisticas.exerciciosRealizados / (estatisticas.metaExercicios || 1)) * 100)
+    Math.round((estatisticas.exerciciosRealizados / (estatisticas.metaExercicios || 1)) * 100),
   );
 
   const pctDietaVisual = Math.min(
     100,
-    Math.round((estatisticas.refeicoesConcluidas / (estatisticas.totalRefeicoesPrevistas || 1)) * 100)
+    Math.round(
+      (estatisticas.refeicoesConcluidas / (estatisticas.totalRefeicoesPrevistas || 1)) * 100,
+    ),
   );
 
   return (
@@ -53,7 +55,8 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
             <Text style={estilos.labelMetric}>Treinos</Text>
           </View>
           <Text style={estilos.valorMetric}>
-            {estatisticas.diasTreinados} / {estatisticas.metaDiasTreino} <Text style={estilos.subMetric}>dias</Text>
+            {estatisticas.diasTreinados} / {estatisticas.metaDiasTreino}{' '}
+            <Text style={estilos.subMetric}>dias</Text>
           </Text>
           <View style={estilos.barraFundo}>
             <View style={[estilos.barraProgresso, { width: `${pctTreinoVisual}%` }]} />
@@ -67,7 +70,8 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
             <Text style={estilos.labelMetric}>Exercícios</Text>
           </View>
           <Text style={estilos.valorMetric}>
-            {estatisticas.exerciciosRealizados} / {estatisticas.metaExercicios} <Text style={estilos.subMetric}>ex</Text>
+            {estatisticas.exerciciosRealizados} / {estatisticas.metaExercicios}{' '}
+            <Text style={estilos.subMetric}>ex</Text>
           </Text>
           <View style={estilos.barraFundo}>
             <View style={[estilos.barraProgresso, { width: `${pctExVisual}%` }]} />
@@ -81,7 +85,8 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
             <Text style={estilos.labelMetric}>Dieta</Text>
           </View>
           <Text style={estilos.valorMetric}>
-            {estatisticas.refeicoesConcluidas} / {estatisticas.totalRefeicoesPrevistas} <Text style={estilos.subMetric}>ref</Text>
+            {estatisticas.refeicoesConcluidas} / {estatisticas.totalRefeicoesPrevistas}{' '}
+            <Text style={estilos.subMetric}>ref</Text>
           </Text>
           <View style={estilos.barraFundo}>
             <View style={[estilos.barraProgresso, { width: `${pctDietaVisual}%` }]} />
@@ -94,76 +99,76 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
 
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
-  card: {
-    marginVertical: 8,
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  rowTitulo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  titulo: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 15,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-  },
-  porcentagemBadge: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 16,
-    fontWeight: PesoFonte.bold,
-    color: cores.destaque,
-  },
-  grid: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  itemMetric: {
-    flex: 1,
-    backgroundColor: cores.elevada,
-    borderRadius: 12,
-    padding: 10,
-  },
-  rowMetricHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  labelMetric: {
-    fontFamily: FamiliaFonte.regular,
-    fontSize: 11,
-    color: cores.textoSecundario,
-  },
-  valorMetric: {
-    fontFamily: FamiliaFonte.bold,
-    fontSize: 13,
-    fontWeight: PesoFonte.bold,
-    color: cores.texto,
-    marginBottom: 6,
-  },
-  subMetric: {
-    fontSize: 10,
-    fontFamily: FamiliaFonte.regular,
-    color: cores.textoSecundario,
-    fontWeight: PesoFonte.regular,
-  },
-  barraFundo: {
-    height: 4,
-    backgroundColor: cores.destaqueSuave,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  barraProgresso: {
-    height: '100%',
-    backgroundColor: cores.destaque,
-    borderRadius: 2,
-  },
-});
+    card: {
+      marginVertical: 8,
+      padding: 16,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
+    rowTitulo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    titulo: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 15,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+    },
+    porcentagemBadge: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 16,
+      fontWeight: PesoFonte.bold,
+      color: cores.destaque,
+    },
+    grid: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    itemMetric: {
+      flex: 1,
+      backgroundColor: cores.elevada,
+      borderRadius: 12,
+      padding: 10,
+    },
+    rowMetricHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginBottom: 4,
+    },
+    labelMetric: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: 11,
+      color: cores.textoSecundario,
+    },
+    valorMetric: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: 13,
+      fontWeight: PesoFonte.bold,
+      color: cores.texto,
+      marginBottom: 6,
+    },
+    subMetric: {
+      fontSize: 10,
+      fontFamily: FamiliaFonte.regular,
+      color: cores.textoSecundario,
+      fontWeight: PesoFonte.regular,
+    },
+    barraFundo: {
+      height: 4,
+      backgroundColor: cores.destaqueSuave,
+      borderRadius: 2,
+      overflow: 'hidden',
+    },
+    barraProgresso: {
+      height: '100%',
+      backgroundColor: cores.destaque,
+      borderRadius: 2,
+    },
+  });

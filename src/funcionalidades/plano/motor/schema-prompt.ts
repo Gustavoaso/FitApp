@@ -52,7 +52,14 @@ export function montarSchemaEscolha(
     }
     return {
       type: 'object',
-      properties: { exercicios: { type: 'object', properties: propriedades, required: Object.keys(propriedades), additionalProperties: false } },
+      properties: {
+        exercicios: {
+          type: 'object',
+          properties: propriedades,
+          required: Object.keys(propriedades),
+          additionalProperties: false,
+        },
+      },
       required: ['exercicios'],
       additionalProperties: false,
     };
@@ -62,7 +69,12 @@ export function montarSchemaEscolha(
   for (const slot of SLOTS) {
     slotsSchema[slot] = enumIds(alimentos.filter((a) => a.slot === slot).map((a) => a.id));
   }
-  const refeicao = { type: 'object', properties: slotsSchema, required: SLOTS, additionalProperties: false };
+  const refeicao = {
+    type: 'object',
+    properties: slotsSchema,
+    required: SLOTS,
+    additionalProperties: false,
+  };
 
   return {
     type: 'object',
@@ -101,18 +113,34 @@ export function montarPrompt(
   const c = montarContextoPrompt(origem);
   // Prompt enxuto (etapa 13b): candidatos agrupados, um "id nome" por item, e
   // diretrizes cortadas. Menos tokens = geração mais rápida no Mac de 8 GB.
-  const agrupar = <T,>(itens: T[], chave: (i: T) => string, linha: (i: T) => string) =>
-    [...new Set(itens.map(chave))].map((k) => `${k}: ${itens.filter((i) => chave(i) === k).map(linha).join('; ')}`);
+  const agrupar = <T>(itens: T[], chave: (i: T) => string, linha: (i: T) => string) =>
+    [...new Set(itens.map(chave))].map(
+      (k) =>
+        `${k}: ${itens
+          .filter((i) => chave(i) === k)
+          .map(linha)
+          .join('; ')}`,
+    );
   const linhas = [
     'Monte um plano de treino e dieta escolhendo apenas IDs das listas.',
     `Objetivo: ${c.objetivo}. Nível: ${c.nivel}. Dias por semana: ${c.diasPorSemana}.`,
     `Equipamentos: ${c.equipamentos}. Restrições alimentares: ${c.restricoes.join(', ') || 'nenhuma'}.`,
     'Diretrizes:',
-    ...c.diretrizes.map((d) => `- ${d.length > LIMITE_DIRETRIZ ? `${d.slice(0, LIMITE_DIRETRIZ)}…` : d}`),
+    ...c.diretrizes.map(
+      (d) => `- ${d.length > LIMITE_DIRETRIZ ? `${d.slice(0, LIMITE_DIRETRIZ)}…` : d}`,
+    ),
     'Exercícios por grupo (id nome):',
-    ...agrupar(exercicios, (e) => e.grupo, (e) => `${e.id} ${e.nome}`),
+    ...agrupar(
+      exercicios,
+      (e) => e.grupo,
+      (e) => `${e.id} ${e.nome}`,
+    ),
     'Alimentos por slot (id nome):',
-    ...agrupar(alimentos, (a) => a.slot, (a) => `${a.id} ${a.nome}`),
+    ...agrupar(
+      alimentos,
+      (a) => a.slot,
+      (a) => `${a.id} ${a.nome}`,
+    ),
     'Responda só o JSON no formato pedido. Varie os exercícios entre os dias.',
   ];
   if (errosAnteriores.length > 0) {

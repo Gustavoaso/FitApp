@@ -1,10 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
-import fs from 'fs'
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-)
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 function levenshtein(a, b) {
   if (a.length === 0) return b.length;
@@ -19,7 +16,7 @@ function levenshtein(a, b) {
       } else {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
-          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1),
         );
       }
     }
@@ -28,20 +25,23 @@ function levenshtein(a, b) {
 }
 
 async function run() {
-  const jsonPath = '/Users/gustavosoares/Documents/Projetos/FitApp/scratch/exercicios-bd-ptbr/exercises/exercises-ptbr-full-translation.json';
+  const jsonPath =
+    '/Users/gustavosoares/Documents/Projetos/FitApp/scratch/exercicios-bd-ptbr/exercises/exercises-ptbr-full-translation.json';
   const json = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
 
-  const { data: exerciciosDb, error } = await supabase.from('base_exercicios').select('id, nome, id_externo');
+  const { data: exerciciosDb, error } = await supabase
+    .from('base_exercicios')
+    .select('id, nome, id_externo');
   if (error) {
     console.error('Error fetching db:', error);
     return;
   }
 
   // Pre-process json names
-  const repoExs = json.map(ex => {
+  const repoExs = json.map((ex) => {
     return {
       ptName: ex.name,
-      enId: ex.id.toLowerCase().replace(/_/g, ' ')
+      enId: ex.id.toLowerCase().replace(/_/g, ' '),
     };
   });
 
@@ -65,8 +65,11 @@ async function run() {
     const maxLength = Math.max(dbName.length, bestMatch.enId.length);
     const similarity = (maxLength - bestDist) / maxLength;
 
-    if (similarity > 0.7) { // Reasonable threshold for matching names
-      console.log(`Updating '${exDb.nome}' -> '${bestMatch.ptName}' (matched '${bestMatch.enId}', sim: ${similarity.toFixed(2)})`);
+    if (similarity > 0.7) {
+      // Reasonable threshold for matching names
+      console.log(
+        `Updating '${exDb.nome}' -> '${bestMatch.ptName}' (matched '${bestMatch.enId}', sim: ${similarity.toFixed(2)})`,
+      );
 
       const { error: updateErr } = await supabase
         .from('base_exercicios')
@@ -79,7 +82,9 @@ async function run() {
         updatedCount++;
       }
     } else {
-      console.log(`No good match for '${exDb.nome}' (best was '${bestMatch.enId}' with sim: ${similarity.toFixed(2)})`);
+      console.log(
+        `No good match for '${exDb.nome}' (best was '${bestMatch.enId}' with sim: ${similarity.toFixed(2)})`,
+      );
     }
   }
 

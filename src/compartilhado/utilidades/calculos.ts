@@ -12,12 +12,7 @@
 // - Mifflin-St Jeor (Mifflin et al., 1990) — mais precisa para sobrepeso
 // ============================================================
 
-import type {
-  SexoBiologico,
-  NivelAtividade,
-  ObjetivoTreino,
-  Macros,
-} from '@/compartilhado/tipos';
+import type { SexoBiologico, NivelAtividade, ObjetivoTreino, Macros } from '@/compartilhado/tipos';
 
 // ──────────────────────────────────────────────
 // FATORES DE ATIVIDADE
@@ -27,11 +22,11 @@ import type {
 // ──────────────────────────────────────────────
 
 const FATORES_ATIVIDADE: Record<NivelAtividade, number> = {
-  sedentario: 1.2,      // Escritório, sem exercício
-  leve: 1.375,          // Exercício leve 1-3x/semana
-  moderado: 1.55,       // Exercício moderado 3-5x/semana
-  ativo: 1.725,         // Exercício intenso 6-7x/semana
-  muito_ativo: 1.9,     // Atleta, 2x ao dia ou trabalho físico pesado
+  sedentario: 1.2, // Escritório, sem exercício
+  leve: 1.375, // Exercício leve 1-3x/semana
+  moderado: 1.55, // Exercício moderado 3-5x/semana
+  ativo: 1.725, // Exercício intenso 6-7x/semana
+  muito_ativo: 1.9, // Atleta, 2x ao dia ou trabalho físico pesado
 };
 
 // ──────────────────────────────────────────────
@@ -42,11 +37,11 @@ const FATORES_ATIVIDADE: Record<NivelAtividade, number> = {
 // ──────────────────────────────────────────────
 
 const AJUSTE_CALORICO: Record<ObjetivoTreino, number> = {
-  hipertrofia: 1.10,       // +10% (superávit moderado)
-  definicao: 0.85,         // -15% (déficit moderado)
-  forca: 1.05,             // +5% (superávit leve)
-  emagrecimento: 0.80,     // -20% (déficit mais agressivo)
-  condicionamento: 1.0,    // Manutenção
+  hipertrofia: 1.1, // +10% (superávit moderado)
+  definicao: 0.85, // -15% (déficit moderado)
+  forca: 1.05, // +5% (superávit leve)
+  emagrecimento: 0.8, // -20% (déficit mais agressivo)
+  condicionamento: 1.0, // Manutenção
 };
 
 // ──────────────────────────────────────────────
@@ -56,12 +51,15 @@ const AJUSTE_CALORICO: Record<ObjetivoTreino, number> = {
 // sobre o total calórico diário.
 // ──────────────────────────────────────────────
 
-const DISTRIBUICAO_MACROS: Record<ObjetivoTreino, { proteina: number; carboidrato: number; gordura: number }> = {
-  hipertrofia:     { proteina: 0.30, carboidrato: 0.45, gordura: 0.25 },
-  definicao:       { proteina: 0.35, carboidrato: 0.35, gordura: 0.30 },
-  forca:           { proteina: 0.30, carboidrato: 0.45, gordura: 0.25 },
-  emagrecimento:   { proteina: 0.35, carboidrato: 0.35, gordura: 0.30 },
-  condicionamento: { proteina: 0.25, carboidrato: 0.50, gordura: 0.25 },
+const DISTRIBUICAO_MACROS: Record<
+  ObjetivoTreino,
+  { proteina: number; carboidrato: number; gordura: number }
+> = {
+  hipertrofia: { proteina: 0.3, carboidrato: 0.45, gordura: 0.25 },
+  definicao: { proteina: 0.35, carboidrato: 0.35, gordura: 0.3 },
+  forca: { proteina: 0.3, carboidrato: 0.45, gordura: 0.25 },
+  emagrecimento: { proteina: 0.35, carboidrato: 0.35, gordura: 0.3 },
+  condicionamento: { proteina: 0.25, carboidrato: 0.5, gordura: 0.25 },
 };
 
 // ──────────────────────────────────────────────

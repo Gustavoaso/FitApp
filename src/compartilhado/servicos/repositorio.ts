@@ -102,7 +102,9 @@ async function validarSchemaPlanejamento(): Promise<void> {
     const faltantes = (resultado?.faltantes || [])
       .map((item: any) => `${item.tabela}.${item.coluna}`)
       .join(', ');
-    throw new Error(`Schema do planejamento incompatível. Colunas ausentes: ${faltantes || 'não identificadas'}.`);
+    throw new Error(
+      `Schema do planejamento incompatível. Colunas ausentes: ${faltantes || 'não identificadas'}.`,
+    );
   }
 }
 
@@ -153,14 +155,15 @@ export const repositorioDieta = {
       if (error || !data) return [];
 
       const recentes = new Map<string, any>();
-      
-      data.forEach(registro => {
-        const alimentos = typeof registro.alimentos === 'string' 
-          ? JSON.parse(registro.alimentos) 
-          : registro.alimentos;
-        
+
+      data.forEach((registro) => {
+        const alimentos =
+          typeof registro.alimentos === 'string'
+            ? JSON.parse(registro.alimentos)
+            : registro.alimentos;
+
         if (Array.isArray(alimentos)) {
-          alimentos.forEach(a => {
+          alimentos.forEach((a) => {
             if (a.id && !recentes.has(String(a.id))) {
               recentes.set(String(a.id), {
                 id: String(a.id),
@@ -171,13 +174,13 @@ export const repositorioDieta = {
                 proteinas_100g: a.proteinas,
                 carboidratos_100g: a.carboidratos,
                 gorduras_100g: a.gorduras,
-                porcao_descricao: a.porcao
+                porcao_descricao: a.porcao,
               });
             }
           });
         }
       });
-      
+
       return Array.from(recentes.values());
     } catch (e) {
       return [];
@@ -215,12 +218,16 @@ export const repositorioDieta = {
     if (!userId) return;
 
     if (favorito) {
-      const payload = [{
-        usuario_id: userId,
-        alimento_id: alimentoId,
-      }];
+      const payload = [
+        {
+          usuario_id: userId,
+          alimento_id: alimentoId,
+        },
+      ];
 
-      const { error } = await supabase.from('alimentos_favoritos').upsert(payload, { onConflict: 'usuario_id,alimento_id' });
+      const { error } = await supabase
+        .from('alimentos_favoritos')
+        .upsert(payload, { onConflict: 'usuario_id,alimento_id' });
       if (error && tabelaNaoExiste(error)) {
         const locais = await lerLocal<any[]>(CHAVE_FAVORITOS_LOCAL, []);
         const atualizado = [...locais.filter((item) => item.id !== alimentoId), { id: alimentoId }];
@@ -235,7 +242,10 @@ export const repositorioDieta = {
 
       if (error && tabelaNaoExiste(error)) {
         const locais = await lerLocal<any[]>(CHAVE_FAVORITOS_LOCAL, []);
-        await salvarLocal(CHAVE_FAVORITOS_LOCAL, locais.filter((item) => item.id !== alimentoId));
+        await salvarLocal(
+          CHAVE_FAVORITOS_LOCAL,
+          locais.filter((item) => item.id !== alimentoId),
+        );
       }
     }
   },
@@ -275,24 +285,45 @@ export const repositorioDieta = {
       nome: receita.nome,
       descricao: receita.descricao || null,
       alimentos: receita.alimentos,
-      total_calorias: receita.total_calorias || receita.alimentos.reduce((acc, a) => acc + Number(a.calorias || 0), 0),
-      total_proteinas: receita.total_proteinas || receita.alimentos.reduce((acc, a) => acc + Number(a.proteinas || 0), 0),
-      total_carboidratos: receita.total_carboidratos || receita.alimentos.reduce((acc, a) => acc + Number((a.carboidratos ?? a.carbos) || 0), 0),
-      total_gorduras: receita.total_gorduras || receita.alimentos.reduce((acc, a) => acc + Number(a.gorduras || 0), 0),
+      total_calorias:
+        receita.total_calorias ||
+        receita.alimentos.reduce((acc, a) => acc + Number(a.calorias || 0), 0),
+      total_proteinas:
+        receita.total_proteinas ||
+        receita.alimentos.reduce((acc, a) => acc + Number(a.proteinas || 0), 0),
+      total_carboidratos:
+        receita.total_carboidratos ||
+        receita.alimentos.reduce((acc, a) => acc + Number((a.carboidratos ?? a.carbos) || 0), 0),
+      total_gorduras:
+        receita.total_gorduras ||
+        receita.alimentos.reduce((acc, a) => acc + Number(a.gorduras || 0), 0),
     };
 
     if (receita.id) {
-      const { error } = await supabase.from('receitas_usuario').update(payload).eq('id', receita.id).eq('usuario_id', userId);
+      const { error } = await supabase
+        .from('receitas_usuario')
+        .update(payload)
+        .eq('id', receita.id)
+        .eq('usuario_id', userId);
       if (error && tabelaNaoExiste(error)) {
         const locais = await lerLocal<ReceitaUsuario[]>(CHAVE_RECEITAS_LOCAL, []);
-        const atualizado = locais.map((item) => (item.id === receita.id ? { ...item, ...payload, id: receita.id } : item));
+        const atualizado = locais.map((item) =>
+          item.id === receita.id ? { ...item, ...payload, id: receita.id } : item,
+        );
         await salvarLocal(CHAVE_RECEITAS_LOCAL, atualizado);
       }
     } else {
-      const { data, error } = await supabase.from('receitas_usuario').insert([payload]).select('*').maybeSingle();
+      const { data, error } = await supabase
+        .from('receitas_usuario')
+        .insert([payload])
+        .select('*')
+        .maybeSingle();
       if (error && tabelaNaoExiste(error)) {
         const locais = await lerLocal<ReceitaUsuario[]>(CHAVE_RECEITAS_LOCAL, []);
-        await salvarLocal(CHAVE_RECEITAS_LOCAL, [{ id: `local-${Date.now()}`, ...payload }, ...locais]);
+        await salvarLocal(CHAVE_RECEITAS_LOCAL, [
+          { id: `local-${Date.now()}`, ...payload },
+          ...locais,
+        ]);
       } else if (data) {
         const locais = await lerLocal<ReceitaUsuario[]>(CHAVE_RECEITAS_LOCAL, []);
         await salvarLocal(CHAVE_RECEITAS_LOCAL, [data, ...locais]);
@@ -345,7 +376,9 @@ export const repositorioDieta = {
       };
     } catch {
       const local = await lerLocal<PlanoIAAtivo | null>(CHAVE_PLANO_EDITAVEL_LOCAL, null);
-      return local ? { id: local.id, plano_gerado: local.plano_gerado, criado_em: local.criado_em } : null;
+      return local
+        ? { id: local.id, plano_gerado: local.plano_gerado, criado_em: local.criado_em }
+        : null;
     }
   },
 
@@ -358,15 +391,19 @@ export const repositorioDieta = {
       .from('planos_dieta_editaveis')
       .update({ ativo: false })
       .eq('usuario_id', userId);
-    if (erroDesativacao) throw erroBanco('Não foi possível atualizar o plano editável anterior', erroDesativacao);
+    if (erroDesativacao)
+      throw erroBanco('Não foi possível atualizar o plano editável anterior', erroDesativacao);
 
-    const { error: erroPlanoEditavel } = await supabase.from('planos_dieta_editaveis').insert([{
-      usuario_id: userId,
-      plano_ia_id: planoIAId || null,
-      plano_json: plano,
-      ativo: true,
-    }]);
-    if (erroPlanoEditavel) throw erroBanco('Não foi possível salvar o plano editável', erroPlanoEditavel);
+    const { error: erroPlanoEditavel } = await supabase.from('planos_dieta_editaveis').insert([
+      {
+        usuario_id: userId,
+        plano_ia_id: planoIAId || null,
+        plano_json: plano,
+        ativo: true,
+      },
+    ]);
+    if (erroPlanoEditavel)
+      throw erroBanco('Não foi possível salvar o plano editável', erroPlanoEditavel);
     await salvarLocal(CHAVE_PLANO_EDITAVEL_LOCAL, {
       id: `local-${Date.now()}`,
       usuario_id: userId,
@@ -393,7 +430,7 @@ export const repositorioDieta = {
 
       if (!data || data.length === 0) return [];
 
-      return data.map(item => ({
+      return data.map((item) => ({
         idRefeicao: item.id_refeicao,
         data: item.data,
         concluida: item.concluida,
@@ -423,7 +460,7 @@ export const repositorioDieta = {
 
       if (registros.length === 0) return;
 
-      const payload = registros.map(r => ({
+      const payload = registros.map((r) => ({
         usuario_id: userId,
         id_refeicao: r.idRefeicao,
         data: dataStr,
@@ -431,9 +468,7 @@ export const repositorioDieta = {
         alimentos: r.alimentos,
       }));
 
-      const { error } = await supabase
-        .from('registro_refeicoes')
-        .insert(payload);
+      const { error } = await supabase.from('registro_refeicoes').insert(payload);
 
       if (error) {
         console.error('Erro de banco ao salvar refeições:', error.message);
@@ -446,21 +481,25 @@ export const repositorioDieta = {
   /**
    * Copia o registro de alimentos de uma refeição de uma data de origem para a data de destino.
    */
-  async copiarRefeicaoDeData(dataOrigem: string, dataDestino: string, nomeRefeicao: string): Promise<boolean> {
+  async copiarRefeicaoDeData(
+    dataOrigem: string,
+    dataDestino: string,
+    nomeRefeicao: string,
+  ): Promise<boolean> {
     try {
       const refeicoesOrigem = await this.buscarDietaPorData(dataOrigem);
-      const origem = refeicoesOrigem.find(r => r.idRefeicao === nomeRefeicao);
+      const origem = refeicoesOrigem.find((r) => r.idRefeicao === nomeRefeicao);
       if (!origem || !origem.alimentos || origem.alimentos.length === 0) {
         return false;
       }
 
       const refeicoesDestino = await this.buscarDietaPorData(dataDestino);
-      const atualizadas = refeicoesDestino.filter(r => r.idRefeicao !== nomeRefeicao);
+      const atualizadas = refeicoesDestino.filter((r) => r.idRefeicao !== nomeRefeicao);
       atualizadas.push({
         idRefeicao: nomeRefeicao,
         data: dataDestino,
         concluida: false,
-        alimentos: origem.alimentos.map(a => ({ ...a, id: `${a.id}-copy-${Date.now()}` })),
+        alimentos: origem.alimentos.map((a) => ({ ...a, id: `${a.id}-copy-${Date.now()}` })),
       });
 
       await this.salvarDietaDoDia(dataDestino, atualizadas);
@@ -483,7 +522,9 @@ export const repositorioTreino = {
     try {
       const { data, error } = await supabase
         .from('planos_treino')
-        .select('id, nome, dias_por_semana, dias_treino(id, dia_semana, nome, exercicios_plano(id, exercicio_id, nome, series))')
+        .select(
+          'id, nome, dias_por_semana, dias_treino(id, dia_semana, nome, exercicios_plano(id, exercicio_id, nome, series))',
+        )
         .eq('ativo', true)
         .order('criado_em', { ascending: false })
         .limit(1)
@@ -498,7 +539,16 @@ export const repositorioTreino = {
 
       return ((data as any).dias_treino || []).map((dia: any) => ({
         id: dia.id,
-        diaSemana: ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'][dia.dia_semana] || dia.nome,
+        diaSemana:
+          [
+            'Domingo',
+            'Segunda-feira',
+            'Terça-feira',
+            'Quarta-feira',
+            'Quinta-feira',
+            'Sexta-feira',
+            'Sábado',
+          ][dia.dia_semana] || dia.nome,
         foco: dia.nome,
         exercicios: (dia.exercicios_plano || []).map((ex: any) => {
           const serie = Array.isArray(ex.series) ? ex.series[0] || {} : {};
@@ -527,7 +577,7 @@ export const repositorioTreino = {
       const userRes = await supabase.auth.getUser();
       const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
 
-      const payload = planos.map(p => ({
+      const payload = planos.map((p) => ({
         id: p.id.startsWith('dia-') ? undefined : p.id,
         usuario_id: userId,
         dia_semana: p.diaSemana,
@@ -535,9 +585,7 @@ export const repositorioTreino = {
         exercicios: p.exercicios,
       }));
 
-      const { error } = await supabase
-        .from('planos_treino')
-        .upsert(payload);
+      const { error } = await supabase.from('planos_treino').upsert(payload);
 
       if (error) {
         console.error('Erro de banco ao salvar treinos:', error.message);
@@ -555,22 +603,22 @@ export const repositorioTreino = {
     nomeExercicio: string,
     numeroSerie: number,
     cargaKg: number,
-    repeticoes: number
+    repeticoes: number,
   ): Promise<void> {
     try {
       const userRes = await supabase.auth.getUser();
       const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
 
-      const { error } = await supabase
-        .from('historico_series_executadas')
-        .insert([{
+      const { error } = await supabase.from('historico_series_executadas').insert([
+        {
           usuario_id: userId,
           exercicio_id: exercicioId,
           nome_exercicio: nomeExercicio,
           numero_serie: numeroSerie,
           carga_kg: cargaKg,
           repeticoes: repeticoes,
-        }]);
+        },
+      ]);
 
       if (error) {
         console.error('Erro de banco ao registrar série:', error.message);
@@ -602,7 +650,7 @@ export const repositorioProgresso = {
 
       if (!data || data.length === 0) return [];
 
-      return data.map(item => ({
+      return data.map((item) => ({
         id: item.id,
         data: item.data,
         pesoKg: Number(item.peso_kg),
@@ -621,13 +669,13 @@ export const repositorioProgresso = {
       const userRes = await supabase.auth.getUser();
       const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
 
-      const { error } = await supabase
-        .from('historico_peso')
-        .insert([{
+      const { error } = await supabase.from('historico_peso').insert([
+        {
           usuario_id: userId,
           peso_kg: pesoKg,
           data: dataStr || new Date().toISOString().split('T')[0],
-        }]);
+        },
+      ]);
 
       if (error) {
         console.error('Erro de banco ao registrar peso:', error.message);
@@ -667,14 +715,17 @@ export const repositorioAgua = {
       const userRes = await supabase.auth.getUser();
       const userId = userRes.data.user?.id || '00000000-0000-0000-0000-000000000000';
 
-      const { error } = await supabase
-        .from('registros_agua')
-        .upsert([{
-          usuario_id: userId,
-          data: dataStr,
-          total_ml: totalMl,
-          meta_ml: metaMl,
-        }], { onConflict: 'usuario_id, data' });
+      const { error } = await supabase.from('registros_agua').upsert(
+        [
+          {
+            usuario_id: userId,
+            data: dataStr,
+            total_ml: totalMl,
+            meta_ml: metaMl,
+          },
+        ],
+        { onConflict: 'usuario_id, data' },
+      );
 
       if (error) {
         console.error('Erro ao salvar água:', error.message);
@@ -802,46 +853,58 @@ export const repositorioPlano = {
       if (respostas) {
         // Grava no histórico de questionarios do usuário
         try {
-          await supabase.from('questionarios').insert([{
-            usuario_id: userId,
-            respostas,
-          }]);
+          await supabase.from('questionarios').insert([
+            {
+              usuario_id: userId,
+              respostas,
+            },
+          ]);
         } catch (errQuest) {
           console.warn('Não foi possível gravar na tabela questionarios:', errQuest);
         }
 
         // Salva/atualiza perfil — não bloqueia se falhar
         // NOTA: preferencias_json foi removido — dados já vão para tabela 'questionarios'
-        const { error: erroPerfil } = await supabase
-          .from('perfis')
-          .upsert([{
-            usuario_id: userId,
-            nome: respostas.nome,
-            idade: respostas.idade,
-            sexo: respostas.sexo || 'masculino',
-            peso_kg: respostas.pesoKg || 70,
-            altura_cm: respostas.alturaCm || 175,
-            nivel_experiencia: respostas.nivelExperiencia,
-            nivel_atividade: respostas.nivelAtividade,
-            objetivo: respostas.objetivo || 'hipertrofia',
-            frequencia_semanal: respostas.frequenciaSemanal || 4,
-            sistema_unidades: 'metrico',
-          }], { onConflict: 'usuario_id' });
+        const { error: erroPerfil } = await supabase.from('perfis').upsert(
+          [
+            {
+              usuario_id: userId,
+              nome: respostas.nome,
+              idade: respostas.idade,
+              sexo: respostas.sexo || 'masculino',
+              peso_kg: respostas.pesoKg || 70,
+              altura_cm: respostas.alturaCm || 175,
+              nivel_experiencia: respostas.nivelExperiencia,
+              nivel_atividade: respostas.nivelAtividade,
+              objetivo: respostas.objetivo || 'hipertrofia',
+              frequencia_semanal: respostas.frequenciaSemanal || 4,
+              sistema_unidades: 'metrico',
+            },
+          ],
+          { onConflict: 'usuario_id' },
+        );
         if (erroPerfil) {
           // Não bloqueia o salvamento do plano — log claro para debug
-          console.error('⚠️ Erro ao atualizar perfil (não fatal):', erroPerfil.message, erroPerfil.code);
+          console.error(
+            '⚠️ Erro ao atualizar perfil (não fatal):',
+            erroPerfil.message,
+            erroPerfil.code,
+          );
         }
       }
 
       // 2. Salva as metas localmente. O plano remoto completo é criado abaixo.
       if (plano.resumo) {
-        await AsyncStorage.setItem('@fitapp_metas_ativas_v1', JSON.stringify({
-          caloriasMeta: plano.resumo.caloriasAlvo,
-          proteinaMeta: plano.resumo.macros.proteinas,
-          carboidratoMeta: plano.resumo.macros.carboidratos,
-          gorduraMeta: plano.resumo.macros.gorduras,
-          metaAguaMl: plano.resumo.metaAguaMl,
-        }));
+        await AsyncStorage.setItem(
+          '@fitapp_metas_ativas_v1',
+          JSON.stringify({
+            caloriasMeta: plano.resumo.caloriasAlvo,
+            proteinaMeta: plano.resumo.macros.proteinas,
+            carboidratoMeta: plano.resumo.macros.carboidratos,
+            gorduraMeta: plano.resumo.macros.gorduras,
+            metaAguaMl: plano.resumo.metaAguaMl,
+          }),
+        );
       }
 
       // 3. Salva Plano de Treino no Supabase e Localmente
@@ -863,11 +926,16 @@ export const repositorioPlano = {
         }));
 
         await AsyncStorage.setItem('@fitapp_plano_treino_custom_v1', JSON.stringify(treinosLocais));
-        const mapeamento = plano.treino.dias.reduce((acc: Record<string, string>, dia: any, idx: number) => {
-          const abrev = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][Math.max(0, Math.min(6, Number(dia.diaSemana)))];
-          acc[abrev] = treinosLocais[idx].id;
-          return acc;
-        }, {});
+        const mapeamento = plano.treino.dias.reduce(
+          (acc: Record<string, string>, dia: any, idx: number) => {
+            const abrev = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'][
+              Math.max(0, Math.min(6, Number(dia.diaSemana)))
+            ];
+            acc[abrev] = treinosLocais[idx].id;
+            return acc;
+          },
+          {},
+        );
         await AsyncStorage.setItem('@fitapp_mapeamento_semanal_v1', JSON.stringify(mapeamento));
       }
 
@@ -897,7 +965,10 @@ export const repositorioPlano = {
           alimentos: ref.alimentos,
         }));
 
-        await AsyncStorage.setItem(`@fitapp_historico_dieta_${hojeStr}`, JSON.stringify(paraSalvar));
+        await AsyncStorage.setItem(
+          `@fitapp_historico_dieta_${hojeStr}`,
+          JSON.stringify(paraSalvar),
+        );
       }
 
       await repositorioDieta.salvarPlanoDietaEditavel(plano, null);

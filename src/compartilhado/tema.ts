@@ -15,9 +15,9 @@ import { Platform } from 'react-native';
 
 export const Cores = {
   fundo: {
-    principal: '#000000',    // Preto puro estilo OLED iOS
-    superficie: '#121418',   // Cards de primeiro nível
-    elevada: '#1A1D24',      // Modais e elementos elevados
+    principal: '#000000', // Preto puro estilo OLED iOS
+    superficie: '#121418', // Cards de primeiro nível
+    elevada: '#1A1D24', // Modais e elementos elevados
   },
 
   // Única cor de destaque — branco puro

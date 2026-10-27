@@ -10,9 +10,9 @@ import type { ObjetivoTreino } from '@/compartilhado/tipos';
 /** Informações de exibição de cada objetivo */
 export interface InfoObjetivo {
   valor: ObjetivoTreino;
-  label: string;           // Nome amigável para exibição
-  descricao: string;       // Explicação breve para o usuário
-  icone: string;           // Nome do ícone (para SF Symbols ou similar)
+  label: string; // Nome amigável para exibição
+  descricao: string; // Explicação breve para o usuário
+  icone: string; // Nome do ícone (para SF Symbols ou similar)
 }
 
 /**

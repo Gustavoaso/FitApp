@@ -16,13 +16,10 @@ const supabaseUrl =
   'https://asuxqjbwgetdcldjoaqm.supabase.co';
 // SUPABASE_KEY é dos scripts (pode ser service_role): o app só usa a anon key.
 const supabaseAnonKey =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  'sb_publishable_s97SsJOHdU0myvXzWT26DA_PBaFe95D';
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_s97SsJOHdU0myvXzWT26DA_PBaFe95D';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn(
-    '⚠️ SUPABASE_URL ou SUPABASE_KEY não configuradas no .env'
-  );
+  console.warn('⚠️ SUPABASE_URL ou SUPABASE_KEY não configuradas no .env');
 }
 
 /**

@@ -27,7 +27,9 @@ afterEach(() => jest.useRealTimers());
 it('comemora com mola e haptic Success, e segue sozinho', () => {
   mockReduzir.mockReturnValue(false);
   const aoTerminar = jest.fn();
-  render(<MomentoConquista titulo="Treino concluído" subtitulo="Treino A" aoTerminar={aoTerminar} />);
+  render(
+    <MomentoConquista titulo="Treino concluído" subtitulo="Treino A" aoTerminar={aoTerminar} />,
+  );
 
   expect(screen.getByLabelText('Treino concluído. Treino A')).toBeTruthy();
   expect(Haptics.notificationAsync).toHaveBeenCalledWith('success');

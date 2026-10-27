@@ -60,7 +60,11 @@ const EXERCICIOS_NATIVOS: ExercícioExerciseDB[] = [
   },
 ];
 
-async function fetchComTimeout(resource: string, options: RequestInit = {}, timeoutMs: number = 3500): Promise<Response> {
+async function fetchComTimeout(
+  resource: string,
+  options: RequestInit = {},
+  timeoutMs: number = 3500,
+): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -88,10 +92,7 @@ export async function obterDadosRawExerciseDB(): Promise<any[]> {
     }
 
     // 2. Supabase (< 30ms)
-    const { data: dadosSupabase } = await supabase
-      .from('base_exercicios')
-      .select('*')
-      .limit(300);
+    const { data: dadosSupabase } = await supabase.from('base_exercicios').select('*').limit(300);
 
     if (dadosSupabase && dadosSupabase.length >= 30) {
       await AsyncStorage.setItem(CHAVE_CACHE_EXERCISE_RAW, JSON.stringify(dadosSupabase));
@@ -112,7 +113,11 @@ export async function obterDadosRawExerciseDB(): Promise<any[]> {
 
 async function buscarTodosExerciciosRede(): Promise<ExercícioExerciseDB[]> {
   try {
-    const resp = await fetchComTimeout('https://oss.exercisedb.dev/api/v1/exercises?limit=300', {}, 3500);
+    const resp = await fetchComTimeout(
+      'https://oss.exercisedb.dev/api/v1/exercises?limit=300',
+      {},
+      3500,
+    );
     if (resp.ok) {
       const json = await resp.json();
       const lista = json.data || [];
@@ -171,9 +176,7 @@ export async function sincronizarExercicios(forcado: boolean = false): Promise<v
     const TAMANHO_LOTE = 50;
     for (let i = 0; i < payload.length; i += TAMANHO_LOTE) {
       const lote = payload.slice(i, i + TAMANHO_LOTE);
-      await supabase
-        .from('base_exercicios')
-        .upsert(lote, { onConflict: 'id_externo' });
+      await supabase.from('base_exercicios').upsert(lote, { onConflict: 'id_externo' });
     }
 
     await AsyncStorage.setItem(CHAVE_ULTIMA_SYNC_EXERCICIOS, String(Date.now()));
@@ -183,13 +186,16 @@ export async function sincronizarExercicios(forcado: boolean = false): Promise<v
 }
 
 export async function buscarExerciciosParaPrompt(
-  filtros: { localTreino: string; nivelExperiencia: string; restricoesFisicas: string[]; divisaoPreferida: string },
-  limite: number = 80
+  filtros: {
+    localTreino: string;
+    nivelExperiencia: string;
+    restricoesFisicas: string[];
+    divisaoPreferida: string;
+  },
+  limite: number = 80,
 ): Promise<string[]> {
   try {
-    let query = supabase
-      .from('base_exercicios')
-      .select('id, nome, grupo_primario, equipamento');
+    let query = supabase.from('base_exercicios').select('id, nome, grupo_primario, equipamento');
 
     if (filtros.localTreino === 'Casa' || filtros.localTreino === 'Peso do corpo') {
       // Evitar equipamentos complexos (máquinas, cabos) para quem treina em casa
@@ -210,19 +216,25 @@ export async function buscarExerciciosParaPrompt(
 
     // Filtro em memória simples para restrições físicas para evitar query complexa
     if (filtros.restricoesFisicas && filtros.restricoesFisicas.length > 0) {
-      const restricoes = filtros.restricoesFisicas.map(r => r.toLowerCase());
-      resultados = resultados.filter(e => {
+      const restricoes = filtros.restricoesFisicas.map((r) => r.toLowerCase());
+      resultados = resultados.filter((e) => {
         const str = (e.nome + ' ' + e.grupo_primario).toLowerCase();
-        if (restricoes.includes('joelho') && (str.includes('agachamento') || str.includes('leg press'))) return false;
-        if (restricoes.includes('ombro') && (str.includes('desenvolvimento') || str.includes('elevação'))) return false;
+        if (
+          restricoes.includes('joelho') &&
+          (str.includes('agachamento') || str.includes('leg press'))
+        )
+          return false;
+        if (
+          restricoes.includes('ombro') &&
+          (str.includes('desenvolvimento') || str.includes('elevação'))
+        )
+          return false;
         if (restricoes.includes('coluna') && str.includes('terra')) return false;
         return true;
       });
     }
 
-    return resultados.map((e) =>
-      `[ID: ${e.id}] ${e.nome} (Músculo: ${e.grupo_primario})`
-    );
+    return resultados.map((e) => `[ID: ${e.id}] ${e.nome} (Músculo: ${e.grupo_primario})`);
   } catch {
     return [];
   }
