@@ -13,7 +13,6 @@ import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { calcularTudo } from '@/compartilhado/utilidades';
 import {
   mapearAlimento,
-  mapearExercicio,
   mapearRespostas,
   paraPlanoGerado,
   type EntradaMotor,
@@ -21,10 +20,11 @@ import {
   type LinhaExercicio,
 } from './mapear-plano';
 import { montarDivisaoSemanal, montarSlotsDia, prescrever } from './motor/divisao-semanal';
+import { selecionarExercicios } from './selecionar-exercicios';
 import { montarPrompt, montarSchemaEscolha } from './motor/schema-prompt';
 import { MENSAGEM_PROFISSIONAL, verificarTravasSaude } from './motor/travas-saude';
 import type { AlimentoCandidato, ExercicioCandidato } from './motor/tipos';
-import { EQUIPAMENTOS_PERMITIDOS, montarPlano, validarEscolha } from './motor/validador';
+import { montarPlano, validarEscolha } from './motor/validador';
 import { ErroOllama, gerarComSchema, gerarEmbedding, MODELO_GERACAO } from './ollama-cliente';
 
 // PREMISSA (textos): mensagens da tela de geração.
@@ -37,15 +37,10 @@ export class ErroGeracao extends Error {
   name = 'ErroGeracao';
 }
 
-// Poucos candidatos por grupo/slot: o prompt cabe no contexto do llama3.2 3B.
-const POR_GRUPO = 6;
-const POR_SLOT = 8;
+// Poucos candidatos por grupo/slot: prompt curto, geração mais rápida (etapa 13b).
+const POR_GRUPO = 4;
+const POR_SLOT = 5;
 const TENTATIVAS = 2;
-const NIVEIS_ACEITOS = {
-  iniciante: ['iniciante'],
-  intermediario: ['iniciante', 'intermediario'],
-  avancado: ['iniciante', 'intermediario', 'avancado'],
-} as const;
 // Prefixo de consulta recomendado para o mxbai-embed-large.
 const PREFIXO_CONSULTA = 'Represent this sentence for searching relevant passages: ';
 
@@ -58,21 +53,15 @@ function limitarPor<T, K>(itens: T[], chave: (item: T) => K, maximo: number): T[
   });
 }
 
-async function buscarExercicios(entrada: EntradaMotor): Promise<ExercicioCandidato[]> {
+async function buscarExercicios(): Promise<LinhaExercicio[]> {
+  // Todos os níveis: a seleção amplia o nível quando um grupo fica vazio.
   const { data, error } = await supabase
     .from('base_exercicios')
-    .select('id, nome, grupo_primario, equipamento, tipo_movimento')
+    .select('id, nome, grupo_primario, grupo_secundario, equipamento, tipo_movimento, nivel')
     .eq('is_curado', true)
-    .in('nivel', [...NIVEIS_ACEITOS[entrada.nivel]])
-    .limit(1000);
+    .limit(2000);
   if (error) throw error;
-  const permitidos = EQUIPAMENTOS_PERMITIDOS[entrada.equipamentos];
-  const candidatos = ((data ?? []) as LinhaExercicio[])
-    .map(mapearExercicio)
-    .filter((e): e is ExercicioCandidato => e !== null && permitidos.includes(e.equipamento));
-  // Compostos primeiro, para eles sobrarem no corte por grupo.
-  candidatos.sort((a, b) => Number(b.composto) - Number(a.composto));
-  return limitarPor(candidatos, (e) => e.grupo, POR_GRUPO);
+  return (data ?? []) as LinhaExercicio[];
 }
 
 async function buscarAlimentos(entrada: EntradaMotor): Promise<AlimentoCandidato[]> {
@@ -83,7 +72,7 @@ async function buscarAlimentos(entrada: EntradaMotor): Promise<AlimentoCandidato
     .limit(1000);
   if (error) throw error;
   const candidatos = ((data ?? []) as LinhaAlimento[])
-    .map(mapearAlimento)
+    .map((linha) => mapearAlimento(linha, entrada.restricoes.includes('vegano')))
     .filter(
       (a): a is AlimentoCandidato =>
         a !== null && entrada.restricoes.every((r) => a.restricoesAtendidas.includes(r)),
@@ -111,10 +100,23 @@ async function buscarDiretrizes(entrada: EntradaMotor): Promise<Trecho[]> {
   return (data ?? []) as Trecho[];
 }
 
+/** Troca os UUIDs por apelidos curtos (e1, e2...): bem menos tokens no prompt e na resposta. */
+function apelidar(exercicios: ExercicioCandidato[]) {
+  const original = new Map(exercicios.map((e, i) => [`e${i + 1}`, e.id]));
+  return { apelidados: exercicios.map((e, i) => ({ ...e, id: `e${i + 1}` })), original };
+}
+
 async function escolherComRetry(entrada: EntradaMotor, meta: ReturnType<typeof metaDe>, diretrizes: string[]) {
   const divisao = montarDivisaoSemanal(entrada.diasPorSemana);
-  const slots = divisao.map((d) => montarSlotsDia(d, entrada.nivel));
-  const [exercicios, alimentos] = await Promise.all([buscarExercicios(entrada), buscarAlimentos(entrada)]);
+  const [linhas, alimentos] = await Promise.all([buscarExercicios(), buscarAlimentos(entrada)]);
+  const selecao = selecionarExercicios(
+    linhas,
+    entrada,
+    divisao.map((d) => montarSlotsDia(d, entrada.nivel)),
+    POR_GRUPO,
+  );
+  const { slots } = selecao;
+  const { apelidados: exercicios, original } = apelidar(selecao.exercicios);
   const schema = montarSchemaEscolha(slots, exercicios, alimentos);
   const contexto = {
     objetivo: entrada.objetivo,
@@ -135,7 +137,13 @@ async function escolherComRetry(entrada: EntradaMotor, meta: ReturnType<typeof m
       continue;
     }
     const montagem = montarPlano(validacao.escolha, slots, exercicios, alimentos, prescrever(entrada.objetivo, entrada.nivel), meta);
-    if (montagem.plano) return { plano: montagem.plano, divisao };
+    if (montagem.plano) {
+      const dias = montagem.plano.dias.map((d) => ({
+        ...d,
+        exercicios: d.exercicios.map((e) => ({ ...e, id: original.get(e.id) ?? e.id })),
+      }));
+      return { plano: { ...montagem.plano, dias }, divisao, avisos: selecao.avisos };
+    }
     erros = montagem.erros;
   }
   console.warn('[geracao] recusada duas vezes:', erros);
@@ -167,11 +175,12 @@ export async function montarPlanoGerado(dados: DadosQuestionario): Promise<Plano
   if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
 
   const trechos = await buscarDiretrizes(entrada);
-  const { plano, divisao } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
+  const { plano, divisao, avisos } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
   const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
   return {
     ...paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`)),
     fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
+    ...(avisos.length > 0 ? { avisos } : {}),
   };
 }
 

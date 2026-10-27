@@ -1,5 +1,11 @@
 import type { DadosQuestionario } from '@/compartilhado/tipos';
-import { mapearAlimento, mapearExercicio, mapearRespostas, type LinhaAlimento } from './mapear-plano';
+import {
+  mapearAlimento,
+  mapearExercicio,
+  mapearRespostas,
+  respeitaRestricoesFisicas,
+  type LinhaAlimento,
+} from './mapear-plano';
 
 const linhaAlimento = (parcial: Partial<LinhaAlimento>): LinhaAlimento => ({
   id: 1, nome: 'Alimento', categoria: 'outros', calorias_100g: 100,
@@ -19,7 +25,7 @@ describe('mapearRespostas', () => {
     expect(entrada).toEqual({
       sexo: 'feminino', idade: 28, pesoKg: 60, alturaCm: 165, nivelAtividade: 'sedentario',
       objetivo: 'forca', nivel: 'avancado', diasPorSemana: 3, equipamentos: 'home_gym',
-      restricoes: ['sem_lactose', 'sem_gluten'],
+      restricoes: ['sem_lactose', 'sem_gluten'], restricoesFisicas: [],
     });
     expect(JSON.stringify(entrada)).not.toContain('Pessoa Teste');
   });
@@ -77,5 +83,61 @@ describe('mapearAlimento', () => {
     expect(mapearAlimento(linhaAlimento({ calorias_100g: 0 }))).toBeNull();
     expect(mapearAlimento(linhaAlimento({ calorias_100g: NaN }))).toBeNull();
     expect(mapearAlimento(linhaAlimento({ proteinas_100g: undefined as unknown as number }))).toBeNull();
+  });
+});
+
+describe('restrição física', () => {
+  const base: DadosQuestionario = {
+    perfil: { nome: '', sexo_biologico: 'Masculino', idade: 45, peso_atual: 90, altura: 175 },
+    objetivo: { objetivo_principal: 'Emagrecimento', atividade_fora_treino: 'Sedentário', nivel_experiencia: 'Iniciante' },
+    treino: { dias_disponiveis_semana: 3, local_treino: 'Academia', tempo_sessao: '60 min', divisao_preferida: '', restricao_fisica: ['Joelho', 'Coluna-lombar', 'Punho'] },
+    dieta: { restricao_alimentar: ['Nenhuma'], refeicoes_por_dia: 4 },
+  };
+
+  it('traduz joelho e coluna; punho ainda não tem regra', () => {
+    expect(mapearRespostas(base).restricoesFisicas).toEqual(['joelho', 'coluna']);
+  });
+
+  it('recusa "Nenhuma" e campo ausente (dado antigo)', () => {
+    expect(mapearRespostas({ ...base, treino: { ...base.treino, restricao_fisica: ['Nenhuma'] } }).restricoesFisicas).toEqual([]);
+    const semCampo = { ...base, treino: { ...base.treino, restricao_fisica: undefined as unknown as string[] } };
+    expect(mapearRespostas(semCampo).restricoesFisicas).toEqual([]);
+  });
+
+  it('joelho exclui impacto, salto e flexão profunda, sem acento e sem caixa', () => {
+    for (const nome of ['Salto Diagonal Alternado com as Pernas', 'Agachamento Goblet', 'AFUNDO Caminhando', 'Leg Press 45', 'Pulo na Caixa', 'Avanço com Halteres']) {
+      expect(respeitaRestricoesFisicas(nome, ['joelho'])).toBe(false);
+    }
+    expect(respeitaRestricoesFisicas('Cadeira Flexora', ['joelho'])).toBe(true);
+    expect(respeitaRestricoesFisicas('Supino Reto com Barra', ['joelho'])).toBe(true);
+  });
+
+  it('ombro exclui carga acima da cabeça; coluna exclui terra e bom dia', () => {
+    expect(respeitaRestricoesFisicas('Desenvolvimento Militar em Pé', ['ombro'])).toBe(false);
+    expect(respeitaRestricoesFisicas('Elevação Lateral com Halteres', ['ombro'])).toBe(true);
+    expect(respeitaRestricoesFisicas('Levantamento Terra com Barra', ['coluna'])).toBe(false);
+    expect(respeitaRestricoesFisicas('Bom Dia Sentado', ['coluna'])).toBe(false);
+    expect(respeitaRestricoesFisicas('Puxada Frontal', ['coluna'])).toBe(true);
+  });
+
+  it('sem restrição, tudo passa', () => {
+    expect(respeitaRestricoesFisicas('Salto na Caixa', [])).toBe(true);
+  });
+});
+
+describe('proteína vegetal (vegano)', () => {
+  const feijao = linhaAlimento({ nome: 'Feijão Preto Cozido', categoria: 'leguminosas', calorias_100g: 77, proteinas_100g: 4.5, carboidratos_100g: 14, gorduras_100g: 0.5 });
+  const arroz = linhaAlimento({ nome: 'Arroz Branco Cozido', categoria: 'cereais', calorias_100g: 128, proteinas_100g: 2.5, carboidratos_100g: 28, gorduras_100g: 0.2 });
+
+  it('leguminosa vira proteína só para o vegano', () => {
+    expect(mapearAlimento(feijao)?.slot).toBe('carboidrato');
+    expect(mapearAlimento(feijao, true)?.slot).toBe('proteina');
+    expect(mapearAlimento(feijao, true)?.restricoesAtendidas).toContain('vegano');
+  });
+
+  it('tofu vira proteína e cereal continua carboidrato', () => {
+    const tofu = linhaAlimento({ nome: 'Tofu', categoria: 'outros', calorias_100g: 120, proteinas_100g: 8, carboidratos_100g: 13, gorduras_100g: 4 });
+    expect(mapearAlimento(tofu, true)?.slot).toBe('proteina');
+    expect(mapearAlimento(arroz, true)?.slot).toBe('carboidrato');
   });
 });

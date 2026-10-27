@@ -21,6 +21,9 @@ export const SLOTS: SlotAlimento[] = ['proteina', 'carboidrato', 'complemento'];
 
 type Schema = Record<string, unknown>;
 
+// Caracteres de cada diretriz no prompt; o texto inteiro continua nos fundamentos.
+const LIMITE_DIRETRIZ = 300;
+
 function enumIds(ids: string[]): Schema {
   // `enum` vazio é inválido em JSON Schema: falta de candidato é erro do chamador.
   if (ids.length === 0) throw new Error('Sem candidatos para um grupo ou slot.');
@@ -96,17 +99,21 @@ export function montarPrompt(
   errosAnteriores: string[] = [],
 ): string {
   const c = montarContextoPrompt(origem);
+  // Prompt enxuto (etapa 13b): candidatos agrupados, um "id nome" por item, e
+  // diretrizes cortadas. Menos tokens = geração mais rápida no Mac de 8 GB.
+  const agrupar = <T,>(itens: T[], chave: (i: T) => string, linha: (i: T) => string) =>
+    [...new Set(itens.map(chave))].map((k) => `${k}: ${itens.filter((i) => chave(i) === k).map(linha).join('; ')}`);
   const linhas = [
-    'Você monta um plano de treino e dieta escolhendo apenas IDs da lista.',
+    'Monte um plano de treino e dieta escolhendo apenas IDs das listas.',
     `Objetivo: ${c.objetivo}. Nível: ${c.nivel}. Dias por semana: ${c.diasPorSemana}.`,
     `Equipamentos: ${c.equipamentos}. Restrições alimentares: ${c.restricoes.join(', ') || 'nenhuma'}.`,
     'Diretrizes:',
-    ...c.diretrizes.map((d) => `- ${d}`),
-    'Exercícios (id | nome | grupo):',
-    ...exercicios.map((e) => `${e.id} | ${e.nome} | ${e.grupo}`),
-    'Alimentos (id | nome | slot):',
-    ...alimentos.map((a) => `${a.id} | ${a.nome} | ${a.slot}`),
-    'Responda só o JSON no formato pedido. Prefira variedade entre os dias.',
+    ...c.diretrizes.map((d) => `- ${d.length > LIMITE_DIRETRIZ ? `${d.slice(0, LIMITE_DIRETRIZ)}…` : d}`),
+    'Exercícios por grupo (id nome):',
+    ...agrupar(exercicios, (e) => e.grupo, (e) => `${e.id} ${e.nome}`),
+    'Alimentos por slot (id nome):',
+    ...agrupar(alimentos, (a) => a.slot, (a) => `${a.id} ${a.nome}`),
+    'Responda só o JSON no formato pedido. Varie os exercícios entre os dias.',
   ];
   if (errosAnteriores.length > 0) {
     linhas.push('A resposta anterior foi recusada por:', ...errosAnteriores.map((e) => `- ${e}`));

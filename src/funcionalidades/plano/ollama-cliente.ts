@@ -9,7 +9,11 @@
 export const OLLAMA_URL = process.env.EXPO_PUBLIC_OLLAMA_URL || 'http://localhost:11434';
 export const MODELO_GERACAO = 'llama3.2';
 export const MODELO_EMBEDDING = 'mxbai-embed-large';
-export const TIMEOUT_MS = 60_000;
+// PREMISSA: 180 s; o llama3.2 no Mac de 8 GB passa de 60 s nos perfis maiores (etapa 13).
+export const TIMEOUT_MS = 180_000;
+// Contexto que cabe o prompt enxuto e a resposta; o modelo fica carregado entre gerações.
+const OPCOES_GERACAO = { temperature: 0.4, num_ctx: 4096 };
+const MANTER_CARREGADO = '15m';
 
 export const MENSAGEM_OLLAMA_FORA =
   'Não consegui falar com o gerador de planos. Confira se o Mac está ligado e na mesma rede.';
@@ -50,7 +54,8 @@ export async function gerarComSchema(prompt: string, schema: object): Promise<un
     prompt,
     format: schema,
     stream: false,
-    options: { temperature: 0.4 },
+    options: OPCOES_GERACAO,
+    keep_alive: MANTER_CARREGADO,
   });
   const texto = typeof corpo === 'object' && corpo !== null && 'response' in corpo ? corpo.response : undefined;
   if (typeof texto !== 'string') throw new ErroOllama('resposta sem "response"');

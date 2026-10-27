@@ -82,3 +82,6 @@ export interface DadosSaude {
 }
 
 export type MetaDia = Pick<Macros, 'calorias' | 'proteinas' | 'carboidratos' | 'gorduras'>;
+
+/** Restrições físicas que o motor sabe tratar (joelho, ombro, coluna lombar). */
+export type RestricaoFisica = 'joelho' | 'ombro' | 'coluna';

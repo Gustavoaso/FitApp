@@ -123,6 +123,8 @@ export interface PlanoIAGerado {
   comentarios?: string[];
   /** Trechos da base_conhecimento que embasaram o plano (justificativa + fonte). */
   fundamentos?: FundamentoPlano[];
+  /** Grupos que ficaram fora do treino por falta de exercício possível. */
+  avisos?: string[];
 }
 
 /** Trecho da base de conhecimento mostrado no Resultado. */

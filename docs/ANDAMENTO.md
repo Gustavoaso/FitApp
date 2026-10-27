@@ -36,7 +36,7 @@ Fluxo: novo-projeto
 | 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
-| 13b. Qualidade da geração | Pendente | | |
+| 13b. Qualidade da geração | Implementada, aguardando o testador | 1 | |
 | 14. Preparação para os testes finais | Pendente | | |
 | 15. Testes finais: correções | Pendente | | |
 

@@ -1,7 +1,8 @@
 import React from 'react';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { PlanoIAGerado } from '@/compartilhado/tipos';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
+import { gerarPlano } from './gerar-plano-servico';
 import TelaResultadoQuestionario, { AVISO_PROFISSIONAL } from './TelaResultadoQuestionario';
 
 const mockPush = jest.fn();
@@ -91,4 +92,23 @@ it('erro ao salvar aparece na barra e não comemora', async () => {
   fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
   await waitFor(() => expect(screen.getByText('Sem conexão.')).toBeTruthy());
   expect(screen.queryByText('Plano ativado')).toBeNull();
+});
+
+it('mostra o aviso de grupo que ficou fora do treino', () => {
+  const aviso = 'Não achei exercício de bíceps; o grupo ficou fora do treino.';
+  mockParametros = { ...mockParametros, plano: JSON.stringify({ ...PLANO, avisos: [aviso] }) };
+  render(<TelaResultadoQuestionario />);
+  expect(screen.getByText(aviso)).toBeTruthy();
+});
+
+it('enquanto gera, o texto avança de "Montando seu treino" para "Escolhendo alimentos"', () => {
+  jest.useFakeTimers();
+  (gerarPlano as jest.Mock).mockReturnValue(new Promise(() => {}));
+  mockParametros = { respostas: JSON.stringify({ perfil: { nome: 'Pessoa Teste' } }) };
+  render(<TelaResultadoQuestionario />);
+  expect(screen.getByText('Montando seu treino…')).toBeTruthy();
+  expect(screen.getByText('Isso pode levar até 3 minutos.')).toBeTruthy();
+  act(() => jest.advanceTimersByTime(20_000));
+  expect(screen.getByText('Escolhendo alimentos…')).toBeTruthy();
+  jest.useRealTimers();
 });

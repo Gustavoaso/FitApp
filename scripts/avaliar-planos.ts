@@ -63,13 +63,14 @@ const PERFIS: Perfil[] = [
   perfil('Peso do corpo intermediário', { sexo: 'Feminino', idade: 30, peso: 58, altura: 160, objetivo: 'Condicionamento', atividade: 'Moderado', nivel: 'Intermediário' }, { dias: 4, local: 'Peso do corpo' }),
 ];
 
-// PREMISSA: nomes que carregam o joelho. O motor ainda não lê restricao_fisica;
-// a avaliação só aponta, não reprova.
+// PREMISSA: nomes que carregam o joelho. Lista própria (não a do motor), para a
+// reconferência não herdar um furo do motor. Desde a etapa 13b, reprova.
 const CARGA_JOELHO = ['agachamento', 'afundo', 'avanco', 'leg press', 'extensora', 'salto', 'pliometr', 'passada', 'lunge', 'squat'];
 
-// O app desiste em TIMEOUT_MS (60 s). Aqui o limite é maior para medir a qualidade
+// O app desiste em TIMEOUT_MS (180 s desde a etapa 13b; meta de 60 s). Aqui o limite é maior para medir a qualidade
 // mesmo quando a geração é lenta; o que passa de TIMEOUT_MS vira problema no relatório.
 const LIMITE_AVALIACAO_MS = 300_000;
+const META_SEGUNDOS = 60;
 const fetchOriginal = globalThis.fetch;
 globalThis.fetch = (url, init) =>
   fetchOriginal(url, String(url).startsWith(OLLAMA_URL) ? { ...init, signal: AbortSignal.timeout(LIMITE_AVALIACAO_MS) } : init);
@@ -152,9 +153,10 @@ async function checar(dados: DadosQuestionario, plano: PlanoIAGerado) {
 
   if (dados.treino.restricao_fisica.includes('Joelho')) {
     const pesados = dias.flatMap((d) => d.exercicios.map((e) => e.nome)).filter((n) => CARGA_JOELHO.some((p) => semAcento(n).includes(p)));
-    if (pesados.length) alertas.push(`Joelho: o motor ignora restricao_fisica; saíram ${[...new Set(pesados)].join(', ')}.`);
+    if (pesados.length) problemas.push(`Joelho: saíram ${[...new Set(pesados)].join(', ')}.`);
   }
   if (!plano.fundamentos?.length) alertas.push('Sem fundamentos da base de conhecimento.');
+  alertas.push(...(plano.avisos ?? []).map((a) => `Aviso no plano: ${a}`));
   return { problemas, alertas };
 }
 
@@ -177,6 +179,7 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
     const segundos = Math.round((Date.now() - inicio) / 1000);
     const { problemas, alertas } = await checar(dados, plano);
     if (segundos * 1000 > TIMEOUT_MS) problemas.push(`Levou ${segundos} s: no app estouraria o limite de ${TIMEOUT_MS / 1000} s.`);
+    else if (segundos > META_SEGUNDOS) alertas.push(`Levou ${segundos} s: acima da meta de ${META_SEGUNDOS} s.`);
     const exercicios = plano.treino.dias.reduce((t, d) => t + d.exercicios.length, 0);
     const resumo = `${plano.treino.nomeDivisao}; ${plano.treino.dias.length} dias, ${exercicios} exercícios; ${plano.resumo.caloriasAlvo} kcal; ${plano.fundamentos?.length ?? 0} fundamentos`;
     return { rotulo, segundos, situacao: problemas.length ? 'reprovado' : 'aprovado', detalhes: [...problemas, ...alertas], resumo };
@@ -190,11 +193,14 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
 
 function relatorio(resultados: Resultado[], data: string): string {
   const aprovados = resultados.filter((r) => r.situacao === 'aprovado').length;
+  const comPlano = resultados.filter((r) => r.situacao !== 'falhou');
+  const media = comPlano.length ? Math.round(comPlano.reduce((t, r) => t + r.segundos, 0) / comPlano.length) : 0;
   const linhas = [
     `# Avaliação dos planos: ${data}`,
     '',
     `Modelo ${MODELO_GERACAO} (embeddings ${MODELO_EMBEDDING}), Ollama e Supabase locais, ${resultados.length} perfis fictícios em sequência.`,
     `**${aprovados} de ${resultados.length} aprovados.** Reprovado = o plano saiu, mas a reconferência achou problema; falhou = o serviço não entregou plano.`,
+    `Tempo médio (planos entregues): ${media} s. Limite do app ${TIMEOUT_MS / 1000} s; meta ${META_SEGUNDOS} s.`,
     '',
     '| Perfil | Situação | Tempo | Plano |',
     '|---|---|---|---|',

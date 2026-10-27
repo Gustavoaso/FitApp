@@ -19,7 +19,13 @@ import type {
 } from '@/compartilhado/tipos';
 import type { ResultadoCalculo } from '@/compartilhado/utilidades';
 import type { PlanoMontado } from './motor/validador';
-import type { AlimentoCandidato, ExercicioCandidato, NomeRefeicao, SlotAlimento } from './motor/tipos';
+import type {
+  AlimentoCandidato,
+  ExercicioCandidato,
+  NomeRefeicao,
+  RestricaoFisica,
+  SlotAlimento,
+} from './motor/tipos';
 
 export interface EntradaMotor {
   sexo: SexoBiologico;
@@ -32,6 +38,7 @@ export interface EntradaMotor {
   diasPorSemana: number;
   equipamentos: EquipamentosDisponiveis;
   restricoes: RestricaoAlimentar[];
+  restricoesFisicas: RestricaoFisica[];
 }
 
 function semAcento(texto: string): string {
@@ -45,6 +52,7 @@ export function mapearRespostas(dados: DadosQuestionario): EntradaMotor {
   const nivel = semAcento(dados.objetivo.nivel_experiencia);
   const local = semAcento(dados.treino.local_treino);
   const restricoes = dados.dieta.restricao_alimentar.map(semAcento);
+  const fisicas = (dados.treino.restricao_fisica ?? []).map(semAcento);
   const mapaRestricoes: [string, RestricaoAlimentar][] = [
     ['lactose', 'sem_lactose'],
     ['gluten', 'sem_gluten'],
@@ -71,6 +79,8 @@ export function mapearRespostas(dados: DadosQuestionario): EntradaMotor {
     equipamentos: local.includes('academia') ? 'academia_completa' : local.includes('casa') ? 'home_gym' : 'peso_corporal',
     // "Outra" não tem filtro possível: fica de fora.
     restricoes: mapaRestricoes.filter(([texto]) => restricoes.includes(texto)).map(([, r]) => r),
+    // "Punho" e "Outra" ainda não têm regra no motor.
+    restricoesFisicas: (['joelho', 'ombro', 'coluna'] as const).filter((r) => fisicas.some((f) => f.includes(r))),
   };
 }
 
@@ -111,12 +121,18 @@ export interface LinhaExercicio {
   grupo_primario: string;
   equipamento: string;
   tipo_movimento: string;
+  nivel?: string;
+  grupo_secundario?: string | null;
+}
+
+/** Nome da base ("isquiotibiais", "Dorsais") → grupo do motor, ou undefined. */
+export function grupoDaBase(texto: string): GrupoMuscular | undefined {
+  return GRUPO_DA_BASE[semAcento(texto.trim())];
 }
 
 /** Linha sem grupo conhecido é descartada. Funcional vira candidato de corpo inteiro. */
 export function mapearExercicio(linha: LinhaExercicio): ExercicioCandidato | null {
-  const primeiro = semAcento(linha.grupo_primario.split(',')[0].trim());
-  const grupo = linha.tipo_movimento === 'funcional' ? 'corpo_inteiro' : GRUPO_DA_BASE[primeiro];
+  const grupo = linha.tipo_movimento === 'funcional' ? 'corpo_inteiro' : grupoDaBase(linha.grupo_primario.split(',')[0]);
   if (!grupo) return null;
   const equipamento = semAcento(linha.equipamento);
   return {
@@ -150,8 +166,43 @@ const PROIBIDOS: Record<Exclude<RestricaoAlimentar, 'nenhuma'>, string[]> = {
   sem_gluten: ['trigo', 'pao', 'macarrao', 'massa', 'aveia', 'cevada', 'centeio', 'biscoito', 'bolacha', 'granola'],
 };
 
-/** Classifica pelo macro dominante em kcal; alimento sem slot claro fica de fora. */
-export function mapearAlimento(linha: LinhaAlimento): AlimentoCandidato | null {
+// PREMISSA: palavras que marcam exercício de risco para cada restrição física.
+// Na dúvida, exclui: joelho = impacto, salto e flexão profunda; ombro = carga
+// acima da cabeça e arremessos; coluna = carga axial e flexão de tronco com peso.
+const LEVANTAMENTOS_OLIMPICOS = ['arranco', 'clean', 'snatch', 'jerk', 'thruster', 'turkish'];
+const RISCO_FISICO: Record<RestricaoFisica, string[]> = {
+  joelho: [
+    'agachamento', 'afundo', 'avanco', 'passada', 'lunge', 'squat', 'bulgaro', 'pistol', 'leg press',
+    'hack', 'extensora', 'extensao de pernas', 'salto', 'pulo', 'saltos', 'pliometr', 'sprint', 'corrida',
+    'impulso', 'patinacao', 'shuffle', 'caixa', 'barreiras', 'step', 'chute', 'carioca', 'prowler',
+    ...LEVANTAMENTOS_OLIMPICOS,
+  ],
+  ombro: [
+    'desenvolvimento', 'press', 'arremesso', 'handstand', 'flexoes de mao', 'acima da cabeca', 'por cima',
+    'atras do pescoco', 'mergulho', 'paralela', 'remada alta', 'iron cross', 'batalha', 'jammer',
+    ...LEVANTAMENTOS_OLIMPICOS,
+  ],
+  coluna: [
+    'levantamento terra', 'terra ', 'deadlift', 'stiff', 'bom dia', 'good morning', 'hiperextens',
+    'agachamento', 'squat', 'zercher', 'remada curvada', 'balance', 'swing', 'salto', 'pulo', 'prowler',
+    ...LEVANTAMENTOS_OLIMPICOS,
+  ],
+};
+
+/** true quando o nome do exercício não tem nenhuma palavra de risco das restrições. */
+export function respeitaRestricoesFisicas(nome: string, restricoes: RestricaoFisica[]): boolean {
+  const texto = `${semAcento(nome)} `;
+  return restricoes.every((r) => !RISCO_FISICO[r].some((p) => texto.includes(p)));
+}
+
+// PREMISSA: proteína vegetal que o vegano usa no slot de proteína, mesmo sem 40% das kcal.
+const PROTEINA_VEGETAL = ['leguminosas', 'feijao', 'grao-de-bico', 'lentilha', 'ervilha', 'tofu', 'soja', 'tempeh'];
+
+/**
+ * Classifica pelo macro dominante em kcal; alimento sem slot claro fica de fora.
+ * Com `proteinaVegetal`, leguminosas, tofu e soja entram como proteína (cardápio vegano).
+ */
+export function mapearAlimento(linha: LinhaAlimento, proteinaVegetal = false): AlimentoCandidato | null {
   const kcal = Number(linha.calorias_100g);
   const proteina = Number(linha.proteinas_100g);
   const carboidrato = Number(linha.carboidratos_100g);
@@ -159,12 +210,13 @@ export function mapearAlimento(linha: LinhaAlimento): AlimentoCandidato | null {
   if (![kcal, proteina, carboidrato, gordura].every(Number.isFinite) || kcal <= 0) return null;
   // PREMISSA: limiares de fração das kcal para cada slot.
   let slot: SlotAlimento | null = null;
+  const texto = semAcento(`${linha.nome} ${linha.categoria}`);
   if ((proteina * 4) / kcal >= 0.4) slot = 'proteina';
+  else if (proteinaVegetal && PROTEINA_VEGETAL.some((p) => texto.includes(p))) slot = 'proteina';
   else if ((gordura * 9) / kcal >= 0.6) slot = 'complemento';
   else if ((carboidrato * 4) / kcal >= 0.5) slot = 'carboidrato';
   if (!slot) return null;
 
-  const texto = semAcento(`${linha.nome} ${linha.categoria}`);
   const atende = (r: Exclude<RestricaoAlimentar, 'nenhuma'>) => !PROIBIDOS[r].some((p) => texto.includes(p));
   const restricoesAtendidas = (Object.keys(PROIBIDOS) as Exclude<RestricaoAlimentar, 'nenhuma'>[]).filter(
     // Vegano exclui também tudo o que o vegetariano exclui.

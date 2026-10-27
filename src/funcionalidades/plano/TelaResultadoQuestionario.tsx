@@ -68,6 +68,22 @@ function useReduzirTransparencia() {
   return reduzir;
 }
 
+// PREMISSA (textos): fases mostradas enquanto o Ollama trabalha. O serviço não
+// avisa o progresso real; o texto avança pelo tempo, até a última fase.
+export const FASES_GERACAO = ['Montando seu treino…', 'Escolhendo alimentos…', 'Conferindo as contas…'];
+const INTERVALO_FASE_MS = 20_000;
+
+function useFaseGeracao(ativo: boolean) {
+  const [fase, setFase] = useState(0);
+  useEffect(() => {
+    if (!ativo) return;
+    setFase(0);
+    const relogio = setInterval(() => setFase((f) => Math.min(f + 1, FASES_GERACAO.length - 1)), INTERVALO_FASE_MS);
+    return () => clearInterval(relogio);
+  }, [ativo]);
+  return fase;
+}
+
 export default function TelaResultadoQuestionario() {
   const { cores, escuro } = useTema();
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
@@ -85,6 +101,7 @@ export default function TelaResultadoQuestionario() {
   const [gerarAoAbrir] = useState(!dadosPlano && !!dadosRespostas);
   const [gerando, setGerando] = useState(gerarAoAbrir);
   const [erroGeracao, setErroGeracao] = useState<string | null>(null);
+  const fase = useFaseGeracao(gerando);
 
   const gerar = useCallback(async () => {
     if (!dadosRespostas) return;
@@ -122,8 +139,10 @@ export default function TelaResultadoQuestionario() {
             <Skeleton key={i} largura={64} altura={64} raio={32} />
           ))}
         </View>
-        <Text style={estilos.titulo3}>Criando seu plano personalizado...</Text>
-        <Text style={estilos.legenda}>Isso pode levar até um minuto.</Text>
+        <Text style={estilos.titulo3} accessibilityLiveRegion="polite">
+          {FASES_GERACAO[fase]}
+        </Text>
+        <Text style={estilos.legenda}>Isso pode levar até 3 minutos.</Text>
       </View>
     );
   }
@@ -343,6 +362,13 @@ export default function TelaResultadoQuestionario() {
             ))}
           </View>
         ) : null}
+
+        {(dadosPlano.avisos ?? []).map((aviso) => (
+          <View key={aviso} style={estilos.aviso} accessible>
+            <SymbolView name="exclamationmark.triangle" size={18} tintColor={cores.textoSecundario} />
+            <Text style={[estilos.legenda, estilos.avisoTexto]}>{aviso}</Text>
+          </View>
+        ))}
 
         <View style={estilos.aviso} accessible>
           <SymbolView name="info.circle" size={18} tintColor={cores.textoSecundario} />

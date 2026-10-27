@@ -1,7 +1,6 @@
 import { supabase } from '@/compartilhado/supabase';
 import type { DadosQuestionario } from '@/compartilhado/tipos';
 import { ErroGeracao, gerarPlano, MENSAGEM_FALHA, MENSAGEM_LIMITE } from './gerar-plano-servico';
-import { montarDivisaoSemanal, montarSlotsDia } from './motor/divisao-semanal';
 import { MENSAGEM_PROFISSIONAL } from './motor/travas-saude';
 import { MENSAGEM_OLLAMA_FORA } from './ollama-cliente';
 
@@ -38,25 +37,22 @@ const RESPOSTAS: DadosQuestionario = {
   dieta: { restricao_alimentar: ['Nenhuma'], refeicoes_por_dia: 4 },
 };
 
-// O que a LLM daria: os primeiros IDs de cada grupo (nomes do motor → nomes da base).
-const BASE_DO_MOTOR: Record<string, string> = {
-  costas: 'dorsais', posterior: 'isquiotibiais', panturrilha: 'panturrilhas', abdomen: 'abdominais', antebraco: 'antebracos',
-};
-function escolhaValida() {
-  const slots = montarDivisaoSemanal(4).map((d) => montarSlotsDia(d, 'intermediario'));
-  const refeicao = { proteina: '1', carboidrato: '2', complemento: '3' };
-  return {
-    dias: slots.map((s) => ({
-      exercicios: Object.fromEntries(
-        s.porGrupo.map(({ grupo, quantidade }) => [
-          grupo,
-          [1, 2, 3].slice(0, quantidade).map((n) => `${BASE_DO_MOTOR[grupo] ?? grupo}-${n}`),
-        ]),
-      ),
-    })),
-    refeicoes: { cafe: refeicao, almoco: refeicao, lanche: refeicao, jantar: refeicao },
-  };
+type Schema = { properties?: Record<string, Schema>; prefixItems?: Schema[]; items?: Schema; enum?: string[]; minItems?: number };
+
+/** O que a LLM daria: os primeiros IDs de cada `enum` do schema pedido (os apelidos e1, e2...). */
+function escolherDoSchema(schema: Schema): unknown {
+  const props = (s: Schema) => Object.entries(s.properties ?? {});
+  const dias = (schema.properties?.dias.prefixItems ?? []).map((dia) => ({
+    exercicios: Object.fromEntries(
+      props(dia.properties?.exercicios ?? {}).map(([g, lista]) => [g, (lista.items?.enum ?? []).slice(0, lista.minItems)]),
+    ),
+  }));
+  const refeicoes = Object.fromEntries(
+    props(schema.properties?.refeicoes ?? {}).map(([r, slots]) => [r, Object.fromEntries(props(slots).map(([k, v]) => [k, v.enum?.[0]]))]),
+  );
+  return { dias, refeicoes };
 }
+const VALIDA = 'VALIDA';
 const ESCOLHA_INVALIDA = { dias: [], refeicoes: {} };
 
 function consulta(data: unknown[]) {
@@ -70,17 +66,18 @@ function consulta(data: unknown[]) {
 /** Simula o Ollama: cada chamada a /api/generate devolve a próxima resposta da fila. */
 function simularOllama(respostas: unknown[]) {
   const fila = [...respostas];
-  const fetchMock = jest.fn(async (url: string) => {
+  const fetchMock = jest.fn(async (url: string, init: { body: string }) => {
+    const proxima = fila.shift();
     const corpo = url.endsWith('/api/embed')
-      ? { embeddings: [[0.1, 0.2, 0.3]] }
-      : { response: JSON.stringify(fila.shift()) };
+      ? (fila.unshift(proxima), { embeddings: [[0.1, 0.2, 0.3]] })
+      : { response: JSON.stringify(proxima === VALIDA ? escolherDoSchema(JSON.parse(init.body).format) : proxima) };
     return { ok: true, status: 200, json: async () => corpo };
   });
   global.fetch = fetchMock as unknown as typeof fetch;
   return fetchMock;
 }
 
-function chamadasGenerate(fetchMock: jest.Mock): { prompt: string }[] {
+function chamadasGenerate(fetchMock: jest.Mock): { prompt: string; format: Schema }[] {
   return fetchMock.mock.calls
     .filter(([url]) => String(url).endsWith('/api/generate'))
     .map(([, init]) => JSON.parse(init.body));
@@ -100,7 +97,7 @@ afterEach(() => jest.restoreAllMocks());
 
 describe('gerarPlano com o Ollama simulado', () => {
   it('sucesso: gera, salva pela RPC e o prompt não leva o nome', async () => {
-    const fetchMock = simularOllama([escolhaValida()]);
+    const fetchMock = simularOllama([VALIDA]);
     const { plano, planoIaId } = await gerarPlano(RESPOSTAS);
 
     expect(planoIaId).toBe('plano-ia-1');
@@ -117,7 +114,7 @@ describe('gerarPlano com o Ollama simulado', () => {
   });
 
   it('retry: a 1ª resposta é recusada e a 2ª, com os erros no prompt, é salva', async () => {
-    const fetchMock = simularOllama([ESCOLHA_INVALIDA, escolhaValida()]);
+    const fetchMock = simularOllama([ESCOLHA_INVALIDA, VALIDA]);
     await gerarPlano(RESPOSTAS);
 
     const chamadas = chamadasGenerate(fetchMock);
@@ -146,7 +143,7 @@ describe('gerarPlano com o Ollama simulado', () => {
   });
 
   it('6ª geração do dia: a recusa da RPC vira a mensagem do limite', async () => {
-    simularOllama([escolhaValida()]);
+    simularOllama([VALIDA]);
     rpc.mockImplementation(async (nome: string) =>
       nome === 'buscar_conhecimento_rag'
         ? { data: [TRECHO], error: null }
@@ -156,18 +153,52 @@ describe('gerarPlano com o Ollama simulado', () => {
   });
 
   it('trava de saúde: menor de 18 nem chama o Ollama', async () => {
-    const fetchMock = simularOllama([escolhaValida()]);
+    const fetchMock = simularOllama([VALIDA]);
     const menor = { ...RESPOSTAS, perfil: { ...RESPOSTAS.perfil, idade: 16 } };
     await expect(gerarPlano(menor)).rejects.toThrow(MENSAGEM_PROFISSIONAL);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('base sem candidatos: erro genérico, sem gravar', async () => {
-    simularOllama([escolhaValida()]);
+    simularOllama([VALIDA]);
     from.mockImplementation(() => consulta([]));
     const erro = await gerarPlano(RESPOSTAS).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(ErroGeracao);
     expect((erro as Error).message).toBe(MENSAGEM_FALHA);
     expect(salvou()).toBe(false);
+  });
+
+  it('vegano: leguminosa (39% das kcal em proteína) entra como proteína e o plano sai', async () => {
+    const tempeh = { id: 7, nome: 'Soja cozida', categoria: 'leguminosas', calorias_100g: 165, proteinas_100g: 16, carboidratos_100g: 20, gorduras_100g: 1 };
+    const veganos = [tempeh, ALIMENTOS[1], ALIMENTOS[2]];
+    from.mockImplementation((tabela: string) => consulta(tabela === 'base_exercicios' ? EXERCICIOS : [ALIMENTOS[0], ...veganos]));
+    simularOllama([VALIDA]);
+    const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
+    const { plano } = await gerarPlano(vegano);
+    const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
+    expect(nomes).toContain('Soja cozida');
+    expect(nomes).not.toContain('Frango grelhado');
+  });
+
+  it('peso do corpo: grupo sem exercício possível sai do dia com aviso e o plano sai', async () => {
+    // Só peito, costas e pernas têm versão sem equipamento; o resto exige barra.
+    const comCorpo = EXERCICIOS.map((e) =>
+      ['peito', 'dorsais', 'quadriceps', 'isquiotibiais', 'gluteos', 'abdominais'].some((g) => e.id.startsWith(g))
+        ? { ...e, equipamento: 'peso-do-corpo' }
+        : e,
+    );
+    from.mockImplementation((tabela: string) => consulta(tabela === 'base_exercicios' ? comCorpo : ALIMENTOS));
+    const fetchMock = simularOllama([VALIDA]);
+    const corpo = { ...RESPOSTAS, treino: { ...RESPOSTAS.treino, local_treino: 'Peso do corpo' } };
+    const { plano } = await gerarPlano(corpo);
+
+    expect(plano.treino.dias).toHaveLength(4);
+    const grupos = plano.treino.dias.flatMap((d) => d.exercicios.map((e) => e.grupoMuscular));
+    expect(grupos).not.toContain('biceps');
+    expect(grupos).toContain('peito');
+    expect(plano.avisos).toEqual(expect.arrayContaining([expect.stringContaining('bíceps')]));
+    // IDs reais no plano; o prompt só viu os apelidos.
+    expect(plano.treino.dias[0].exercicios[0].exercicioId).toMatch(/^peito-/);
+    expect(chamadasGenerate(fetchMock)[0].prompt).not.toContain('peito-1');
   });
 });
