@@ -9,7 +9,11 @@ import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Variáveis de ambiente do Expo
-const supabaseUrl = process.env.SUPABASE_URL || 'https://asuxqjbwgetdcldjoaqm.supabase.co';
+// O Expo só embute no app variáveis EXPO_PUBLIC_*; a instância de teste usa esta para o banco local.
+const supabaseUrl =
+  process.env.EXPO_PUBLIC_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
+  'https://asuxqjbwgetdcldjoaqm.supabase.co';
 // SUPABASE_KEY é dos scripts (pode ser service_role): o app só usa a anon key.
 const supabaseAnonKey =
   process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||

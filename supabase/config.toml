@@ -5,6 +5,11 @@ port = 54321
 [db]
 port = 54322
 
+# O db reset carrega as bases e depois as contas fictícias dos testes.
+[db.seed]
+enabled = true
+sql_paths = ["./seed/001_exercicios.sql", "./seed/002_alimentos.sql", "./seed.sql"]
+
 [studio]
 enabled = true
 port = 54323

@@ -21,8 +21,10 @@ Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `s
 | Lint | `npm run lint` (ESLint com `eslint-config-expo`) |
 | Testes | `npm test` (Jest + jest-expo, sem rede e sem banco; teste ao lado do arquivo, `*.test.ts`) |
 | Importar exercícios | `node scripts/importar-exercicios.js` (lê `SUPABASE_URL`/`SUPABASE_KEY`; escreve no banco apontado) |
-| Banco local | `npx supabase start` / `npx supabase db reset` (migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
+| Banco local | `npx supabase start` / `npx supabase db reset` (o reset carrega `supabase/seed/*.sql` e `supabase/seed.sql`; migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
 | Ingerir base de conhecimento | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node scripts/ingestao-conhecimento.ts` (Ollama local com `mxbai-embed-large`; recusa URL que não seja localhost/127.0.0.1; trechos em `scripts/conhecimento/trechos.json`) |
+| Instância de teste | `bash scripts/instancia-teste.sh subir` / `derrubar` (Supabase local + `db reset` com seed + ingestão se o Ollama estiver no ar + Metro numa porta livre aberto no simulador iOS pelo Expo Go; `COM_EDGE=1` sobe o edge-runtime; PIDs em `$TMPDIR/fitapp-instancia-teste.pid`) |
+| Contas de teste (seed) | `conta-a@exemplo.com` (plano aceito e registros) e `conta-b@exemplo.com` (nova), senha `senha-teste-123`; só banco local |
 | Popular bases locais | `bash scripts/preparar-bases-locais.sh` (exercícios do JSON em `scratch/`, seeds de `supabase/seed/`, curadoria e ingestão; só no container local) |
 | Avaliar planos | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node --import ./scripts/avaliacao/carregador.mjs scripts/avaliar-planos.ts` (8 perfis fictícios em sequência, Ollama e Supabase locais, não grava; relatório em `docs/avaliacoes/`; fora do `npm test`) |
 | Testes de RLS | `npx supabase test db` (pgTAP em `supabase/tests/`, só banco local) |

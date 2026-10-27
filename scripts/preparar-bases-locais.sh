@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Popula as bases do Supabase LOCAL para a avaliação dos planos (etapa 13).
-# O `db reset` não carrega supabase/seed/*.sql; aqui eles entram direto no
-# container do banco local (nunca no remoto) e a base_conhecimento vem da
-# ingestão da etapa 7 (Ollama local). Só dados públicos/fictícios.
+# Popula as bases do Supabase LOCAL para a avaliação dos planos (etapa 13):
+# troca as bases do seed pelo free-exercise-db completo e faz a ingestão da
+# etapa 7 (Ollama local). Nunca no remoto. Só dados públicos/fictícios.
+# O truncate apaga o plano da conta A do seed: `npx supabase db reset` o recria.
 #
 # COMO RODAR: npx supabase start && bash scripts/preparar-bases-locais.sh
 set -euo pipefail

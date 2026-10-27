@@ -37,7 +37,7 @@ Fluxo: novo-projeto
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
-| 14. Preparação para os testes finais | Pendente | | |
+| 14. Preparação para os testes finais | Implementada, aguardando o testador | 1 | |
 | 15. Testes finais: correções | Pendente | | |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
