@@ -249,7 +249,7 @@ export function BuscaAlimentosModal({
                   {itensSelecionadosReceita.length > 0 ? (
                     <Text style={estilos.composerMeta}>{itensSelecionadosReceita.length} item(ns) selecionado(s)</Text>
                   ) : (
-                    <Text style={estilos.composerMeta}>Toque em "Selecionar itens" e depois no + dos alimentos.</Text>
+                    <Text style={estilos.composerMeta}>Toque em “Selecionar itens” e depois no + dos alimentos.</Text>
                   )}
                 </CardVidro>
 

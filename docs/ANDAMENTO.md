@@ -23,7 +23,7 @@ Fluxo: novo-projeto
 
 | Etapa | Situação | Tentativas | Commit |
 |---|---|---|---|
-| 1. Fundação | Pendente | | |
+| 1. Fundação | Implementada, aguardando o testador | 1 | |
 | 2. Reorganizar por funcionalidade | Pendente | | |
 | 3. Tema, modo claro e componentes base | Pendente | | |
 | 4. Navegação nativa e telas no tema novo | Pendente | | |
@@ -74,4 +74,15 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 ## Decisões do agente
 
+- Etapa 1: versões fixadas no SDK 54 (`jest-expo ~54`, `eslint-config-expo ~10`, `jest ~29.7`); o `npx expo install` puxava o jest-expo 58 (exige React 19.2).
+- Etapa 1: `react-test-renderer@19.1.0` entrou como dev: é peer obrigatório do `@testing-library/react-native` e precisa casar com o React 19.1.0.
+- Etapa 1: ESLint ignora `supabase/` (Deno), `scratch/`, `.venv/` e `.expo/`; os 43 avisos existentes ficam como avisos (só os 2 erros foram corrigidos, com aspas tipográficas em `BuscaAlimentosModal.tsx:252`).
+- Etapa 1: testes de entradas inválidas registram o comportamento atual (NaN / TypeError), pois as funções de cálculo não validam; a validação mora no questionário.
+- Etapa 1: de `scratch/` foram para `scripts/` `importar-exercicios.js`, `atualizar-exercicios.js` e `ingestao-embeddings.py`; apagados `rag.py` e `verify_match.js` (experimentos).
+- Etapa 1: `.env.example` lista só as variáveis em uso (`SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OLLAMA_URL`, `SUPABASE_KEY`); Groq e TACO ficaram de fora porque saem do app na etapa 5.
+
 ## Pendências
+
+- `scratch/exercicios-bd-ptbr` está no índice do git como gitlink (repositório embutido). Está no `.gitignore`, mas tirar do índice exige `git rm --cached scratch/exercicios-bd-ptbr`, comando que o desenvolvedor não pode rodar: ação do dono.
+- `expo-doctor` acusa versões de patch antigas já existentes (`expo` 54.0.36→37, `expo-asset`, `expo-constants`, `react-native-worklets`): corrigir com `npx expo install --fix` numa etapa decidida pelo dono.
+- A skill `fitapp-padroes` ainda cita `docs/checklist_construcao.md` (agora em `docs/arquivo/`); a skill é atualizada na etapa 2.

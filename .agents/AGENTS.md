@@ -15,9 +15,10 @@ Documentação: [PROJETO.md](../docs/PROJETO.md) (regras), [VISUAL.md](../docs/V
 | O quê | Comando |
 |---|---|
 | Rodar | `npx expo start` |
-| Tipos | `npm run typecheck` (até a etapa 1: `npm run lint`, que roda `tsc --noEmit`) |
-| Lint | `npm run lint` (ESLint, a partir da etapa 1) |
-| Testes | `npm test` (Jest + jest-expo, sem rede e sem banco; a partir da etapa 1) |
+| Tipos | `npm run typecheck` (`tsc --noEmit`) |
+| Lint | `npm run lint` (ESLint com `eslint-config-expo`) |
+| Testes | `npm test` (Jest + jest-expo, sem rede e sem banco; teste ao lado do arquivo, `*.test.ts`) |
+| Importar exercícios | `node scripts/importar-exercicios.js` (lê `SUPABASE_URL`/`SUPABASE_KEY`; escreve no banco apontado) |
 | Banco local | `npx supabase start` / `npx supabase db reset` |
 
 Regras que não podem ser quebradas:

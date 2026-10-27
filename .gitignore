@@ -7,9 +7,8 @@ dist/
 *.tsbuildinfo
 
 # Variáveis de ambiente
-.env
-.env.local
-.env.production
+.env*
+!.env.example
 
 # Supabase
 supabase/.temp/
@@ -40,3 +39,6 @@ expo-env.d.ts
 .venv/
 __pycache__/
 *.pyc
+
+# Base de exercícios baixada (repositório próprio)
+scratch/exercicios-bd-ptbr/
