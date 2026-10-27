@@ -31,6 +31,7 @@ import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import { obterDadosRawTacoAPI } from './taco-sincronizacao-servico';
 import { obterDadosRawExerciseDB } from './exercise-db-sincronizacao-servico';
+import { excluirConta } from './excluir-conta-servico';
 
 export default function TelaPerfil() {
   const { cores, escuro } = useTema();
@@ -130,6 +131,30 @@ export default function TelaPerfil() {
         },
       },
     ]);
+  };
+
+  const [excluindo, setExcluindo] = useState(false);
+
+  const confirmarExclusao = async () => {
+    setExcluindo(true);
+    try {
+      await excluirConta();
+      router.replace('/(auth)/login');
+    } catch {
+      setExcluindo(false);
+      Alert.alert('Não foi possível excluir', 'Verifique a conexão e tente de novo. Nada foi apagado.');
+    }
+  };
+
+  const lidarComExcluirConta = () => {
+    Alert.alert(
+      'Excluir sua conta?',
+      'Seus planos, treinos e registros de dieta serão apagados para sempre.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Excluir conta e dados', style: 'destructive', onPress: confirmarExclusao },
+      ],
+    );
   };
 
   const iniciais = (usuario?.user_metadata?.nome as string | undefined)
@@ -301,6 +326,26 @@ export default function TelaPerfil() {
           <SymbolView name="rectangle.portrait.and.arrow.right" size={16} tintColor={cores.textoSecundario} />
           <Text style={estilos.textoSair}>Sair da Conta</Text>
         </TouchableOpacity>
+
+        {/* ── Excluir conta: destrutivo, separado do resto ───── */}
+        <CardVidro semBorda estilo={estilos.cardOpcoes}>
+          <TouchableOpacity
+            style={estilos.itemOpcao}
+            onPress={lidarComExcluirConta}
+            disabled={excluindo}
+            accessibilityRole="button"
+            accessibilityLabel="Excluir conta"
+            accessibilityHint="Apaga sua conta, planos e histórico. Não tem volta."
+            activeOpacity={0.7}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={[estilos.tituloOpcao, { color: cores.erro }]}>
+                {excluindo ? 'Excluindo conta...' : 'Excluir conta'}
+              </Text>
+              <Text style={estilos.subOpcao}>Apaga sua conta, planos e histórico. Não tem volta.</Text>
+            </View>
+          </TouchableOpacity>
+        </CardVidro>
 
         <Text style={estilos.versao}>FitApp v1.0.0</Text>
       </ScrollView>

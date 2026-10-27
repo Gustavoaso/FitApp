@@ -22,6 +22,7 @@ import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
 import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { supabase } from '@/compartilhado/supabase';
+import { possuiConsentimentoSaude } from '@/compartilhado/servicos/consentimento-servico';
 import type { DadosQuestionario } from '@/compartilhado/tipos';
 import {
   validarIdade,
@@ -60,6 +61,15 @@ export default function TelaQuestionario() {
   const [restricaoFisica, setRestricaoFisica] = useState<string[]>(['Nenhuma']);
   const [restricaoAlimentar, setRestricaoAlimentar] = useState<string[]>(['Nenhuma']);
   const [refeicoesPorDia, setRefeicoesPorDia] = useState('4');
+
+  // Sem o aceite dos dados de saúde o questionário não começa (PROJETO.md, seção 4).
+  const [consentimentoConfirmado, setConsentimentoConfirmado] = useState(false);
+  useEffect(() => {
+    possuiConsentimentoSaude().then((aceitou) => {
+      if (aceitou) setConsentimentoConfirmado(true);
+      else router.replace('/consentimento');
+    });
+  }, [router]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -199,6 +209,8 @@ export default function TelaQuestionario() {
       params: { respostas: JSON.stringify(payload) },
     });
   };
+
+  if (!consentimentoConfirmado) return <View style={estilos.container} />;
 
   return (
     <View style={estilos.container}>

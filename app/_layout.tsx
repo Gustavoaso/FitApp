@@ -49,6 +49,7 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/cadastro" options={{ headerShown: false }} />
+        <Stack.Screen name="consentimento" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/index" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/resultado" options={{ headerShown: false }} />
         <Stack.Screen

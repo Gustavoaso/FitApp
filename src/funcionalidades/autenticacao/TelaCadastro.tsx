@@ -73,7 +73,7 @@ export default function TelaCadastro() {
     } else if (resposta.erro) {
       setErro(resposta.erro);
     } else {
-      router.replace('/questionario');
+      router.replace('/consentimento');
     }
   };
 

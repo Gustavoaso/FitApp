@@ -24,6 +24,7 @@ Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `s
 | Banco local | `npx supabase start` / `npx supabase db reset` (migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
 | Ingerir base de conhecimento | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node scripts/ingestao-conhecimento.ts` (Ollama local com `mxbai-embed-large`; recusa URL que não seja localhost/127.0.0.1; trechos em `scripts/conhecimento/trechos.json`) |
 | Testes de RLS | `npx supabase test db` (pgTAP em `supabase/tests/`, só banco local) |
+| Testes das Edge Functions | `deno test supabase/functions/excluir-conta/` (handler isolado, sem rede nem segredo) |
 | Tipos do banco | `npx supabase gen types typescript --local --schema public > src/compartilhado/tipos/database.ts` e `npx prettier --write` no arquivo |
 
 Regras que não podem ser quebradas:

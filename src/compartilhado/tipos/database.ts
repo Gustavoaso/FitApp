@@ -351,6 +351,7 @@ export type Database = {
         Row: {
           altura_cm: number;
           atualizado_em: string;
+          consentimento_saude_em: string | null;
           criado_em: string;
           frequencia_semanal: number | null;
           gordura_corporal: number | null;
@@ -370,6 +371,7 @@ export type Database = {
         Insert: {
           altura_cm: number;
           atualizado_em?: string;
+          consentimento_saude_em?: string | null;
           criado_em?: string;
           frequencia_semanal?: number | null;
           gordura_corporal?: number | null;
@@ -388,6 +390,7 @@ export type Database = {
         Update: {
           altura_cm?: number;
           atualizado_em?: string;
+          consentimento_saude_em?: string | null;
           criado_em?: string;
           frequencia_semanal?: number | null;
           gordura_corporal?: number | null;
