@@ -47,10 +47,13 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 | Agente | Veredito | Rodadas | Observação |
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
-| seguranca | | | |
+| seguranca | REPROVADO (rodada 1) | 1 | CORRIGIR 2 (sincronizar-bases sem checar chamador), 3 (esm.sh sem versão); DECIDIR 1 (token sbp_ em repo PÚBLICO), 4 (auth fraco) |
 | testador-usuario | | | |
 
 ## Ações do dono
+
+- [ ] **URGENTE:** o repositório no GitHub é **público** e o token `sbp_e405…` está no histórico (commit 8cbf222). Revogar o token e tornar o repositório privado.
+- [ ] No painel do Supabase remoto: senha mínima 8 com requisitos, confirmação de e-mail e checagem de senha vazada.
 
 - [ ] Revogar o token Supabase `sbp_e405…` (commit `8cbf222`, publicado no GitHub) em supabase.com/dashboard/account/tokens.
 - [ ] Rotacionar a chave da RapidAPI (está no histórico do git em `servicos/tacoSincronizacaoServico.ts`).
@@ -72,6 +75,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 - 2026-10-26: Resultado = variação A; água `#38BDF8`; testes finais com Supabase local, simulador iOS e testes práticos de segurança.
 - 2026-10-26: plano de 15 etapas aprovado.
+
+- 2026-10-27 (maestro, autonomia do dono): seg. item 4 — endurecer o Auth no `config.toml` local (senha mín. 8 com letras e dígitos, confirmação de e-mail); replicar no painel remoto é ação do dono.
 
 ## Decisões do agente
 
