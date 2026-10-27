@@ -35,7 +35,8 @@ Fluxo: novo-projeto
 | 10. Resultado e conquistas | Concluída (testador: APROVADO) | 1 | 56ba4d3 |
 | 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
-| 13. Avaliação dos planos | Implementada, aguardando o testador | 1 | |
+| 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
+| 13b. Qualidade da geração | Pendente | | |
 | 14. Preparação para os testes finais | Pendente | | |
 | 15. Testes finais: correções | Pendente | | |
 
@@ -121,6 +122,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 10: campo opcional `fundamentos` no plano; fonte em rota `app/questionario/fonte.tsx` (formSheet); sem botões Voltar/Compartilhar do mockup; PREMISSA nos textos do aviso e da conquista.
 - Etapa 11: aceite sem perfil cria o perfil com os valores iniciais do cadastro; barra do Continuar sólida (sem vidro); handler da `excluir-conta` separado com exclusão injetada.
 - Etapa 12: botão só onde `isAvailableAsync()` confirma (iOS); sem nonce (exigiria `expo-crypto`); nome da Apple não é salvo (perfil padrão "Atleta").
+- Etapa 13: correção no motor (`items: false` quebrava o Ollama 0.32.5); `montarPlanoGerado` separado; `scripts/preparar-bases-locais.sh` popula as bases locais. Avaliação: 0/8 (tempo 82–128 s, vegano e peso do corpo sem candidatos, joelho ignorado).
+- Maestro (2026-10-27): etapa 13b acrescentada ao plano para corrigir a qualidade da geração, com a autonomia dada pelo dono.
 
 ## Pendências
 

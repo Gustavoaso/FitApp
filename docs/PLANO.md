@@ -215,6 +215,27 @@
 - **Dependências permitidas:** nenhuma nova.
 - **Premissas:** pode.
 
+## Etapa 13b: qualidade da geração (acrescentada pelo maestro em 2026-10-27)
+
+> Decisão do maestro com a autonomia dada pelo dono, a partir da avaliação `docs/avaliacoes/2026-10-27-avaliacao-planos.md` (0 de 8 aprovados).
+
+- **Escopo:**
+  - **Tempo:** a meta é chegar a no máximo 60 s na avaliação. Para isso:
+    - reduzir o prompt e o número de candidatos por grupo/slot;
+    - testar `num_ctx` menor e `keep_alive`;
+    - subir o timeout do app de 60 s para **180 s** (PREMISSA), com um texto de progresso na tela de Resultado ("Montando seu treino…", "Escolhendo alimentos…").
+  - **Restrição física:** o motor passa a usar `restricao_fisica`. Com joelho, ficam fora os exercícios de impacto, salto e flexão profunda de joelho; com ombro e coluna, a mesma lógica para os grupos de risco.
+  - **Falta de candidatos:** quando um grupo ou slot fica sem candidato:
+    - primeiro, amplia o filtro em degraus (equipamento → nível → grupo secundário);
+    - depois, se um grupo ainda ficar vazio, ele sai do dia com um aviso no plano, sem falhar o plano inteiro;
+    - para o vegano, as proteínas vegetais (leguminosas, tofu, soja) passam a contar como `proteina`.
+  - Rodar `scripts/avaliar-planos.ts` de novo e salvar um relatório novo.
+- **Pronto quando:**
+  - testes unitários: o joelho exclui exercícios de impacto; o plano vegano e o de peso do corpo são montados com os candidatos simulados; um grupo vazio sai do dia com aviso;
+  - o novo relatório mostra pelo menos 6 de 8 perfis aprovados e o tempo médio abaixo de 90 s (meta de 60 s registrada se não for atingida).
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode, exceto as travas de saúde (RN16).
+
 ## Etapa 14: preparação para os testes finais
 
 - **Escopo:**
