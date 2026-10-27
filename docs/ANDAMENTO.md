@@ -28,7 +28,7 @@ Fluxo: novo-projeto
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
 | 4. Navegação nativa e telas no tema novo | Concluída (testador: APROVADO) | 1 | 028b004 |
 | 5. Segredos fora do app | Concluída (testador: APROVADO) | 1 | 092f1e1 |
-| 6. Banco versionado (local) | Implementada, aguardando o testador | 1 | |
+| 6. Banco versionado (local) | Concluída (testador: APROVADO) | 1 | 5d5c02c |
 | 7. Base de conhecimento | Pendente | | |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Pendente | | |
