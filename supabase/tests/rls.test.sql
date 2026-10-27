@@ -20,6 +20,9 @@ values ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-0000000
 insert into public.base_exercicios (nome, grupo_primario, equipamento, nivel)
 values ('Agachamento Teste', 'quadriceps', 'barra', 'iniciante');
 
+-- O seed já põe exercícios na base: guarda o total para comparar sem depender dele.
+select set_config('teste.total_exercicios', (select count(*)::text from public.base_exercicios), true);
+
 -- Todas as tabelas de public com RLS ligada.
 select is(
   (select count(*)::int from pg_tables where schemaname = 'public' and not rowsecurity),
@@ -68,7 +71,7 @@ select throws_ok(
 );
 
 -- Bases: leitura sim, escrita não.
-select is((select count(*)::int from public.base_exercicios), 1, 'A lê a base de exercícios');
+select is((select count(*)::int from public.base_exercicios), current_setting('teste.total_exercicios')::int, 'A lê a base de exercícios inteira');
 select throws_ok(
   $$insert into public.base_exercicios (nome, grupo_primario, equipamento, nivel) values ('x', 'peito', 'barra', 'iniciante')$$,
   '42501', null, 'A não escreve na base de exercícios'
@@ -89,7 +92,7 @@ select is((select count(*)::int from public.perfis), 0, 'anon não lê perfis');
 reset role;
 select is((select nome from public.planos_treino where usuario_id = '00000000-0000-0000-0000-00000000000b'), 'Plano B', 'update de A não alterou o plano de B');
 select is((select count(*)::int from public.historico_peso where usuario_id = '00000000-0000-0000-0000-00000000000b'), 1, 'delete de A não apagou o registro de B');
-select is((select nome from public.base_exercicios where grupo_primario = 'quadriceps'), 'Agachamento Teste', 'update de A não alterou a base');
+select is((select count(*)::int from public.base_exercicios where nome = 'Alterado por A'), 0, 'update de A não alterou a base');
 
 select * from finish();
 rollback;
