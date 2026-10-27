@@ -32,7 +32,7 @@ Fluxo: novo-projeto
 | 7. Base de conhecimento | Concluída (testador: APROVADO) | 1 | b8542c5 |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Concluída (testador: APROVADO) | 1 | 1570805 |
-| 10. Resultado e conquistas | Implementada, aguardando o testador | 1 | |
+| 10. Resultado e conquistas | Concluída (testador: APROVADO) | 1 | 56ba4d3 |
 | 11. Consentimento e excluir conta | Pendente | | |
 | 12. Sign in with Apple | Pendente | | |
 | 13. Avaliação dos planos | Pendente | | |
@@ -118,6 +118,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 6: tipos gerados em `src/compartilhado/tipos/database.ts` (`supabase gen types --local`, formatado com prettier); ainda sem uso no código.
 
 - Etapa 9: a tela de Resultado dispara a geração; o plano fica ativo ao ser gerado (o anterior fica inativo, não apagado); `planos_ia_gerados` sem políticas de UPDATE/DELETE (protege o limite); o limite só é checado ao salvar. PREMISSAs: mapeamento de grupos e equipamentos, papel do alimento pelo macro dominante, restrições por palavras do nome, treinos a partir de segunda.
+- Etapa 10: campo opcional `fundamentos` no plano; fonte em rota `app/questionario/fonte.tsx` (formSheet); sem botões Voltar/Compartilhar do mockup; PREMISSA nos textos do aviso e da conquista.
 
 ## Pendências
 
