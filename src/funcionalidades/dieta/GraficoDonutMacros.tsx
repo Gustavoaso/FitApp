@@ -5,10 +5,11 @@
 // Inspirado no design do MyFitnessPal com estética Liquid Glass.
 // ============================================================
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { Cores, FamiliaFonte, Fonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresTema, CoresMacros, FamiliaFonte, Fonte, PesoFonte } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 
 interface PropsGraficoDonutMacros {
   calorias: number;
@@ -27,6 +28,8 @@ export function GraficoDonutMacros({
   tamanho = 90,
   espessura = 7,
 }: PropsGraficoDonutMacros) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const raio = (tamanho - espessura) / 2;
   const circunferencia = 2 * Math.PI * raio;
 
@@ -58,18 +61,18 @@ export function GraficoDonutMacros({
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke={cores.separador}
             strokeWidth={espessura}
             fill="transparent"
           />
 
-          {/* Arco Carbos (Verde Esmeralda) */}
+          {/* Arco Carbos */}
           {pctCarbos > 0 && (
             <Circle
               cx={tamanho / 2}
               cy={tamanho / 2}
               r={raio}
-              stroke="#10B981"
+              stroke={CoresMacros.carboidrato}
               strokeWidth={espessura}
               fill="transparent"
               strokeDasharray={`${lenCarbos} ${circunferencia - lenCarbos}`}
@@ -78,13 +81,13 @@ export function GraficoDonutMacros({
             />
           )}
 
-          {/* Arco Gorduras (Roxo / Violeta) */}
+          {/* Arco Gorduras */}
           {pctGorduras > 0 && (
             <Circle
               cx={tamanho / 2}
               cy={tamanho / 2}
               r={raio}
-              stroke="#A855F7"
+              stroke={CoresMacros.gordura}
               strokeWidth={espessura}
               fill="transparent"
               strokeDasharray={`${lenGorduras} ${circunferencia - lenGorduras}`}
@@ -93,13 +96,13 @@ export function GraficoDonutMacros({
             />
           )}
 
-          {/* Arco Proteínas (Amarelo / Accent FitApp) */}
+          {/* Arco Proteínas */}
           {pctProteinas > 0 && (
             <Circle
               cx={tamanho / 2}
               cy={tamanho / 2}
               r={raio}
-              stroke="#EAB308"
+              stroke={CoresMacros.proteina}
               strokeWidth={espessura}
               fill="transparent"
               strokeDasharray={`${lenProteinas} ${circunferencia - lenProteinas}`}
@@ -119,7 +122,8 @@ export function GraficoDonutMacros({
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -133,13 +137,13 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 16,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     letterSpacing: -0.5,
   },
   caloriasLabel: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 10,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: -2,
   },
 });

@@ -5,7 +5,7 @@
 // Permite entrar com e-mail/senha ou navegar para o cadastro.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -20,14 +20,18 @@ import {
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
-import { Cores, Espacamento, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { validarEmail } from '@/compartilhado/utilidades';
 
 export default function TelaLogin() {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
   const { entrarComEmail } = useAuth();
   const router = useRouter();
 
@@ -42,12 +46,13 @@ export default function TelaLogin() {
       return;
     }
 
+    setErro(null);
     setCarregando(true);
-    const { erro } = await entrarComEmail(email, senha);
+    const resposta = await entrarComEmail(email, senha);
     setCarregando(false);
 
-    if (erro) {
-      Alert.alert('Erro ao entrar', erro);
+    if (resposta.erro) {
+      setErro(resposta.erro);
     } else {
       // A rota raiz decide entre questionário e dashboard conforme o plano ativo.
       router.replace('/');
@@ -62,7 +67,7 @@ export default function TelaLogin() {
       <ScrollView contentContainerStyle={estilos.scrollContent}>
         {/* Cabeçalho / Branding */}
         <View style={estilos.cabecalho}>
-          <SymbolView name="bolt.fill" size={36} tintColor={Cores.accent} weight="bold" />
+          <SymbolView name="bolt.fill" size={36} tintColor={cores.destaque} weight="bold" />
           <Text style={estilos.titulo}>FitApp</Text>
           <Text style={estilos.subtitulo}>Seu treino e dieta sob medida</Text>
         </View>
@@ -76,7 +81,7 @@ export default function TelaLogin() {
             <TextInput
               style={estilos.input}
               placeholder="seu@email.com"
-              placeholderTextColor={Cores.texto.secundario}
+              placeholderTextColor={cores.textoSecundario}
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
@@ -89,12 +94,18 @@ export default function TelaLogin() {
             <TextInput
               style={estilos.input}
               placeholder="••••••••"
-              placeholderTextColor={Cores.texto.secundario}
+              placeholderTextColor={cores.textoSecundario}
               secureTextEntry
               value={senha}
               onChangeText={setSenha}
             />
           </View>
+
+          {erro ? (
+            <Text accessibilityRole="alert" style={estilos.textoErro}>
+              {erro}
+            </Text>
+          ) : null}
 
           <BotaoPrimario
             texto="Entrar"
@@ -116,10 +127,12 @@ export default function TelaLogin() {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
+  textoErro: { color: cores.erro, fontSize: Fonte.label, textAlign: 'center', marginBottom: Espacamento.md },
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
   },
   scrollContent: {
     flexGrow: 1,
@@ -137,12 +150,12 @@ const estilos = StyleSheet.create({
   titulo: {
     fontSize: Fonte.display,
     fontWeight: PesoFonte.extrabold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     letterSpacing: -0.5,
   },
   subtitulo: {
     fontSize: Fonte.corpo,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 4,
   },
   cardFormulario: {
@@ -151,7 +164,7 @@ const estilos = StyleSheet.create({
   cardTitulo: {
     fontSize: Fonte.titulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginBottom: Espacamento.xl,
   },
   campo: {
@@ -160,17 +173,17 @@ const estilos = StyleSheet.create({
   label: {
     fontSize: Fonte.label,
     fontWeight: PesoFonte.medio,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginBottom: Espacamento.sm,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: Cores.vidro.borda,
+    borderColor: cores.separador,
     borderRadius: Raio.md,
     padding: Espacamento.md,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   botaoEntrar: {
     marginTop: Espacamento.md,
@@ -181,11 +194,11 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
   },
   textoRodape: {
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontSize: Fonte.corpo,
   },
   linkCadastro: {
-    color: Cores.secundaria,
+    color: cores.destaque,
     fontSize: Fonte.corpo,
     fontWeight: PesoFonte.bold,
   },

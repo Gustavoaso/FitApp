@@ -4,11 +4,12 @@
 // Painel de aderência semanal (Treinos, Exercícios e Refeições reais vs metas)
 // ============================================================
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
-import { Cores, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresTema, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { EstatisticasAderencia } from '@/compartilhado/servicos/progresso-servico';
 
 interface PropsCardAderencia {
@@ -17,6 +18,8 @@ interface PropsCardAderencia {
 }
 
 export function CardAderencia({ estatisticas }: PropsCardAderencia) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const pctTreinoVisual = Math.min(
     100,
     Math.round((estatisticas.diasTreinados / (estatisticas.metaDiasTreino || 1)) * 100)
@@ -36,7 +39,7 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
     <CardVidro semBorda estilo={estilos.card}>
       <View style={estilos.header}>
         <View style={estilos.rowTitulo}>
-          <SymbolView name="chart.bar.fill" size={16} tintColor={Cores.accent} weight="bold" />
+          <SymbolView name="chart.bar.fill" size={16} tintColor={cores.destaque} weight="bold" />
           <Text style={estilos.titulo}>Aderência Semanal</Text>
         </View>
         <Text style={estilos.porcentagemBadge}>{estatisticas.porcentagemAderenciaGeral}%</Text>
@@ -46,7 +49,7 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
         {/* Treinos */}
         <View style={estilos.itemMetric}>
           <View style={estilos.rowMetricHeader}>
-            <SymbolView name="figure.run" size={14} tintColor={Cores.texto.secundario} />
+            <SymbolView name="figure.run" size={14} tintColor={cores.textoSecundario} />
             <Text style={estilos.labelMetric}>Treinos</Text>
           </View>
           <Text style={estilos.valorMetric}>
@@ -60,7 +63,7 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
         {/* Exercícios */}
         <View style={estilos.itemMetric}>
           <View style={estilos.rowMetricHeader}>
-            <SymbolView name="dumbbell.fill" size={14} tintColor={Cores.texto.secundario} />
+            <SymbolView name="dumbbell.fill" size={14} tintColor={cores.textoSecundario} />
             <Text style={estilos.labelMetric}>Exercícios</Text>
           </View>
           <Text style={estilos.valorMetric}>
@@ -74,7 +77,7 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
         {/* Dieta */}
         <View style={estilos.itemMetric}>
           <View style={estilos.rowMetricHeader}>
-            <SymbolView name="apple.logo" size={14} tintColor={Cores.texto.secundario} />
+            <SymbolView name="apple.logo" size={14} tintColor={cores.textoSecundario} />
             <Text style={estilos.labelMetric}>Dieta</Text>
           </View>
           <Text style={estilos.valorMetric}>
@@ -89,7 +92,8 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   card: {
     marginVertical: 8,
     padding: 16,
@@ -109,13 +113,13 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 15,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   porcentagemBadge: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 16,
     fontWeight: PesoFonte.bold,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   grid: {
     flexDirection: 'row',
@@ -123,7 +127,7 @@ const estilos = StyleSheet.create({
   },
   itemMetric: {
     flex: 1,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: 12,
     padding: 10,
   },
@@ -136,30 +140,30 @@ const estilos = StyleSheet.create({
   labelMetric: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   valorMetric: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginBottom: 6,
   },
   subMetric: {
     fontSize: 10,
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontWeight: PesoFonte.regular,
   },
   barraFundo: {
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 2,
     overflow: 'hidden',
   },
   barraProgresso: {
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     borderRadius: 2,
   },
 });

@@ -6,7 +6,7 @@
 // Rodada 2 — Ajuste 2: Adicionadas opções inversas para remover água (-250ml, -500ml, -1L).
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,8 @@ import { BlurView } from 'expo-blur';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '@/compartilhado/ui';
 import { CardAderencia } from './CardAderencia';
 import { GraficoEvolucao, PontoGrafico } from './GraficoEvolucao';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import {
   obterHistoricoPeso,
   adicionarEntradaPeso,
@@ -35,6 +36,8 @@ import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repo
 import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '@/compartilhado/servicos/plano-gestao-servico';
 
 export default function TelaInicio() {
+  const { cores, escuro } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
 
   const [caloriasConsumidas, setCaloriasConsumidas] = useState(0);
@@ -219,7 +222,11 @@ export default function TelaInicio() {
 
   return (
     <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={estilos.scrollContent}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* ── Top Bar ────────────────────────────────────────── */}
         <View style={estilos.topBar}>
@@ -272,9 +279,9 @@ export default function TelaInicio() {
         <View>
           <View style={estilos.gridMacros}>
             {[
-              { icone: <SymbolView name="fork.knife" size={16} tintColor={Cores.texto.secundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
-              { icone: <SymbolView name="leaf" size={16} tintColor={Cores.texto.secundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
-              { icone: <SymbolView name="drop" size={16} tintColor={Cores.texto.secundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
+              { icone: <SymbolView name="fork.knife" size={16} tintColor={cores.textoSecundario} />, nome: 'Proteína', atual: proteina, meta: proteinaMeta },
+              { icone: <SymbolView name="leaf" size={16} tintColor={cores.textoSecundario} />, nome: 'Carbos', atual: carboidrato, meta: carboidratoMeta },
+              { icone: <SymbolView name="drop" size={16} tintColor={cores.textoSecundario} />, nome: 'Gordura', atual: gordura, meta: gorduraMeta },
             ].map((macro, i) => (
               <CardVidro key={i} semBorda estilo={estilos.cardMacro}>
                 <View style={estilos.rowMacroTopo}>
@@ -306,7 +313,7 @@ export default function TelaInicio() {
           <View style={estilos.headerEvolucao}>
             <Text style={estilos.tituloEvolucao}>Evolução de Peso</Text>
             <TouchableOpacity style={estilos.btnNovoPeso} onPress={() => setModalPesoVisivel(true)}>
-              <SymbolView name="plus" size={12} tintColor={Cores.accent} weight="bold" />
+              <SymbolView name="plus" size={12} tintColor={cores.destaque} weight="bold" />
               <Text style={estilos.txtNovoPeso}>Registrar</Text>
             </TouchableOpacity>
           </View>
@@ -318,7 +325,7 @@ export default function TelaInicio() {
         <CardVidro semBorda estilo={estilos.cardAgua}>
           <View style={estilos.rowAguaTopo}>
             <View style={estilos.rowAguaInfo}>
-              <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
+              <SymbolView name="drop.fill" size={18} tintColor={cores.destaque} />
               <Text style={estilos.aguaLabel}>Meta de Água</Text>
             </View>
             <TouchableOpacity onPress={() => setModalMetaAguaVisivel(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
@@ -326,7 +333,7 @@ export default function TelaInicio() {
                 {aguaConsumidaMl}
                 <Text style={estilos.aguaUnidade}> / {metaAguaMl}ml</Text>
               </Text>
-              <SymbolView name="pencil" size={12} tintColor={Cores.texto.secundario} />
+              <SymbolView name="pencil" size={12} tintColor={cores.textoSecundario} />
             </TouchableOpacity>
           </View>
 
@@ -383,7 +390,7 @@ export default function TelaInicio() {
                 <Text style={estilos.treinoSub}>{treinoHojeSub}</Text>
               </View>
               <View style={estilos.iconeTreinoContainer}>
-                <SymbolView name="bolt.fill" size={20} tintColor={Cores.accent} />
+                <SymbolView name="bolt.fill" size={20} tintColor={cores.destaque} />
               </View>
             </View>
 
@@ -400,14 +407,14 @@ export default function TelaInicio() {
       <Modal visible={modalMetaAguaVisivel} animationType="slide" transparent statusBarTranslucent>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMetaAguaVisivel(false)} />
-          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Editar Meta de Água</Text>
 
             <TextInput
               style={estilos.input}
               placeholder="Meta em ml (ex: 2500)"
-              placeholderTextColor={Cores.texto.desabilitado}
+              placeholderTextColor={cores.textoSecundario}
               keyboardType="number-pad"
               value={novaMetaAguaStr}
               onChangeText={setNovaMetaAguaStr}
@@ -430,14 +437,14 @@ export default function TelaInicio() {
       <Modal visible={modalPesoVisivel} animationType="slide" transparent statusBarTranslucent>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalPesoVisivel(false)} />
-          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Registrar Peso Atual</Text>
 
             <TextInput
               style={estilos.input}
               placeholder="Peso em kg (ex: 85.0)"
-              placeholderTextColor={Cores.texto.desabilitado}
+              placeholderTextColor={cores.textoSecundario}
               keyboardType="decimal-pad"
               value={novoPesoStr}
               onChangeText={setNovoPesoStr}
@@ -459,14 +466,15 @@ export default function TelaInicio() {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Espacamento.sm, // o título grande fica no header nativo
     paddingBottom: 120,
   },
 
@@ -480,12 +488,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.titulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   dataAtual: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 3,
   },
   topBarDireita: {
@@ -497,18 +505,18 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Cores.fundo.superficie,
+    backgroundColor: cores.superficie,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: Raio.full,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   streakTexto: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   cardCalorias: {
@@ -526,7 +534,7 @@ const estilos = StyleSheet.create({
   labelCalorias: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontWeight: PesoFonte.semibold,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
@@ -536,38 +544,38 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.display,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     letterSpacing: -0.5,
   },
   metaCalorias: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
     marginBottom: 10,
   },
   barraFundo: {
     height: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 2,
     overflow: 'hidden',
     marginBottom: 5,
   },
   barraProgresso: {
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     borderRadius: 2,
   },
   textoPorcentagem: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   secaoTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: Espacamento.md,
@@ -590,23 +598,23 @@ const estilos = StyleSheet.create({
   },
   macroNome: {
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontFamily: FamiliaFonte.regular,
   },
   macroValor: {
     fontSize: 18,
     fontFamily: FamiliaFonte.bold,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   macroUnidade: {
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontFamily: FamiliaFonte.regular,
   },
   barraFundoMacro: {
     height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 1,
     overflow: 'hidden',
     marginTop: 8,
@@ -614,12 +622,12 @@ const estilos = StyleSheet.create({
   },
   barraProgressoMacro: {
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     borderRadius: 1,
   },
   macroMeta: {
     fontSize: Fonte.micro,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
     fontFamily: FamiliaFonte.regular,
   },
 
@@ -638,13 +646,13 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 15,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   btnNovoPeso: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
@@ -652,7 +660,7 @@ const estilos = StyleSheet.create({
   txtNovoPeso: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 11,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 
   cardAgua: {
@@ -673,40 +681,40 @@ const estilos = StyleSheet.create({
   aguaLabel: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   aguaValor: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   aguaUnidade: {
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontSize: Fonte.label,
   },
   barraFundoAgua: {
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 3,
     overflow: 'hidden',
     marginBottom: 14,
   },
   barraProgressoAgua: {
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     borderRadius: 3,
   },
   subtituloAguaAcao: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginBottom: 6,
   },
   subtituloAguaAcaoRemover: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 10,
     marginBottom: 6,
   },
@@ -716,9 +724,9 @@ const estilos = StyleSheet.create({
   },
   btnIncrementoAgua: {
     flex: 1,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: Cores.accentBorda,
+    borderColor: cores.separador,
     paddingVertical: 8,
     borderRadius: Raio.sm,
     alignItems: 'center',
@@ -726,7 +734,7 @@ const estilos = StyleSheet.create({
   txtIncrementoAgua: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   btnRemoverAgua: {
     flex: 1,
@@ -740,19 +748,19 @@ const estilos = StyleSheet.create({
   txtRemoverAgua: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: '#EF4444',
+    color: cores.erro,
   },
   btnEditarMetaAgua: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.sm,
     alignItems: 'center',
   },
   txtEditarMetaAgua: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   cardTreino: {
@@ -771,26 +779,26 @@ const estilos = StyleSheet.create({
   badgeTreino: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.micro,
-    color: Cores.accent,
+    color: cores.destaque,
     letterSpacing: 1,
     marginBottom: 4,
   },
   treinoTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   treinoSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 3,
   },
   iconeTreinoContainer: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -804,7 +812,7 @@ const estilos = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Cores.borda.forte,
+    backgroundColor: cores.separador,
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -812,30 +820,30 @@ const estilos = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    backgroundColor: 'rgba(16,19,24,0.97)',
+    backgroundColor: cores.elevada,
     borderTopWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   modalTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginBottom: 16,
   },
   input: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderWidth: 1,
-    borderColor: Cores.borda.media,
+    borderColor: cores.separador,
     borderRadius: Raio.md,
     padding: 12,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontFamily: FamiliaFonte.regular,
     marginBottom: 20,
   },
   modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
   btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
-  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: Cores.texto.secundario, fontSize: Fonte.corpo },
-  btnSalvar: { backgroundColor: Cores.accent, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
-  txtSalvar: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: Fonte.corpo },
+  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: cores.textoSecundario, fontSize: Fonte.corpo },
+  btnSalvar: { backgroundColor: cores.destaque, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
+  txtSalvar: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: Fonte.corpo },
 });

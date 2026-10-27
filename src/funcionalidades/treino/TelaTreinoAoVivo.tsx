@@ -6,7 +6,7 @@
 // Botão 'Sair' pílula amarela no canto superior esquerdo.
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import { CardVidro, BotaoPrimario, AnelProgresso } from '@/compartilhado/ui';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
 import { registrarExecucaoSerie } from '@/compartilhado/servicos/progresso-servico';
 import { obterPlanoTreinoCustomizado, obterMapeamentoSemanal } from '@/compartilhado/servicos/plano-gestao-servico';
@@ -41,6 +42,8 @@ const EXERCICIOS_PADRAO: ExercicioAoVivo[] = [
 ];
 
 export default function TelaTreinoAoVivo() {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
 
   const sairDoTreino = () => {
@@ -161,7 +164,7 @@ export default function TelaTreinoAoVivo() {
           onPress={sairDoTreino}
           activeOpacity={0.8}
         >
-          <SymbolView name="xmark" size={14} tintColor="#FFFFFF" weight="bold" />
+          <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
           <Text style={estilos.txtSairAmarelo}>Sair</Text>
         </TouchableOpacity>
 
@@ -207,7 +210,7 @@ export default function TelaTreinoAoVivo() {
           style={estilos.inputCarga}
           keyboardType="numeric"
           placeholder={String(exAtual.cargaSugerida)}
-          placeholderTextColor={Cores.texto.desabilitado}
+          placeholderTextColor={cores.textoSecundario}
           value={cargaUsada}
           onChangeText={setCargaUsada}
         />
@@ -229,10 +232,11 @@ export default function TelaTreinoAoVivo() {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
@@ -266,12 +270,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   progressoTexto: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
 
@@ -283,7 +287,7 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.titulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     textAlign: 'center',
   },
 
@@ -295,11 +299,11 @@ const estilos = StyleSheet.create({
   serieDetalhes: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.corpo,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   destaque: {
     fontFamily: FamiliaFonte.bold,
-    color: Cores.accent,
+    color: cores.destaque,
     fontWeight: PesoFonte.bold,
   },
 
@@ -316,12 +320,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.display,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   timerLabel: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 4,
   },
 
@@ -336,15 +340,15 @@ const estilos = StyleSheet.create({
   cargaLabel: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.corpo,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   inputCarga: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
-    backgroundColor: Cores.fundo.elevada,
+    color: cores.texto,
+    backgroundColor: cores.elevada,
     borderWidth: 1,
-    borderColor: Cores.borda.media,
+    borderColor: cores.separador,
     borderRadius: Raio.sm,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -364,7 +368,7 @@ const estilos = StyleSheet.create({
   textoPular: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
   },
   botaoConcluir: {},
 });

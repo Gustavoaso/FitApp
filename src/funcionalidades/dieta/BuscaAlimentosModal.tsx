@@ -19,7 +19,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
 import { repositorioDieta, type ReceitaUsuario } from '@/compartilhado/servicos/repositorio';
 
@@ -65,6 +66,8 @@ export function BuscaAlimentosModal({
   onFavoritarAlimento,
   onSalvarReceita,
 }: PropsBuscaAlimentosModal) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const [termo, setTermo] = useState('');
   const [abaAtiva, setAbaAtiva] = useState<typeof ABAS[number]['chave']>('recentes');
   const [baseAlimentos, setBaseAlimentos] = useState<AlimentoBusca[]>([]);
@@ -168,7 +171,7 @@ export function BuscaAlimentosModal({
           <SafeAreaView style={{ flex: 1 }} edges={['bottom', 'left', 'right']}>
             <View style={estilos.header}>
               <TouchableOpacity onPress={onFechar} style={estilos.fechar} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <SymbolView name="xmark" size={18} tintColor={Cores.texto.principal} weight="bold" />
+                <SymbolView name="xmark" size={18} tintColor={cores.texto} weight="bold" />
               </TouchableOpacity>
               <View style={estilos.headerCentro}>
                 <Text style={estilos.headerTitulo}>{refeicaoAtual}</Text>
@@ -193,11 +196,11 @@ export function BuscaAlimentosModal({
             </View>
 
             <View style={estilos.buscaBox}>
-              <SymbolView name="magnifyingglass" size={18} tintColor={Cores.texto.secundario} />
+              <SymbolView name="magnifyingglass" size={18} tintColor={cores.textoSecundario} />
               <TextInput
                 style={estilos.buscaInput}
                 placeholder="Buscar alimento, marca..."
-                placeholderTextColor={Cores.texto.secundario}
+                placeholderTextColor={cores.textoSecundario}
                 value={termo}
                 onChangeText={setTermo}
                 autoCorrect={false}
@@ -213,7 +216,7 @@ export function BuscaAlimentosModal({
                 { icon: 'plus.circle.fill', label: 'Rápido', disabled: false },
               ].map((acao) => (
                 <TouchableOpacity key={acao.label} style={[estilos.quickItem, acao.disabled && estilos.quickItemDisabled]} disabled={acao.disabled}>
-                  <SymbolView name={acao.icon as any} size={18} tintColor={Cores.accent} />
+                  <SymbolView name={acao.icon as any} size={18} tintColor={cores.destaque} />
                   <Text style={estilos.quickTexto}>{acao.label}</Text>
                 </TouchableOpacity>
               ))}
@@ -234,7 +237,7 @@ export function BuscaAlimentosModal({
                   <TextInput
                     style={estilos.inputReceita}
                     placeholder="Nome da receita"
-                    placeholderTextColor={Cores.texto.secundario}
+                    placeholderTextColor={cores.textoSecundario}
                     value={nomeReceita}
                     onChangeText={setNomeReceita}
                   />
@@ -278,7 +281,7 @@ export function BuscaAlimentosModal({
                           <View style={estilos.itemTituloLinha}>
                             <Text style={estilos.itemNome}>{item.nome}</Text>
                             {item.verificado ? <SymbolView name="checkmark.seal.fill" size={14} tintColor="#22C55E" /> : null}
-                            {favorito ? <SymbolView name="heart.fill" size={14} tintColor="#EF4444" /> : null}
+                            {favorito ? <SymbolView name="heart.fill" size={14} tintColor={cores.erro} /> : null}
                           </View>
                           <Text style={estilos.itemSub}>{formatarCalorias(Number(item.calorias_100g || 0))} • {item.porcao_descricao || '100g'}</Text>
                           <Text style={estilos.itemMeta}>{(item as any).marca || item.categoria || 'Sem marca'} • {Number(item.proteinas_100g || 0)}P {Number(item.carboidratos_100g || 0)}C {Number(item.gorduras_100g || 0)}G</Text>
@@ -298,13 +301,13 @@ export function BuscaAlimentosModal({
                               void onFavoritarAlimento(item, novoEstado);
                             }}
                           >
-                            <SymbolView name={favorito ? 'heart.fill' : 'heart'} size={14} tintColor={favorito ? '#EF4444' : Cores.accent} />
+                            <SymbolView name={favorito ? 'heart.fill' : 'heart'} size={14} tintColor={favorito ? cores.erro : cores.destaque} />
                           </TouchableOpacity>
                           <TouchableOpacity
                             style={estilos.botaoAdicionar}
                             onPress={() => editandoReceita ? alternarSelecionadoReceita(item) : onAdicionarAlimento(item)}
                           >
-                            <SymbolView name="plus" size={16} tintColor="#080A0E" weight="bold" />
+                            <SymbolView name="plus" size={16} tintColor={cores.textoSobreDestaque} weight="bold" />
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -320,9 +323,10 @@ export function BuscaAlimentosModal({
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.72)' },
-  sheet: { flex: 1, backgroundColor: 'rgba(10, 12, 16, 0.98)', paddingHorizontal: Espacamento.lg },
+  sheet: { flex: 1, backgroundColor: cores.elevada, paddingHorizontal: Espacamento.lg },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -334,9 +338,9 @@ const estilos = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Raio.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    backgroundColor: cores.separador,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: cores.separador,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -351,49 +355,49 @@ const estilos = StyleSheet.create({
   txtFecharTexto: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   headerCentro: { alignItems: 'center' },
-  headerTitulo: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: Cores.accent, fontWeight: PesoFonte.bold },
-  headerSubtitulo: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.micro, color: Cores.texto.secundario, marginTop: 2 },
+  headerTitulo: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: cores.destaque, fontWeight: PesoFonte.bold },
+  headerSubtitulo: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.micro, color: cores.textoSecundario, marginTop: 2 },
   seletorContainer: { marginBottom: 14 },
-  label: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: Cores.texto.secundario, marginBottom: 8 },
+  label: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: cores.textoSecundario, marginBottom: 8 },
   chipsContainer: { gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: Raio.full, backgroundColor: Cores.fundo.elevada },
-  chipAtivo: { backgroundColor: Cores.accentSuave, borderWidth: 1, borderColor: Cores.accentBorda },
-  chipTexto: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: Cores.texto.secundario },
-  chipTextoAtivo: { color: Cores.accent },
-  buscaBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: Cores.fundo.superficie, borderRadius: Raio.full, paddingHorizontal: 16, height: 54, borderWidth: 1, borderColor: Cores.borda.sutil, marginBottom: 14 },
-  buscaInput: { flex: 1, color: Cores.texto.principal, fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo },
+  chip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: Raio.full, backgroundColor: cores.elevada },
+  chipAtivo: { backgroundColor: cores.destaqueSuave, borderWidth: 1, borderColor: cores.separador },
+  chipTexto: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: cores.textoSecundario },
+  chipTextoAtivo: { color: cores.destaque },
+  buscaBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: cores.superficie, borderRadius: Raio.full, paddingHorizontal: 16, height: 54, borderWidth: 1, borderColor: cores.separador, marginBottom: 14 },
+  buscaInput: { flex: 1, color: cores.texto, fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo },
   quickGrid: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  quickItem: { flex: 1, minHeight: 72, borderRadius: 18, backgroundColor: Cores.fundo.elevada, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 10 },
+  quickItem: { flex: 1, minHeight: 72, borderRadius: 18, backgroundColor: cores.elevada, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 10 },
   quickItemDisabled: { opacity: 0.45 },
-  quickTexto: { fontFamily: FamiliaFonte.medio, fontSize: 11, color: Cores.accent, textAlign: 'center' },
+  quickTexto: { fontFamily: FamiliaFonte.medio, fontSize: 11, color: cores.destaque, textAlign: 'center' },
   abas: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  aba: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: Raio.full, backgroundColor: Cores.fundo.elevada },
-  abaAtiva: { backgroundColor: Cores.accentSuave, borderWidth: 1, borderColor: Cores.accentBorda },
-  abaTexto: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: Cores.texto.secundario },
-  abaTextoAtiva: { color: Cores.accent },
+  aba: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: Raio.full, backgroundColor: cores.elevada },
+  abaAtiva: { backgroundColor: cores.destaqueSuave, borderWidth: 1, borderColor: cores.separador },
+  abaTexto: { fontFamily: FamiliaFonte.medio, fontSize: 12, color: cores.textoSecundario },
+  abaTextoAtiva: { color: cores.destaque },
   composer: { padding: 16, marginBottom: 10 },
-  secaoTexto: { fontFamily: FamiliaFonte.bold, color: Cores.texto.principal, fontSize: 16 },
-  inputReceita: { backgroundColor: Cores.fundo.elevada, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, color: Cores.texto.principal, marginTop: 10 },
+  secaoTexto: { fontFamily: FamiliaFonte.bold, color: cores.texto, fontSize: 16 },
+  inputReceita: { backgroundColor: cores.elevada, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, color: cores.texto, marginTop: 10 },
   rowAcoes: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  btnSecundario: { flex: 1, borderRadius: 14, backgroundColor: Cores.fundo.elevada, paddingVertical: 12, alignItems: 'center' },
-  btnSecundarioTexto: { fontFamily: FamiliaFonte.bold, color: Cores.accent, fontSize: 12 },
-  btnPrimario: { flex: 1, borderRadius: 14, backgroundColor: Cores.accent, paddingVertical: 12, alignItems: 'center' },
-  btnPrimarioTexto: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: 12 },
-  composerMeta: { fontFamily: FamiliaFonte.regular, color: Cores.texto.secundario, fontSize: 12, marginTop: 10 },
+  btnSecundario: { flex: 1, borderRadius: 14, backgroundColor: cores.elevada, paddingVertical: 12, alignItems: 'center' },
+  btnSecundarioTexto: { fontFamily: FamiliaFonte.bold, color: cores.destaque, fontSize: 12 },
+  btnPrimario: { flex: 1, borderRadius: 14, backgroundColor: cores.destaque, paddingVertical: 12, alignItems: 'center' },
+  btnPrimarioTexto: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: 12 },
+  composerMeta: { fontFamily: FamiliaFonte.regular, color: cores.textoSecundario, fontSize: 12, marginTop: 10 },
   lista: { paddingBottom: 28 },
   item: { marginBottom: 10, padding: 14 },
   itemLinha: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   itemTituloLinha: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  itemNome: { fontFamily: FamiliaFonte.bold, fontSize: 14, color: Cores.texto.principal, fontWeight: PesoFonte.bold },
-  itemSub: { fontFamily: FamiliaFonte.regular, fontSize: 12, color: Cores.texto.secundario, marginTop: 4 },
-  itemMeta: { fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.desabilitado, marginTop: 4 },
+  itemNome: { fontFamily: FamiliaFonte.bold, fontSize: 14, color: cores.texto, fontWeight: PesoFonte.bold },
+  itemSub: { fontFamily: FamiliaFonte.regular, fontSize: 12, color: cores.textoSecundario, marginTop: 4 },
+  itemMeta: { fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario, marginTop: 4 },
   ladoBotoes: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  botaoIcone: { width: 38, height: 38, borderRadius: Raio.full, backgroundColor: Cores.fundo.elevada, alignItems: 'center', justifyContent: 'center' },
-  botaoAdicionar: { width: 40, height: 40, borderRadius: Raio.full, backgroundColor: Cores.accent, alignItems: 'center', justifyContent: 'center' },
+  botaoIcone: { width: 38, height: 38, borderRadius: Raio.full, backgroundColor: cores.elevada, alignItems: 'center', justifyContent: 'center' },
+  botaoAdicionar: { width: 40, height: 40, borderRadius: Raio.full, backgroundColor: cores.destaque, alignItems: 'center', justifyContent: 'center' },
   vazio: { padding: 18, alignItems: 'center' },
-  vazioTitulo: { fontFamily: FamiliaFonte.bold, color: Cores.texto.principal, fontSize: 14 },
-  vazioSubtitulo: { fontFamily: FamiliaFonte.regular, color: Cores.texto.secundario, fontSize: 12, marginTop: 4, textAlign: 'center' },
+  vazioTitulo: { fontFamily: FamiliaFonte.bold, color: cores.texto, fontSize: 14 },
+  vazioSubtitulo: { fontFamily: FamiliaFonte.regular, color: cores.textoSecundario, fontSize: 12, marginTop: 4, textAlign: 'center' },
 });

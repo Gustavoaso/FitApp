@@ -9,7 +9,7 @@
 // - Aparência (Design System Liquid Glass / Tema)
 // ============================================================
 
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,20 +19,22 @@ import {
   Alert,
   Modal,
   Switch,
-  Platform,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro } from '@/compartilhado/ui';
 import { VisualizadorJSONModal } from './VisualizadorJSONModal';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import { obterDadosRawTacoAPI } from './taco-sincronizacao-servico';
 import { obterDadosRawExerciseDB } from './exercise-db-sincronizacao-servico';
 
 export default function TelaPerfil() {
+  const { cores, escuro } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
   const { usuario, sair } = useAuth();
 
@@ -41,10 +43,12 @@ export default function TelaPerfil() {
   const [rawTaco, setRawTaco] = useState<any[]>([]);
   const [rawExerciseDB, setRawExerciseDB] = useState<any[]>([]);
   const [carregandoJSON, setCarregandoJSON] = useState(false);
+  const [erroJSON, setErroJSON] = useState<string | null>(null);
 
   const lidarComAbrirInspectorJSON = async () => {
     setModalJSONVisivel(true);
     setCarregandoJSON(true);
+    setErroJSON(null);
     try {
       const [alimentos, exercicios] = await Promise.all([
         obterDadosRawTacoAPI(),
@@ -53,7 +57,7 @@ export default function TelaPerfil() {
       setRawTaco(alimentos || []);
       setRawExerciseDB(exercicios || []);
     } catch (err: any) {
-      Alert.alert('Erro ao carregar dados', err?.message || 'Falha ao conectar com APIs');
+      setErroJSON(err?.message || 'Falha ao conectar com as APIs.');
     } finally {
       setCarregandoJSON(false);
     }
@@ -166,7 +170,11 @@ export default function TelaPerfil() {
 
   return (
     <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={estilos.scrollContent}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* ── Cabeçalho do perfil ───────────────────────────── */}
         <View style={estilos.perfilHeader}>
@@ -218,7 +226,7 @@ export default function TelaPerfil() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeOpcaoContainer}>
-              <SymbolView name="bell.fill" size={18} tintColor={Cores.texto.secundario} />
+              <SymbolView name="bell.fill" size={18} tintColor={cores.textoSecundario} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloOpcao}>Notificações</Text>
@@ -226,7 +234,7 @@ export default function TelaPerfil() {
                 {lembreteTreino ? 'Lembretes de treino e água ativos' : 'Notificações desativadas'}
               </Text>
             </View>
-            <SymbolView name="chevron.right" size={14} tintColor={Cores.texto.desabilitado} />
+            <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
           </TouchableOpacity>
 
           {/* Unidades de Medida */}
@@ -236,7 +244,7 @@ export default function TelaPerfil() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeOpcaoContainer}>
-              <SymbolView name="ruler.fill" size={18} tintColor={Cores.texto.secundario} />
+              <SymbolView name="ruler.fill" size={18} tintColor={cores.textoSecundario} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloOpcao}>Unidades de Medida</Text>
@@ -244,7 +252,7 @@ export default function TelaPerfil() {
                 {sistemaUnidades === 'metrico' ? 'Sistema Métrico (kg / cm / ml)' : 'Sistema Imperial (lbs / in / fl oz)'}
               </Text>
             </View>
-            <SymbolView name="chevron.right" size={14} tintColor={Cores.texto.desabilitado} />
+            <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
           </TouchableOpacity>
 
           {/* Aparência */}
@@ -254,13 +262,13 @@ export default function TelaPerfil() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeOpcaoContainer}>
-              <SymbolView name="moon.fill" size={18} tintColor={Cores.texto.secundario} />
+              <SymbolView name="moon.fill" size={18} tintColor={cores.textoSecundario} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloOpcao}>Aparência</Text>
               <Text style={estilos.subOpcao}>{temaSelecionado} · Liquid Glass</Text>
             </View>
-            <SymbolView name="chevron.right" size={14} tintColor={Cores.texto.desabilitado} />
+            <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
           </TouchableOpacity>
 
           {/* Dev Tool: Inspetor JSON Interativo */}
@@ -271,15 +279,15 @@ export default function TelaPerfil() {
             activeOpacity={0.7}
           >
             <View style={[estilos.iconeOpcaoContainer, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}>
-              <SymbolView name="terminal.fill" size={18} tintColor={Cores.accent} />
+              <SymbolView name="terminal.fill" size={18} tintColor={cores.destaque} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[estilos.tituloOpcao, { color: Cores.accent }]}>
+              <Text style={[estilos.tituloOpcao, { color: cores.destaque }]}>
                 {carregandoJSON ? 'Buscando JSON...' : 'Dev: Inspetor de JSON das APIs'}
               </Text>
               <Text style={estilos.subOpcao}>Abre modal interativo para expandir/colapsar os objetos brutos</Text>
             </View>
-            <SymbolView name="chevron.right" size={14} tintColor={Cores.accent} />
+            <SymbolView name="chevron.right" size={14} tintColor={cores.destaque} />
           </TouchableOpacity>
 
         </CardVidro>
@@ -290,7 +298,7 @@ export default function TelaPerfil() {
           onPress={lidarComSair}
           activeOpacity={0.6}
         >
-          <SymbolView name="rectangle.portrait.and.arrow.right" size={16} tintColor={Cores.texto.desabilitado} />
+          <SymbolView name="rectangle.portrait.and.arrow.right" size={16} tintColor={cores.textoSecundario} />
           <Text style={estilos.textoSair}>Sair da Conta</Text>
         </TouchableOpacity>
 
@@ -300,7 +308,7 @@ export default function TelaPerfil() {
       {/* ── Modal Notificações ──────────────────────────────── */}
       <Modal visible={modalNotificacoesVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalNotificacoesVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Preferências de Notificação</Text>
 
@@ -309,7 +317,7 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembretes de Treino</Text>
               <Text style={estilos.txtSwitchSub}>Notificar no horário do treino planejado</Text>
             </View>
-            <Switch value={lembreteTreino} onValueChange={setLembreteTreino} trackColor={{ true: Cores.accent }} />
+            <Switch value={lembreteTreino} onValueChange={setLembreteTreino} trackColor={{ true: cores.destaque }} />
           </View>
 
           <View style={estilos.rowSwitch}>
@@ -317,7 +325,7 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembrete de Hidratação</Text>
               <Text style={estilos.txtSwitchSub}>Lembretes periódicos para beber água</Text>
             </View>
-            <Switch value={lembreteAgua} onValueChange={setLembreteAgua} trackColor={{ true: Cores.accent }} />
+            <Switch value={lembreteAgua} onValueChange={setLembreteAgua} trackColor={{ true: cores.destaque }} />
           </View>
 
           <View style={estilos.rowSwitch}>
@@ -325,7 +333,7 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSwitchTitulo}>Lembrete de Refeições</Text>
               <Text style={estilos.txtSwitchSub}>Alertas para registrar refeições</Text>
             </View>
-            <Switch value={lembreteRefeicao} onValueChange={setLembreteRefeicao} trackColor={{ true: Cores.accent }} />
+            <Switch value={lembreteRefeicao} onValueChange={setLembreteRefeicao} trackColor={{ true: cores.destaque }} />
           </View>
 
           <View style={estilos.modalAcoes}>
@@ -339,7 +347,7 @@ export default function TelaPerfil() {
       {/* ── Modal Unidades de Medida ────────────────────────── */}
       <Modal visible={modalUnidadesVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalUnidadesVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Unidades de Medida</Text>
 
@@ -351,7 +359,7 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSelectTitulo}>Sistema Métrico (Padrão)</Text>
               <Text style={estilos.txtSelectSub}>Quilogramas (kg), Centímetros (cm), Mililitros (ml)</Text>
             </View>
-            {sistemaUnidades === 'metrico' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={Cores.accent} />}
+            {sistemaUnidades === 'metrico' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -362,7 +370,7 @@ export default function TelaPerfil() {
               <Text style={estilos.txtSelectTitulo}>Sistema Imperial</Text>
               <Text style={estilos.txtSelectSub}>Libras (lbs), Polegadas (in), Onças (fl oz)</Text>
             </View>
-            {sistemaUnidades === 'imperial' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={Cores.accent} />}
+            {sistemaUnidades === 'imperial' && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
           </TouchableOpacity>
 
           <View style={estilos.modalAcoes}>
@@ -376,7 +384,7 @@ export default function TelaPerfil() {
       {/* ── Modal Aparência ─────────────────────────────────── */}
       <Modal visible={modalAparenciaVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalAparenciaVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Preferências de Aparência</Text>
 
@@ -387,7 +395,7 @@ export default function TelaPerfil() {
               onPress={() => setTemaSelecionado(t)}
             >
               <Text style={estilos.txtSelectTitulo}>{t}</Text>
-              {temaSelecionado === t && <SymbolView name="checkmark.circle.fill" size={20} tintColor={Cores.accent} />}
+              {temaSelecionado === t && <SymbolView name="checkmark.circle.fill" size={20} tintColor={cores.destaque} />}
             </TouchableOpacity>
           ))}
 
@@ -406,16 +414,19 @@ export default function TelaPerfil() {
         dadosTaco={rawTaco}
         dadosExerciseDB={rawExerciseDB}
         carregando={carregandoJSON}
+        erro={erroJSON}
+        aoTentarDeNovo={lidarComAbrirInspectorJSON}
       />
     </View>
   );
 }
 
-const estilos = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Cores.fundo.principal },
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: cores.fundo },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Espacamento.sm, // o título grande fica no header nativo
     paddingBottom: 120,
   },
 
@@ -427,9 +438,9 @@ const estilos = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderWidth: 1,
-    borderColor: Cores.borda.media,
+    borderColor: cores.separador,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -438,19 +449,19 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 22,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     letterSpacing: 1,
   },
   nome: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.titulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   email: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 3,
   },
 
@@ -458,7 +469,7 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: Espacamento.md,
@@ -478,18 +489,18 @@ const estilos = StyleSheet.create({
   dadoLabel: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   dadoValor: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginTop: 2,
   },
   divisor: {
     height: 1,
-    backgroundColor: Cores.borda.sutil,
+    backgroundColor: cores.separador,
     marginHorizontal: Espacamento.lg,
   },
   botaoRecalcular: {
@@ -502,7 +513,7 @@ const estilos = StyleSheet.create({
   textoRecalcular: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontWeight: PesoFonte.bold,
   },
 
@@ -515,13 +526,13 @@ const estilos = StyleSheet.create({
   },
   itemBorda: {
     borderBottomWidth: 1,
-    borderBottomColor: Cores.borda.sutil,
+    borderBottomColor: cores.separador,
   },
   iconeOpcaoContainer: {
     width: 36,
     height: 36,
     borderRadius: Raio.sm,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -529,12 +540,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subOpcao: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
 
@@ -549,13 +560,13 @@ const estilos = StyleSheet.create({
   textoSair: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.corpo,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
   },
   versao: {
     fontFamily: FamiliaFonte.regular,
     textAlign: 'center',
     fontSize: Fonte.micro,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
   },
 
   // Modal & Sheet
@@ -564,7 +575,7 @@ const estilos = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Cores.borda.forte,
+    backgroundColor: cores.separador,
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -572,14 +583,14 @@ const estilos = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    backgroundColor: 'rgba(16,19,24,0.97)',
+    backgroundColor: cores.elevada,
     borderTopWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   modalTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginBottom: 20,
   },
   rowSwitch: {
@@ -588,43 +599,43 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomColor: cores.destaqueSuave,
   },
   txtSwitchTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   txtSwitchSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   itemSelect: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.md,
     marginBottom: 10,
   },
   itemSelectAtivo: {
     borderWidth: 1,
-    borderColor: Cores.accent,
+    borderColor: cores.destaque,
   },
   txtSelectTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   txtSelectSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 },
-  btnSalvar: { backgroundColor: Cores.accent, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
-  txtSalvar: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: Fonte.corpo },
+  btnSalvar: { backgroundColor: cores.destaque, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
+  txtSalvar: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: Fonte.corpo },
 });

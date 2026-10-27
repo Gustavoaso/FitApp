@@ -12,13 +12,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
+import { EstadoErro, Skeleton } from '@/compartilhado/ui';
 
 interface ItemTreeProps {
   label: string;
@@ -27,6 +28,8 @@ interface ItemTreeProps {
 }
 
 function ItemNode({ label, valor, nivel = 0 }: ItemTreeProps) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const [expandido, setExpandido] = useState(nivel === 0);
 
   const eObjeto = valor !== null && typeof valor === 'object';
@@ -61,7 +64,7 @@ function ItemNode({ label, valor, nivel = 0 }: ItemTreeProps) {
         <SymbolView
           name={expandido ? 'chevron.down' : 'chevron.right'}
           size={12}
-          tintColor={Cores.accent}
+          tintColor={cores.destaque}
           style={{ marginRight: 6 }}
         />
         <Text style={estilos.txtChaveNo}>{label}: </Text>
@@ -89,6 +92,8 @@ interface VisualizadorJSONModalProps {
   dadosTaco: any[];
   dadosExerciseDB: any[];
   carregando?: boolean;
+  erro?: string | null;
+  aoTentarDeNovo?: () => void;
 }
 
 export function VisualizadorJSONModal({
@@ -97,7 +102,11 @@ export function VisualizadorJSONModal({
   dadosTaco,
   dadosExerciseDB,
   carregando = false,
+  erro,
+  aoTentarDeNovo,
 }: VisualizadorJSONModalProps) {
+  const { cores, escuro } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const [abaAtiva, setAbaAtiva] = useState<'taco' | 'exercisedb'>('taco');
   const [limiteExibicao, setLimiteExibicao] = useState(30);
 
@@ -117,7 +126,7 @@ export function VisualizadorJSONModal({
   return (
     <Modal visible={visivel} animationType="slide" transparent statusBarTranslucent onRequestClose={aoFechar}>
       <View style={estilos.overlay}>
-        <BlurView intensity={95} tint="dark" style={estilos.modalContent}>
+        <BlurView intensity={95} tint={escuro ? 'dark' : 'light'} style={estilos.modalContent}>
           <SafeAreaView style={{ flex: 1 }}>
             {/* Header com Fechar */}
             <View style={estilos.topHeader}>
@@ -129,7 +138,7 @@ export function VisualizadorJSONModal({
               </View>
 
               <TouchableOpacity onPress={aoFechar} style={estilos.btnFechar}>
-                <SymbolView name="xmark.circle.fill" size={24} tintColor={Cores.texto.secundario} />
+                <SymbolView name="xmark.circle.fill" size={24} tintColor={cores.textoSecundario} />
               </TouchableOpacity>
             </View>
 
@@ -143,7 +152,7 @@ export function VisualizadorJSONModal({
                 }}
               >
                 <View style={estilos.segmentLabel}>
-                  <SymbolView name="leaf.fill" size={14} tintColor={abaAtiva === 'taco' ? Cores.accent : Cores.texto.secundario} />
+                  <SymbolView name="leaf.fill" size={14} tintColor={abaAtiva === 'taco' ? cores.destaque : cores.textoSecundario} />
                   <Text style={[estilos.segmentTxt, abaAtiva === 'taco' && estilos.segmentTxtAtivo]}>TacoAPI ({dadosTaco.length})</Text>
                 </View>
               </TouchableOpacity>
@@ -156,16 +165,20 @@ export function VisualizadorJSONModal({
                 }}
               >
                 <View style={estilos.segmentLabel}>
-                  <SymbolView name="dumbbell.fill" size={14} tintColor={abaAtiva === 'exercisedb' ? Cores.accent : Cores.texto.secundario} />
+                  <SymbolView name="dumbbell.fill" size={14} tintColor={abaAtiva === 'exercisedb' ? cores.destaque : cores.textoSecundario} />
                   <Text style={[estilos.segmentTxt, abaAtiva === 'exercisedb' && estilos.segmentTxtAtivo]}>ExerciseDB ({dadosExerciseDB.length})</Text>
                 </View>
               </TouchableOpacity>
             </View>
 
             {/* Conteúdo Otimizado: ScrollView com Paginação Progressiva */}
-            {carregando ? (
+            {erro && aoTentarDeNovo ? (
+              <EstadoErro mensagem={erro} aoTentarDeNovo={aoTentarDeNovo} />
+            ) : carregando ? (
               <View style={estilos.boxCarregando}>
-                <ActivityIndicator size="large" color={Cores.accent} />
+                <Skeleton altura={48} />
+                <Skeleton altura={48} />
+                <Skeleton altura={48} />
                 <Text style={estilos.txtCarregando}>Buscando dados das APIs...</Text>
                 <Text style={estilos.txtSubCarregando}>
                   Carregamento instantâneo via cache local e banco Supabase
@@ -213,7 +226,8 @@ export function VisualizadorJSONModal({
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -222,7 +236,7 @@ const estilos = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Espacamento.lg,
     paddingTop: 20,
-    backgroundColor: 'rgba(10, 12, 16, 0.96)',
+    backgroundColor: cores.elevada,
   },
   topHeader: {
     flexDirection: 'row',
@@ -233,12 +247,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subtituloModal: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   btnFechar: {
@@ -247,7 +261,7 @@ const estilos = StyleSheet.create({
 
   segmentContainer: {
     flexDirection: 'row',
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.md,
     padding: 4,
     marginBottom: 16,
@@ -259,7 +273,7 @@ const estilos = StyleSheet.create({
     borderRadius: Raio.sm,
   },
   segmentBtnAtivo: {
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
   },
   segmentLabel: {
     flexDirection: 'row',
@@ -269,20 +283,20 @@ const estilos = StyleSheet.create({
   segmentTxt: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   segmentTxtAtivo: {
-    color: '#080A0E',
+    color: cores.textoSobreDestaque,
   },
 
   scrollArea: {
     flex: 1,
   },
   cardItemJSON: {
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: Raio.md,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
     padding: 12,
     marginBottom: 12,
   },
@@ -295,12 +309,12 @@ const estilos = StyleSheet.create({
   txtChaveNo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   txtTipoNo: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   blocoFilhos: {
     borderLeftWidth: 1,
@@ -319,7 +333,7 @@ const estilos = StyleSheet.create({
   txtChave: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   txtValor: {
     fontFamily: FamiliaFonte.regular,
@@ -332,7 +346,7 @@ const estilos = StyleSheet.create({
   },
   txtVazio: {
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   boxCarregando: {
@@ -340,33 +354,34 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 30,
+    gap: Espacamento.md,
   },
   txtCarregando: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginTop: 16,
   },
   txtSubCarregando: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.micro,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 6,
     textAlign: 'center',
   },
 
   btnMais: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingVertical: 12,
     borderRadius: Raio.md,
     alignItems: 'center',
     marginVertical: 12,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   txtBtnMais: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 });

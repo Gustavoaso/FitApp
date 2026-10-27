@@ -10,19 +10,22 @@
 // 3. Sem sessão, o fluxo começa sempre pelo Login/Cadastro.
 // ============================================================
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
-import { Cores, Espacamento, Fonte } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, Fonte } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
+import { Skeleton } from '@/compartilhado/ui';
 
 export default function TelaInicialRaiz() {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const { usuario, carregando: carregandoAuth } = useAuth();
 
   const [verificandoPlano, setVerificandoPlano] = useState(true);
@@ -49,7 +52,7 @@ export default function TelaInicialRaiz() {
   if (carregandoAuth || (usuario && verificandoPlano)) {
     return (
       <View style={[estilos.container, estilos.centralizado]}>
-        <ActivityIndicator size="large" color={Cores.accent} />
+        <Skeleton largura={64} altura={64} raio={32} />
         <Text style={estilos.textoStatus}>Carregando suas informações...</Text>
       </View>
     );
@@ -69,10 +72,11 @@ export default function TelaInicialRaiz() {
   return <Redirect href="/(auth)/login" />;
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
   },
   centralizado: {
     justifyContent: 'center',
@@ -81,7 +85,7 @@ const estilos = StyleSheet.create({
   },
   textoStatus: {
     fontSize: Fonte.corpo,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: Espacamento.md,
   },
 });

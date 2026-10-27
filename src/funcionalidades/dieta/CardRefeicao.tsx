@@ -5,12 +5,13 @@
 // Suporta modo colapsado (Screen 1) e modo detalhado/expandido (Screen 2).
 // ============================================================
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
 import { GraficoDonutMacros } from './GraficoDonutMacros';
-import { Cores, FamiliaFonte, Fonte, PesoFonte, Raio, Espacamento } from '@/compartilhado/tema';
+import { CoresTema, CoresMacros, FamiliaFonte, Fonte, PesoFonte, Raio, Espacamento } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
 
 export interface ItemRefeicaoResumo {
@@ -46,6 +47,8 @@ export function CardRefeicao({
   onCopiarDe,
   onEditar,
 }: PropsCardRefeicao) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const totais = alimentos.reduce(
     (acc, item) => ({
       calorias: acc.calorias + item.calorias,
@@ -76,7 +79,7 @@ export function CardRefeicao({
         activeOpacity={0.7}
       >
         <View style={estilos.iconeBloco}>
-          <SymbolView name={icone as any} size={18} tintColor={Cores.accent} weight="bold" />
+          <SymbolView name={icone as any} size={18} tintColor={cores.destaque} weight="bold" />
         </View>
 
         <View style={estilos.colunaTitulo}>
@@ -98,7 +101,7 @@ export function CardRefeicao({
           <View style={estilos.acoesDireitaColapsado}>
             {onAlternarExpandir ? (
               <TouchableOpacity onPress={onAlternarExpandir} style={estilos.btnMaisOpcoes}>
-                <SymbolView name="ellipsis" size={16} tintColor={Cores.texto.secundario} />
+                <SymbolView name="ellipsis" size={16} tintColor={cores.textoSecundario} />
               </TouchableOpacity>
             ) : null}
 
@@ -125,17 +128,17 @@ export function CardRefeicao({
               />
               <View style={estilos.colLegendaDonut}>
                 <View style={estilos.linhaLegendaDonut}>
-                  <View style={[estilos.dotCor, { backgroundColor: '#10B981' }]} />
+                  <View style={[estilos.dotCor, { backgroundColor: CoresMacros.carboidrato }]} />
                   <Text style={estilos.txtLegendaPct}>{pctC}%</Text>
                   <Text style={estilos.txtLegendaGramas}>{totais.carbos}g Carbos</Text>
                 </View>
                 <View style={estilos.linhaLegendaDonut}>
-                  <View style={[estilos.dotCor, { backgroundColor: '#A855F7' }]} />
+                  <View style={[estilos.dotCor, { backgroundColor: CoresMacros.gordura }]} />
                   <Text style={estilos.txtLegendaPct}>{pctF}%</Text>
                   <Text style={estilos.txtLegendaGramas}>{totais.gorduras}g Gorduras</Text>
                 </View>
                 <View style={estilos.linhaLegendaDonut}>
-                  <View style={[estilos.dotCor, { backgroundColor: '#EAB308' }]} />
+                  <View style={[estilos.dotCor, { backgroundColor: CoresMacros.proteina }]} />
                   <Text style={estilos.txtLegendaPct}>{pctP}%</Text>
                   <Text style={estilos.txtLegendaGramas}>{totais.proteinas}g Proteína</Text>
                 </View>
@@ -147,13 +150,13 @@ export function CardRefeicao({
           <View style={estilos.rowAcoesRapidas}>
             {onCopiarDe ? (
               <TouchableOpacity style={estilos.btnAcaoQuadrado} onPress={onCopiarDe}>
-                <SymbolView name="doc.on.doc" size={14} tintColor={Cores.accent} />
+                <SymbolView name="doc.on.doc" size={14} tintColor={cores.destaque} />
                 <Text style={estilos.txtAcaoQuadrado}>Copiar de...</Text>
               </TouchableOpacity>
             ) : null}
             {onEditar ? (
               <TouchableOpacity style={estilos.btnAcaoQuadrado} onPress={onEditar}>
-                <SymbolView name="pencil" size={14} tintColor={Cores.texto.principal} />
+                <SymbolView name="pencil" size={14} tintColor={cores.texto} />
                 <Text style={estilos.txtAcaoQuadrado}>Editar</Text>
               </TouchableOpacity>
             ) : null}
@@ -176,7 +179,7 @@ export function CardRefeicao({
 
           {/* Botão Inferior "Log mais" / Adicionar */}
           <TouchableOpacity style={estilos.btnLogMais} onPress={onAdicionar} activeOpacity={0.8}>
-            <SymbolView name="plus" size={14} tintColor={Cores.accent} weight="bold" />
+            <SymbolView name="plus" size={14} tintColor={cores.destaque} weight="bold" />
             <Text style={estilos.txtLogMais}>
               {alimentos.length > 0 ? 'Log mais alimentos' : 'Adicionar alimento'}
             </Text>
@@ -187,7 +190,8 @@ export function CardRefeicao({
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   card: {
     marginBottom: 0,
     padding: 0,
@@ -201,7 +205,7 @@ const estilos = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: Raio.md,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -211,19 +215,19 @@ const estilos = StyleSheet.create({
   nome: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 16,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontWeight: PesoFonte.bold,
   },
   subtituloColapsado: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   kcalExpandidaHeader: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 15,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginRight: 6,
   },
   acoesDireitaColapsado: {
@@ -235,7 +239,7 @@ const estilos = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: Raio.full,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -250,7 +254,7 @@ const estilos = StyleSheet.create({
   txtLogPilula: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 
   // Expandido
@@ -258,12 +262,12 @@ const estilos = StyleSheet.create({
     marginTop: 16,
     paddingTop: 14,
     borderTopWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   cardDonutInterno: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: Raio.md,
     padding: 12,
     gap: 16,
@@ -286,13 +290,13 @@ const estilos = StyleSheet.create({
   txtLegendaPct: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
     width: 32,
   },
   txtLegendaGramas: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   rowAcoesRapidas: {
@@ -306,14 +310,14 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingVertical: 8,
     borderRadius: Raio.sm,
   },
   txtAcaoQuadrado: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   listaAlimentos: {
@@ -332,18 +336,18 @@ const estilos = StyleSheet.create({
   itemNomeBold: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   itemSubCinza: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   itemKcalDireita: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   btnLogMais: {
@@ -351,15 +355,15 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: Cores.accentBorda,
+    borderColor: cores.separador,
     paddingVertical: 10,
     borderRadius: Raio.md,
   },
   txtLogMais: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 });

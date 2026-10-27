@@ -5,7 +5,7 @@
 // Todas as 14 perguntas são obrigatórias e sem condicionais.
 // ============================================================
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CardVidro, BotaoPrimario, EstadoErro, Skeleton } from '@/compartilhado/ui';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { gerarPlanoComIALocal as gerarPlanoComIA, DadosQuestionario } from './ia-local-servico';
 import { supabase } from '@/compartilhado/supabase';
 import {
@@ -31,10 +31,13 @@ import {
 } from '@/compartilhado/utilidades';
 
 export default function TelaQuestionario() {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
   const { dadosFormulario, origem } = useLocalSearchParams<{ dadosFormulario?: string; origem?: string }>();
 
   const [etapa, setEtapa] = useState(1);
+  const [erroGeracao, setErroGeracao] = useState<string | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [nomeUsuario, setNomeUsuario] = useState('Atleta');
 
@@ -167,6 +170,7 @@ export default function TelaQuestionario() {
   };
 
   const finalizarQuestionario = async () => {
+    setErroGeracao(null);
     setCarregando(true);
     try {
       const payload: DadosQuestionario = {
@@ -208,14 +212,25 @@ export default function TelaQuestionario() {
     } catch (err: unknown) {
       setCarregando(false);
       const msg = err instanceof Error ? err.message : 'Erro ao gerar o plano';
-      Alert.alert('Erro', msg);
+      setErroGeracao(msg);
     }
   };
+
+  if (erroGeracao) {
+    return (
+      <View style={[estilos.container, estilos.centralizado]}>
+        <EstadoErro mensagem={erroGeracao} aoTentarDeNovo={finalizarQuestionario} />
+        <TouchableOpacity accessibilityRole="button" onPress={() => setErroGeracao(null)} hitSlop={12}>
+          <Text style={estilos.subTextoCarregando}>Revisar respostas</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (carregando) {
     return (
       <View style={[estilos.container, estilos.centralizado]}>
-        <ActivityIndicator size="large" color={Cores.accent} />
+        <Skeleton largura={120} altura={120} raio={60} />
         <Text style={estilos.textoCarregando}>Criando seu plano personalizado...</Text>
         <Text style={estilos.subTextoCarregando}>Conectando IA e calculando variáveis</Text>
       </View>
@@ -226,7 +241,7 @@ export default function TelaQuestionario() {
     <View style={estilos.container}>
       <View style={estilos.topoHeader}>
         <TouchableOpacity style={estilos.btnSairQuestionario} onPress={sairDoQuestionario} activeOpacity={0.8}>
-          <SymbolView name="xmark" size={14} tintColor="#FFFFFF" weight="bold" />
+          <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
           <Text style={estilos.txtSairQuestionario}>Sair</Text>
         </TouchableOpacity>
       </View>
@@ -346,7 +361,7 @@ export default function TelaQuestionario() {
                 const sel = restricaoFisica.includes(item);
                 return (
                   <TouchableOpacity key={item} style={[estilos.checkboxRow, sel && estilos.checkboxRowSelecionada]} onPress={() => alternarRestricao(item, restricaoFisica, setRestricaoFisica)}>
-                    <SymbolView name={sel ? 'checkmark.square.fill' : 'square'} size={20} tintColor={sel ? Cores.accent : Cores.texto.desabilitado} />
+                    <SymbolView name={sel ? 'checkmark.square.fill' : 'square'} size={20} tintColor={sel ? cores.destaque : cores.textoSecundario} />
                     <Text style={estilos.checkboxLabel}>{item}</Text>
                   </TouchableOpacity>
                 );
@@ -364,7 +379,7 @@ export default function TelaQuestionario() {
                 const sel = restricaoAlimentar.includes(item);
                 return (
                   <TouchableOpacity key={item} style={[estilos.checkboxRow, sel && estilos.checkboxRowSelecionada]} onPress={() => alternarRestricao(item, restricaoAlimentar, setRestricaoAlimentar)}>
-                    <SymbolView name={sel ? 'checkmark.square.fill' : 'square'} size={20} tintColor={sel ? Cores.accent : Cores.texto.desabilitado} />
+                    <SymbolView name={sel ? 'checkmark.square.fill' : 'square'} size={20} tintColor={sel ? cores.destaque : cores.textoSecundario} />
                     <Text style={estilos.checkboxLabel}>{item}</Text>
                   </TouchableOpacity>
                 );
@@ -395,38 +410,39 @@ export default function TelaQuestionario() {
   );
 }
 
-const estilos = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Cores.fundo.principal },
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: cores.fundo },
   centralizado: { justifyContent: 'center', alignItems: 'center', padding: Espacamento.xl },
   topoHeader: { paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 10 },
   btnSairQuestionario: {
     flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
-    backgroundColor: Cores.fundo.elevada, paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: Raio.full, borderWidth: 1, borderColor: Cores.borda.sutil,
+    backgroundColor: cores.elevada, paddingHorizontal: 14, paddingVertical: 8,
+    borderRadius: Raio.full, borderWidth: 1, borderColor: cores.separador,
   },
-  txtSairQuestionario: { fontFamily: FamiliaFonte.bold, fontSize: 13, color: Cores.texto.principal },
-  barraProgressoContainer: { height: 4, backgroundColor: 'rgba(255, 255, 255, 0.08)', width: '100%' },
-  barraProgresso: { height: '100%', backgroundColor: Cores.accent },
+  txtSairQuestionario: { fontFamily: FamiliaFonte.bold, fontSize: 13, color: cores.texto },
+  barraProgressoContainer: { height: 4, backgroundColor: cores.destaqueSuave, width: '100%' },
+  barraProgresso: { height: '100%', backgroundColor: cores.destaque },
   scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },
-  contadorEtapa: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.micro, color: Cores.accent, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  tituloEtapa: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, fontWeight: PesoFonte.bold, color: Cores.texto.principal, marginBottom: Espacamento.lg },
+  contadorEtapa: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.micro, color: cores.destaque, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  tituloEtapa: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, fontWeight: PesoFonte.bold, color: cores.texto, marginBottom: Espacamento.lg },
   cardStep: { padding: Espacamento.lg, marginBottom: Espacamento.xl, marginHorizontal: -20 },
-  label: { fontFamily: FamiliaFonte.semibold, fontSize: Fonte.corpo, color: Cores.texto.principal, marginBottom: 8 },
-  input: { backgroundColor: Cores.fundo.elevada, borderWidth: 1, borderColor: Cores.borda.media, borderRadius: Raio.md, padding: 12, fontSize: Fonte.corpo, color: Cores.texto.principal, fontFamily: FamiliaFonte.regular },
+  label: { fontFamily: FamiliaFonte.semibold, fontSize: Fonte.corpo, color: cores.texto, marginBottom: 8 },
+  input: { backgroundColor: cores.elevada, borderWidth: 1, borderColor: cores.separador, borderRadius: Raio.md, padding: 12, fontSize: Fonte.corpo, color: cores.texto, fontFamily: FamiliaFonte.regular },
   opcoesRow: { flexDirection: 'row', gap: Espacamento.sm, flexWrap: 'wrap' },
   opcoesRowCol: { flexDirection: 'column', gap: Espacamento.sm },
-  opcaoChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: Raio.md, backgroundColor: Cores.fundo.elevada, borderWidth: 1, borderColor: Cores.borda.sutil },
-  opcaoChipSelecionada: { borderColor: Cores.accent, backgroundColor: Cores.accentSuave },
-  opcaoTexto: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo, color: Cores.texto.principal },
-  opcaoCard: { padding: Espacamento.md, borderRadius: Raio.md, backgroundColor: Cores.fundo.elevada, borderWidth: 1, borderColor: Cores.borda.sutil, marginBottom: Espacamento.sm },
-  opcaoCardSelecionada: { borderColor: Cores.accent, backgroundColor: Cores.accentSuave },
-  opcaoCardTitulo: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.corpo, color: Cores.texto.principal },
-  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: Espacamento.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Cores.borda.sutil },
-  checkboxRowSelecionada: { backgroundColor: Cores.accentSuave, borderRadius: Raio.sm, paddingHorizontal: 8 },
-  checkboxLabel: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo, color: Cores.texto.principal },
+  opcaoChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: Raio.md, backgroundColor: cores.elevada, borderWidth: 1, borderColor: cores.separador },
+  opcaoChipSelecionada: { borderColor: cores.destaque, backgroundColor: cores.destaqueSuave },
+  opcaoTexto: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo, color: cores.texto },
+  opcaoCard: { padding: Espacamento.md, borderRadius: Raio.md, backgroundColor: cores.elevada, borderWidth: 1, borderColor: cores.separador, marginBottom: Espacamento.sm },
+  opcaoCardSelecionada: { borderColor: cores.destaque, backgroundColor: cores.destaqueSuave },
+  opcaoCardTitulo: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.corpo, color: cores.texto },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', gap: Espacamento.md, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: cores.separador },
+  checkboxRowSelecionada: { backgroundColor: cores.destaqueSuave, borderRadius: Raio.sm, paddingHorizontal: 8 },
+  checkboxLabel: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.corpo, color: cores.texto },
   acoesRow: { flexDirection: 'row', gap: Espacamento.md, alignItems: 'center' },
-  btnVoltar: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: Raio.md, borderWidth: 1, borderColor: Cores.borda.sutil },
-  txtVoltar: { fontFamily: FamiliaFonte.semibold, fontSize: Fonte.corpo, color: Cores.texto.secundario },
-  textoCarregando: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: Cores.texto.principal, marginTop: 20, textAlign: 'center' },
-  subTextoCarregando: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.label, color: Cores.texto.secundario, marginTop: 8, textAlign: 'center' },
+  btnVoltar: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: Raio.md, borderWidth: 1, borderColor: cores.separador },
+  txtVoltar: { fontFamily: FamiliaFonte.semibold, fontSize: Fonte.corpo, color: cores.textoSecundario },
+  textoCarregando: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: cores.texto, marginTop: 20, textAlign: 'center' },
+  subTextoCarregando: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.label, color: cores.textoSecundario, marginTop: 8, textAlign: 'center' },
 });

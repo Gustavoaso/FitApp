@@ -5,10 +5,11 @@
 // SF Compact Rounded typography, pontos interativos, sem dependências externas.
 // ============================================================
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
-import { Cores, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresTema, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 
 export interface PontoGrafico {
   label: string; // Ex: "01/07"
@@ -27,9 +28,12 @@ export function GraficoEvolucao({
   dados,
   unidade = 'kg',
   altura = 160,
-  corLinha = Cores.accent,
+  corLinha,
   titulo,
 }: PropsGraficoEvolucao) {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
+  const corDaLinha = corLinha ?? cores.destaque;
   const larguraTela = Dimensions.get('window').width - 72; // Largura interna do card
   const paddingHorizontal = 20;
   const paddingVertical = 25;
@@ -91,7 +95,7 @@ export function GraficoEvolucao({
             y1={altura / 2}
             x2={larguraTela - paddingHorizontal}
             y2={altura / 2}
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke={cores.separador}
             strokeWidth={1}
             strokeDasharray="4 4"
           />
@@ -100,7 +104,7 @@ export function GraficoEvolucao({
           <Path
             d={pathD}
             fill="transparent"
-            stroke={corLinha}
+            stroke={corDaLinha}
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -113,14 +117,14 @@ export function GraficoEvolucao({
                 cx={p.x}
                 cy={p.y}
                 r={4.5}
-                fill={Cores.fundo.principal}
-                stroke={corLinha}
+                fill={cores.fundo}
+                stroke={corDaLinha}
                 strokeWidth={2}
               />
               <SvgText
                 x={p.x}
                 y={p.y - 10}
-                fill={Cores.texto.principal}
+                fill={cores.texto}
                 fontSize={10}
                 fontFamily={FamiliaFonte.bold}
                 fontWeight={PesoFonte.bold}
@@ -131,7 +135,7 @@ export function GraficoEvolucao({
               <SvgText
                 x={p.x}
                 y={altura - 6}
-                fill={Cores.texto.secundario}
+                fill={cores.textoSecundario}
                 fontSize={9}
                 fontFamily={FamiliaFonte.regular}
                 textAnchor="middle"
@@ -146,14 +150,15 @@ export function GraficoEvolucao({
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     marginVertical: 8,
   },
   titulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontWeight: PesoFonte.bold,
     marginBottom: 8,
   },
@@ -164,12 +169,12 @@ const estilos = StyleSheet.create({
   containerVazio: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Cores.fundo.superficie,
+    backgroundColor: cores.superficie,
     borderRadius: 12,
   },
   textoVazio: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
   },
 });

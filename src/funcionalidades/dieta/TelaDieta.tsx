@@ -13,14 +13,14 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
 import { CardRefeicao } from './CardRefeicao';
 import { BuscaAlimentosModal } from './BuscaAlimentosModal';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, CoresMacros, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
 import { obterHistoricoDieta, salvarHistoricoDieta, RegistroRefeicaoDiaria } from '@/compartilhado/servicos/historico-servico';
 import { repositorioPlano, repositorioDieta, type ReceitaUsuario } from '@/compartilhado/servicos/repositorio';
@@ -72,6 +72,8 @@ function converterParaResumo(item: any): RefeicaoDiaria['alimentos'][number] {
 }
 
 export default function TelaDieta() {
+  const { cores } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const [dataSelecionada, setDataSelecionada] = useState(() => new Date().toISOString().split('T')[0]);
   const [refeicoes, setRefeicoes] = useState<RefeicaoDiaria[]>(REFEICOES_BASE);
   const [refeicaoAtual, setRefeicaoAtual] = useState('Café da Manhã');
@@ -262,21 +264,25 @@ export default function TelaDieta() {
 
   return (
     <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={estilos.scrollContent}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* ── Top Bar de Navegação de Datas (< Hoje >) ───────────────────────────── */}
         <View style={estilos.topBarData}>
           <TouchableOpacity onPress={() => mudarData(-1)} style={estilos.btnSetaData}>
-            <SymbolView name="chevron.left" size={16} tintColor={Cores.texto.principal} weight="bold" />
+            <SymbolView name="chevron.left" size={16} tintColor={cores.texto} weight="bold" />
           </TouchableOpacity>
 
           <TouchableOpacity style={estilos.seletorDataCentral} onPress={() => setDataSelecionada(new Date().toISOString().split('T')[0])}>
-            <SymbolView name="calendar" size={16} tintColor={Cores.accent} />
+            <SymbolView name="calendar" size={16} tintColor={cores.destaque} />
             <Text style={estilos.txtDataCentral}>{textoDataHeader}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => mudarData(1)} style={estilos.btnSetaData}>
-            <SymbolView name="chevron.right" size={16} tintColor={Cores.texto.principal} weight="bold" />
+            <SymbolView name="chevron.right" size={16} tintColor={cores.texto} weight="bold" />
           </TouchableOpacity>
         </View>
 
@@ -309,7 +315,7 @@ export default function TelaDieta() {
               style={estilos.btnToggleUnidade}
               onPress={() => setModoExibicaoMacros(prev => prev === 'g' ? '%' : 'g')}
             >
-              <SymbolView name="arrow.triangle.2.circlepath" size={12} tintColor={Cores.accent} />
+              <SymbolView name="arrow.triangle.2.circlepath" size={12} tintColor={cores.destaque} />
               <Text style={estilos.txtToggleUnidade}>{modoExibicaoMacros === 'g' ? 'Exibir %' : 'Exibir gramas'}</Text>
             </TouchableOpacity>
           </View>
@@ -329,7 +335,7 @@ export default function TelaDieta() {
                 <View
                   style={[
                     estilos.preenchimentoMacro,
-                    { backgroundColor: '#10B981', width: `${Math.min(100, (totais.carbos / (metaCarbos || 1)) * 100)}%` },
+                    { backgroundColor: CoresMacros.carboidrato, width: `${Math.min(100, (totais.carbos / (metaCarbos || 1)) * 100)}%` },
                   ]}
                 />
               </View>
@@ -349,7 +355,7 @@ export default function TelaDieta() {
                 <View
                   style={[
                     estilos.preenchimentoMacro,
-                    { backgroundColor: '#A855F7', width: `${Math.min(100, (totais.gorduras / (metaGorduras || 1)) * 100)}%` },
+                    { backgroundColor: CoresMacros.gordura, width: `${Math.min(100, (totais.gorduras / (metaGorduras || 1)) * 100)}%` },
                   ]}
                 />
               </View>
@@ -369,7 +375,7 @@ export default function TelaDieta() {
                 <View
                   style={[
                     estilos.preenchimentoMacro,
-                    { backgroundColor: '#EAB308', width: `${Math.min(100, (totais.proteinas / (metaProteinas || 1)) * 100)}%` },
+                    { backgroundColor: CoresMacros.proteina, width: `${Math.min(100, (totais.proteinas / (metaProteinas || 1)) * 100)}%` },
                   ]}
                 />
               </View>
@@ -380,13 +386,13 @@ export default function TelaDieta() {
         {/* ── Banner de Busca / Leitor Rápido ── */}
         <TouchableOpacity style={estilos.bannerBuscaRapida} onPress={() => setModalBuscaVisivel(true)} activeOpacity={0.8}>
           <View style={estilos.iconBannerWrapper}>
-            <SymbolView name="barcode.viewfinder" size={20} tintColor={Cores.accent} />
+            <SymbolView name="barcode.viewfinder" size={20} tintColor={cores.destaque} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={estilos.txtBannerTitulo}>Busca Rápida de Alimentos</Text>
             <Text style={estilos.txtBannerSub}>Consulte a Tabela TACO e adicione com 1 toque</Text>
           </View>
-          <SymbolView name="chevron.right" size={14} tintColor={Cores.texto.secundario} />
+          <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
         </TouchableOpacity>
 
         {/* ── Abas: Diário de Hoje vs Plano Semanal ── */}
@@ -406,7 +412,7 @@ export default function TelaDieta() {
         {abaAtiva === 'planejado' ? (
           <CardVidro semBorda estilo={estilos.blocoPlanejado}>
             <View style={estilos.planejadoHeader}>
-              <SymbolView name="sparkles" size={18} tintColor={Cores.accent} />
+              <SymbolView name="sparkles" size={18} tintColor={cores.destaque} />
               <Text style={estilos.planejadoTitulo}>Estrutura planejada</Text>
             </View>
             <Text style={estilos.planejadoSub}>
@@ -469,7 +475,7 @@ export default function TelaDieta() {
 
       {/* FAB Flutuante estilo MyFitnessPal */}
       <TouchableOpacity style={estilos.fab} onPress={() => setModalBuscaVisivel(true)} activeOpacity={0.9}>
-        <SymbolView name="plus" size={28} tintColor="#080A0E" weight="bold" />
+        <SymbolView name="plus" size={28} tintColor={cores.textoSobreDestaque} weight="bold" />
       </TouchableOpacity>
 
       <BuscaAlimentosModal
@@ -486,14 +492,15 @@ export default function TelaDieta() {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
   },
   scrollContent: {
     paddingHorizontal: Espacamento.lg,
-    paddingTop: Platform.OS === 'ios' ? 56 : 28,
+    paddingTop: Espacamento.sm, // o título grande fica no header nativo
     paddingBottom: 120,
   },
 
@@ -508,7 +515,7 @@ const estilos = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: Raio.full,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -516,17 +523,17 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: Cores.fundo.superficie,
+    backgroundColor: cores.superficie,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: Raio.full,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   txtDataCentral: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   // Card Calorias MFP
@@ -543,19 +550,19 @@ const estilos = StyleSheet.create({
   labelKcalMFP: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   valKcalMFP: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 22,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginTop: 2,
   },
   subValKcal: {
     fontSize: 14,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontFamily: FamiliaFonte.regular,
   },
   colKcalRestantes: {
@@ -564,23 +571,23 @@ const estilos = StyleSheet.create({
   valRestantes: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 22,
-    color: Cores.accent,
+    color: cores.destaque,
     letterSpacing: -0.5,
   },
   labelRestantes: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   trilhoProgressoKcal: {
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 3,
     overflow: 'hidden',
   },
   preenchimentoKcal: {
     height: '100%',
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     borderRadius: 3,
   },
 
@@ -598,7 +605,7 @@ const estilos = StyleSheet.create({
   tituloMacrosMFP: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -606,7 +613,7 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Raio.sm,
@@ -614,7 +621,7 @@ const estilos = StyleSheet.create({
   txtToggleUnidade: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 11,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   gridBarrasMacros: {
     gap: 10,
@@ -629,16 +636,16 @@ const estilos = StyleSheet.create({
   nomeMacroLinha: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   valMacroLinha: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   trilhoMacro: {
     height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -652,9 +659,9 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: Cores.accentBorda,
+    borderColor: cores.separador,
     borderRadius: Raio.md,
     padding: 14,
     marginBottom: 16,
@@ -670,12 +677,12 @@ const estilos = StyleSheet.create({
   txtBannerTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   txtBannerSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 1,
   },
 
@@ -689,20 +696,20 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: Raio.full,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
   },
   abaAtiva: {
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1,
-    borderColor: Cores.accentBorda,
+    borderColor: cores.separador,
   },
   abaTexto: {
     fontFamily: FamiliaFonte.medio,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontSize: 12,
   },
   abaTextoAtiva: {
-    color: Cores.accent,
+    color: cores.destaque,
     fontFamily: FamiliaFonte.bold,
   },
 
@@ -715,12 +722,12 @@ const estilos = StyleSheet.create({
   tituloListaRefeicoes: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 16,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subListaRefeicoes: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   // Plano Semanal
@@ -735,12 +742,12 @@ const estilos = StyleSheet.create({
   },
   planejadoTitulo: {
     fontFamily: FamiliaFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontSize: 16,
   },
   planejadoSub: {
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontSize: 12,
     marginTop: 6,
     marginBottom: 16,
@@ -749,14 +756,14 @@ const estilos = StyleSheet.create({
     gap: 10,
   },
   diaPlanejadoCard: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: 14,
     padding: 12,
     marginBottom: 8,
   },
   diaPlanejadoTitulo: {
     fontFamily: FamiliaFonte.bold,
-    color: Cores.accent,
+    color: cores.destaque,
     fontSize: 14,
     marginBottom: 8,
   },
@@ -765,7 +772,7 @@ const estilos = StyleSheet.create({
     paddingBottom: 10,
     marginBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: Cores.borda.sutil,
+    borderBottomColor: cores.separador,
   },
   timelineItem: {
     flexDirection: 'row',
@@ -776,22 +783,22 @@ const estilos = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
   },
   timelineTitulo: {
     fontFamily: FamiliaFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontSize: 13,
   },
   timelineSub: {
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     fontSize: 11,
     marginTop: 2,
   },
   alimentoPlanejado: {
     fontFamily: FamiliaFonte.regular,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontSize: 12,
     marginTop: 5,
   },
@@ -804,7 +811,7 @@ const estilos = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

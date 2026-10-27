@@ -8,7 +8,7 @@
 // 3. Removido o botão '+' do card do dia (mantido apenas botão 'Trocar')
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,8 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio, CoresMacros } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { supabase } from '@/compartilhado/supabase';
 import {
   obterPlanoTreinoCustomizado,
@@ -64,6 +65,8 @@ function gerarDiasSemanaCarrossel() {
 }
 
 export default function TelaTreino() {
+  const { cores, escuro } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
   const [abaModo, setAbaModo] = useState<'registrado' | 'planejado'>('registrado');
   const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia | null>(null);
@@ -268,11 +271,16 @@ export default function TelaTreino() {
 
   return (
     <View style={estilos.container}>
-      <ScrollView contentContainerStyle={estilos.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={estilos.scrollContent}
+        contentInsetAdjustmentBehavior="automatic"
+        showsVerticalScrollIndicator={false}
+      >
 
         {/* ── Top Bar Limpa ────────────────────────────────────── */}
         <View style={estilos.topBar}>
-          <Text style={estilos.topBarTitulo}>Treino</Text>
+          {/* O título "Treino" agora é o título grande do header nativo. */}
+          <View />
 
           <View style={estilos.topBarDireita}>
             <View style={estilos.streakBadge}>
@@ -309,7 +317,7 @@ export default function TelaTreino() {
             {/* Banner Resumo de Progresso */}
             <CardVidro semBorda estilo={estilos.bannerResumoPlanejado}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <SymbolView name="flag.checkered" size={20} tintColor={Cores.accent} />
+                <SymbolView name="flag.checkered" size={20} tintColor={cores.destaque} />
                 <View style={{ flex: 1 }}>
                   <Text style={estilos.txtBannerTitulo}>
                     {estatisticas?.diasTreinados || 0} de {estatisticas?.metaDiasTreino || 5} treinos concluídos
@@ -327,7 +335,7 @@ export default function TelaTreino() {
               onPress={() => setModalDefinirSemanaVisivel(true)}
               activeOpacity={0.8}
             >
-              <SymbolView name="arrow.triangle.2.circlepath" size={16} tintColor="#080A0E" weight="bold" />
+              <SymbolView name="arrow.triangle.2.circlepath" size={16} tintColor={cores.textoSobreDestaque} weight="bold" />
               <Text style={estilos.txtReformularSemana}>Reformular Semana Completa</Text>
             </TouchableOpacity>
 
@@ -360,7 +368,7 @@ export default function TelaTreino() {
                         <SymbolView
                           name={expandido ? 'chevron.up' : 'chevron.down'}
                           size={12}
-                          tintColor={Cores.accent}
+                          tintColor={cores.destaque}
                         />
                       </View>
                       <Text style={estilos.txtFocoAlocado}>
@@ -408,7 +416,7 @@ export default function TelaTreino() {
             {/* Indicador de Divergência se o treino atual for diferente do planejado */}
             {idTreinoEspecial && idTreinoEspecial !== idTreinoPredefinido && (
               <View style={estilos.badgeDivergenciaContainer}>
-                <SymbolView name="sparkles" size={14} tintColor={Cores.accent} />
+                <SymbolView name="sparkles" size={14} tintColor={cores.destaque} />
                 <Text style={estilos.txtDivergencia}>Diferente do planejado inicial</Text>
               </View>
             )}
@@ -442,7 +450,7 @@ export default function TelaTreino() {
                   <SymbolView
                     name={temTreino ? 'dumbbell.fill' : 'dumbbell'}
                     size={18}
-                    tintColor={temTreino ? Cores.accent : Cores.texto.desabilitado}
+                    tintColor={temTreino ? cores.destaque : cores.textoSecundario}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -457,7 +465,7 @@ export default function TelaTreino() {
                   style={estilos.btnTrocarTreino}
                   onPress={() => setModalTrocarTreinoVisivel(true)}
                 >
-                  <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor={Cores.accent} weight="bold" />
+                  <SymbolView name="arrow.triangle.2.circlepath" size={14} tintColor={cores.destaque} weight="bold" />
                   <Text style={estilos.txtTrocarTreino}>Trocar</Text>
                 </TouchableOpacity>
               </View>
@@ -540,7 +548,7 @@ export default function TelaTreino() {
         activeOpacity={0.85}
       >
         <View style={estilos.fabInnerAmarelo}>
-          <SymbolView name="plus" size={26} tintColor="#FFFFFF" weight="bold" />
+          <SymbolView name="plus" size={26} tintColor={cores.texto} weight="bold" />
         </View>
       </TouchableOpacity>
 
@@ -551,7 +559,7 @@ export default function TelaTreino() {
           activeOpacity={1}
           onPress={() => setMenuTreinoVisivel(false)}
         />
-        <BlurView intensity={90} tint="dark" style={estilos.menuSheetContainer}>
+        <BlurView intensity={90} tint={escuro ? 'dark' : 'light'} style={estilos.menuSheetContainer}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Opções de Treino</Text>
 
@@ -564,7 +572,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="plus.circle.fill" size={22} tintColor={Cores.accent} />
+              <SymbolView name="plus.circle.fill" size={22} tintColor={cores.destaque} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Criar novo treino</Text>
@@ -612,7 +620,7 @@ export default function TelaTreino() {
       <Modal visible={modalCriarNovoTreinoVisivel} animationType="slide" transparent statusBarTranslucent>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalCriarNovoTreinoVisivel(false)} />
-          <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+          <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
             <View style={estilos.modalHandle} />
             <Text style={estilos.modalTitulo}>Criar Novo Treino</Text>
 
@@ -620,7 +628,7 @@ export default function TelaTreino() {
             <TextInput
               style={estilos.input}
               placeholder="Ex: Treino D - Ombros & Trapézio"
-              placeholderTextColor={Cores.texto.desabilitado}
+              placeholderTextColor={cores.textoSecundario}
               value={novoFocoTreino}
               onChangeText={setNovoFocoTreino}
             />
@@ -634,11 +642,11 @@ export default function TelaTreino() {
                     key={grupo}
                     onPress={() => setGrupoMuscularFiltro(grupo)}
                     style={[
-                      { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)' },
-                      grupoMuscularFiltro === grupo && { backgroundColor: Cores.accent },
+                      { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, backgroundColor: cores.destaqueSuave },
+                      grupoMuscularFiltro === grupo && { backgroundColor: cores.destaque },
                     ]}
                   >
-                    <Text style={[{ fontSize: 12, color: Cores.texto.secundario, fontFamily: FamiliaFonte.bold }, grupoMuscularFiltro === grupo && { color: '#080A0E' }]}>
+                    <Text style={[{ fontSize: 12, color: cores.textoSecundario, fontFamily: FamiliaFonte.bold }, grupoMuscularFiltro === grupo && { color: cores.textoSobreDestaque }]}>
                       {grupo}
                     </Text>
                   </TouchableOpacity>
@@ -649,7 +657,7 @@ export default function TelaTreino() {
             <TextInput
               style={estilos.input}
               placeholder="Digite o nome do exercício (ex: Supino, Rosca...)"
-              placeholderTextColor={Cores.texto.desabilitado}
+              placeholderTextColor={cores.textoSecundario}
               value={nomeExTemp}
               onChangeText={setNomeExTemp}
             />
@@ -665,7 +673,7 @@ export default function TelaTreino() {
                       alignItems: 'center',
                       gap: 10,
                       padding: 8,
-                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      backgroundColor: cores.destaqueSuave,
                       borderRadius: 10,
                       marginBottom: 6,
                     }}
@@ -677,17 +685,17 @@ export default function TelaTreino() {
                     {ex.gif_url ? (
                       <Image source={{ uri: ex.gif_url }} style={{ width: 36, height: 36, borderRadius: 6 }} />
                     ) : (
-                      <View style={{ width: 36, height: 36, borderRadius: 6, backgroundColor: Cores.accentSuave, alignItems: 'center', justifyContent: 'center' }}>
-                        <SymbolView name="figure.cross.training" size={18} tintColor={Cores.accent} />
+                      <View style={{ width: 36, height: 36, borderRadius: 6, backgroundColor: cores.destaqueSuave, alignItems: 'center', justifyContent: 'center' }}>
+                        <SymbolView name="figure.cross.training" size={18} tintColor={cores.destaque} />
                       </View>
                     )}
                     <View style={{ flex: 1 }}>
-                      <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 13, color: Cores.texto.principal }}>{ex.nome}</Text>
-                      <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario }}>
+                      <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 13, color: cores.texto }}>{ex.nome}</Text>
+                      <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario }}>
                         {ex.grupo_primario} · {ex.equipamento || 'Livre'}
                       </Text>
                     </View>
-                    <SymbolView name="plus.circle.fill" size={18} tintColor={Cores.accent} />
+                    <SymbolView name="plus.circle.fill" size={18} tintColor={cores.destaque} />
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -695,11 +703,11 @@ export default function TelaTreino() {
 
             <View style={estilos.rowInputs}>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Séries</Text>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario, marginBottom: 4 }}>Séries</Text>
                 <TextInput
                   style={estilos.input}
                   placeholder="ex: 4"
-                  placeholderTextColor={Cores.texto.desabilitado}
+                  placeholderTextColor={cores.textoSecundario}
                   keyboardType="numeric"
                   value={seriesExTemp}
                   onChangeText={setSeriesExTemp}
@@ -707,11 +715,11 @@ export default function TelaTreino() {
               </View>
 
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Reps</Text>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario, marginBottom: 4 }}>Reps</Text>
                 <TextInput
                   style={estilos.input}
                   placeholder="ex: 10"
-                  placeholderTextColor={Cores.texto.desabilitado}
+                  placeholderTextColor={cores.textoSecundario}
                   keyboardType="numeric"
                   value={repsExTemp}
                   onChangeText={setRepsExTemp}
@@ -719,11 +727,11 @@ export default function TelaTreino() {
               </View>
 
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Carga (kg)</Text>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario, marginBottom: 4 }}>Carga (kg)</Text>
                 <TextInput
                   style={estilos.input}
                   placeholder="ex: 20"
-                  placeholderTextColor={Cores.texto.desabilitado}
+                  placeholderTextColor={cores.textoSecundario}
                   keyboardType="numeric"
                   value={cargaExTemp}
                   onChangeText={setCargaExTemp}
@@ -731,11 +739,11 @@ export default function TelaTreino() {
               </View>
 
               <View style={{ flex: 1, marginLeft: 8 }}>
-                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: Cores.texto.secundario, marginBottom: 4 }}>Descanso (s)</Text>
+                <Text style={{ fontFamily: FamiliaFonte.regular, fontSize: 11, color: cores.textoSecundario, marginBottom: 4 }}>Descanso (s)</Text>
                 <TextInput
                   style={estilos.input}
                   placeholder="ex: 60"
-                  placeholderTextColor={Cores.texto.desabilitado}
+                  placeholderTextColor={cores.textoSecundario}
                   keyboardType="numeric"
                   value={descansoExTemp}
                   onChangeText={setDescansoExTemp}
@@ -744,7 +752,7 @@ export default function TelaTreino() {
             </View>
 
             <TouchableOpacity style={estilos.btnAddExTemp} onPress={adicionarExercicioTempAoNovoTreino}>
-              <SymbolView name="plus" size={14} tintColor="#080A0E" weight="bold" />
+              <SymbolView name="plus" size={14} tintColor={cores.textoSobreDestaque} weight="bold" />
               <Text style={estilos.txtAddExTemp}>Incluir Exercício</Text>
             </TouchableOpacity>
 
@@ -755,7 +763,7 @@ export default function TelaTreino() {
                   <View key={ex.id} style={estilos.itemTempRow}>
                     <Text style={estilos.itemTempNome}>{ex.nome} ({ex.series}x{ex.repeticoes} · {ex.cargaKg}kg · {ex.tempoDescansoSegundos}s)</Text>
                     <TouchableOpacity onPress={() => setExerciciosTempNovoTreino(prev => prev.filter(i => i.id !== ex.id))}>
-                      <SymbolView name="trash" size={12} tintColor={Cores.feedback.erro} />
+                      <SymbolView name="trash" size={12} tintColor={cores.erro} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -777,7 +785,7 @@ export default function TelaTreino() {
       {/* ── Modal Meus Treinos (Permite Excluir Treinos Criados) ── */}
       <Modal visible={modalMeusTreinosVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalMeusTreinosVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Meus Treinos Criados</Text>
 
@@ -796,7 +804,7 @@ export default function TelaTreino() {
                   await salvarPlanoTreinoCustomizado(novos);
                 }}
               >
-                <SymbolView name="trash" size={16} tintColor={Cores.feedback.erro} />
+                <SymbolView name="trash" size={16} tintColor={cores.erro} />
               </TouchableOpacity>
             </View>
           ))}
@@ -812,7 +820,7 @@ export default function TelaTreino() {
       {/* ── Modal Definir Treino da Semana ──────────────────── */}
       <Modal visible={modalDefinirSemanaVisivel} animationType="slide" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalDefinirSemanaVisivel(false)} />
-        <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>Definir Treino da Semana</Text>
           <Text style={estilos.subtituloModal}>Escolha qual treino será feito em cada dia:</Text>
@@ -835,7 +843,7 @@ export default function TelaTreino() {
                   <Text style={estilos.txtSelectSemanaVal}>
                     {idAtual === 'descanso' ? 'Descanso (Sem Treino)' : (treinoAtualMap ? treinoAtualMap.foco : 'Selecione')}
                   </Text>
-                  <SymbolView name="chevron.right" size={12} tintColor={Cores.accent} />
+                  <SymbolView name="chevron.right" size={12} tintColor={cores.destaque} />
                 </TouchableOpacity>
               </View>
             );
@@ -852,7 +860,7 @@ export default function TelaTreino() {
       {/* ── Card/Menu Flutuante para Seleção de Treino (Ajuste 3) ── */}
       <Modal visible={modalSeletorTreinoVisivel} animationType="fade" transparent statusBarTranslucent>
         <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalSeletorTreinoVisivel(false)} />
-        <BlurView intensity={90} tint="dark" style={estilos.modalCard}>
+        <BlurView intensity={90} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
           <View style={estilos.modalHandle} />
           <Text style={estilos.modalTitulo}>
             Selecione o Treino para {diaEmTrocaConfig ? diaEmTrocaConfig.toUpperCase() : 'este dia'}
@@ -861,7 +869,7 @@ export default function TelaTreino() {
           <ScrollView style={{ maxHeight: 320, width: '100%', marginVertical: 12 }}>
             {/* Opção 1: Descanso (Dia Sem Treino) */}
             <TouchableOpacity
-              style={[estilos.itemTrocaTreino, { backgroundColor: 'rgba(255, 255, 255, 0.05)' }]}
+              style={[estilos.itemTrocaTreino, { backgroundColor: cores.destaqueSuave }]}
               onPress={() => {
                 if (diaEmTrocaConfig) {
                   lidarComDefinirDiaSemana(diaEmTrocaConfig, 'descanso');
@@ -869,7 +877,7 @@ export default function TelaTreino() {
                 setModalSeletorTreinoVisivel(false);
               }}
             >
-              <SymbolView name="bed.double.fill" size={20} tintColor={Cores.texto.secundario} style={{ marginRight: 12 }} />
+              <SymbolView name="bed.double.fill" size={20} tintColor={cores.textoSecundario} style={{ marginRight: 12 }} />
               <View style={{ flex: 1 }}>
                 <Text style={estilos.nomeTrocaTreino}>Descanso (Dia Sem Treino)</Text>
                 <Text style={estilos.subTrocaTreino}>Dia reservado para recuperação muscular</Text>
@@ -877,7 +885,7 @@ export default function TelaTreino() {
             </TouchableOpacity>
 
             {/* Opção 2: Treinos Gerados e Personalizados */}
-            <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 12, color: Cores.accent, marginTop: 12, marginBottom: 6 }}>
+            <Text style={{ fontFamily: FamiliaFonte.bold, fontSize: 12, color: cores.destaque, marginTop: 12, marginBottom: 6 }}>
               TREINOS DISPONÍVEIS:
             </Text>
             {planos.map(p => (
@@ -893,7 +901,7 @@ export default function TelaTreino() {
                   setModalSeletorTreinoVisivel(false);
                 }}
               >
-                <SymbolView name="dumbbell.fill" size={18} tintColor={Cores.accent} style={{ marginRight: 12 }} />
+                <SymbolView name="dumbbell.fill" size={18} tintColor={cores.destaque} style={{ marginRight: 12 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={estilos.nomeTrocaTreino}>{p.foco}</Text>
                   <Text style={estilos.subTrocaTreino}>{p.exercicios.length} exercícios</Text>
@@ -915,7 +923,7 @@ export default function TelaTreino() {
         <Modal visible={modalEditarVisivel} animationType="slide" transparent statusBarTranslucent>
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TouchableOpacity style={estilos.modalOverlay} activeOpacity={1} onPress={() => setModalEditarVisivel(false)} />
-            <BlurView intensity={80} tint="dark" style={estilos.modalCard}>
+            <BlurView intensity={80} tint={escuro ? 'dark' : 'light'} style={estilos.modalCard}>
               <View style={estilos.modalHandle} />
               <Text style={estilos.modalTitulo}>Editar Exercício</Text>
 
@@ -989,11 +997,12 @@ export default function TelaTreino() {
   );
 }
 
-const estilos = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Cores.fundo.principal },
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: cores.fundo },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingTop: Espacamento.sm, // o título grande fica no header nativo
     paddingBottom: 120,
   },
 
@@ -1007,7 +1016,7 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 20,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   topBarDireita: {
     flexDirection: 'row',
@@ -1018,18 +1027,18 @@ const estilos = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: Cores.fundo.superficie,
+    backgroundColor: cores.superficie,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: Raio.full,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   streakTexto: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   carrosselContainer: {
@@ -1046,23 +1055,23 @@ const estilos = StyleSheet.create({
   diaAbrev: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 13,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
     marginBottom: 6,
   },
   diaAbrevSelecionado: {
     fontFamily: FamiliaFonte.semibold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   diaNum: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 17,
-    color: Cores.texto.desabilitado,
+    color: cores.textoSecundario,
   },
   diaNumSelecionado: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 20,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   cardDiaHeader: {
@@ -1078,7 +1087,7 @@ const estilos = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1086,12 +1095,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 16,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   diaDetalhes: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 13,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   btnTrocarTreino: {
@@ -1100,20 +1109,20 @@ const estilos = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 7,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: 8,
   },
   txtTrocarTreino: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 
   secaoTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     textTransform: 'uppercase',
     letterSpacing: 0.8,
     marginBottom: Espacamento.md,
@@ -1139,7 +1148,7 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
     fontWeight: PesoFonte.bold,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   colExercicio: {
     flex: 1,
@@ -1148,29 +1157,29 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 15,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   exSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   badgeGrupo: {
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: Raio.sm,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
   },
   textoBadgeGrupo: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 
   // Rodada 3 — Ajuste 1: Estilização da exibição das séries em LINHA
   containerLinhasSeries: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    backgroundColor: cores.destaqueSuave,
     borderRadius: Raio.md,
     padding: 10,
     gap: 6,
@@ -1183,20 +1192,20 @@ const estilos = StyleSheet.create({
   txtNumeroSerie: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   linhaDivisoraPontilhada: {
     flex: 1,
     height: 1,
     borderStyle: 'dashed',
     borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: cores.separador,
     marginHorizontal: 8,
   },
   txtValoresSerie: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   botaoIniciar: {
@@ -1210,12 +1219,12 @@ const estilos = StyleSheet.create({
   textoVazioTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   textoVazioSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 4,
   },
 
@@ -1228,7 +1237,7 @@ const estilos = StyleSheet.create({
     height: 56,
     borderRadius: 18,
     overflow: 'hidden',
-    shadowColor: Cores.amarelo,
+    shadowColor: CoresMacros.carboidrato,
     shadowOpacity: 0.4,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -1237,7 +1246,7 @@ const estilos = StyleSheet.create({
   fabInnerAmarelo: {
     width: '100%',
     height: '100%',
-    backgroundColor: Cores.amarelo,
+    backgroundColor: CoresMacros.carboidrato,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1248,7 +1257,7 @@ const estilos = StyleSheet.create({
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Cores.borda.forte,
+    backgroundColor: cores.separador,
     alignSelf: 'center',
     marginBottom: 16,
   },
@@ -1260,9 +1269,9 @@ const estilos = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    backgroundColor: 'rgba(16,19,24,0.98)',
+    backgroundColor: cores.elevada,
     borderTopWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   itemMenuOpcao: {
     flexDirection: 'row',
@@ -1270,25 +1279,25 @@ const estilos = StyleSheet.create({
     gap: 14,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomColor: cores.destaqueSuave,
   },
   iconeMenuOpcao: {
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tituloMenuOpcao: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subtituloMenuOpcao: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
 
@@ -1296,26 +1305,26 @@ const estilos = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
-    backgroundColor: 'rgba(16,19,24,0.97)',
+    backgroundColor: cores.elevada,
     borderTopWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   modalTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginBottom: 12,
   },
   subtituloModal: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginBottom: 16,
   },
   labelForm: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginBottom: 6,
     marginTop: 6,
   },
@@ -1324,7 +1333,7 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     paddingVertical: 10,
     borderRadius: Raio.md,
     marginBottom: 12,
@@ -1332,10 +1341,10 @@ const estilos = StyleSheet.create({
   txtAddExTemp: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 13,
-    color: '#080A0E',
+    color: cores.textoSobreDestaque,
   },
   boxAlimentosTemp: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     padding: 12,
     borderRadius: Raio.md,
     marginBottom: 16,
@@ -1343,7 +1352,7 @@ const estilos = StyleSheet.create({
   txtItensAdicionadosHeader: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 11,
-    color: Cores.accent,
+    color: cores.destaque,
     marginBottom: 6,
   },
   itemTempRow: {
@@ -1355,7 +1364,7 @@ const estilos = StyleSheet.create({
   itemTempNome: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
 
   rowSemanaConfig: {
@@ -1364,18 +1373,18 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomColor: cores.destaqueSuave,
   },
   txtSemanaDia: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   btnSelectSemana: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: Raio.sm,
@@ -1383,59 +1392,59 @@ const estilos = StyleSheet.create({
   txtSelectSemanaVal: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 13,
-    color: Cores.accent,
+    color: cores.destaque,
   },
 
   itemTrocaTreino: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.md,
     marginBottom: 10,
   },
   itemTrocaTreinoAtivo: {
     borderWidth: 1,
-    borderColor: Cores.accent,
+    borderColor: cores.destaque,
   },
   nomeTrocaTreino: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subTrocaTreino: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
 
   input: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderWidth: 1,
-    borderColor: Cores.borda.media,
+    borderColor: cores.separador,
     borderRadius: Raio.md,
     padding: 12,
     fontSize: Fonte.corpo,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontFamily: FamiliaFonte.regular,
     marginBottom: 12,
   },
   modalInputPesquisa: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.corpo,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
     marginBottom: 12,
   },
   segmentControlContainer: {
     flexDirection: 'row',
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderRadius: Raio.md,
     padding: 4,
     marginBottom: 16,
@@ -1447,15 +1456,15 @@ const estilos = StyleSheet.create({
     borderRadius: Raio.sm,
   },
   segmentTabAtiva: {
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
   },
   segmentTxt: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
   segmentTxtAtivo: {
-    color: '#080A0E',
+    color: cores.textoSobreDestaque,
   },
   bannerResumoPlanejado: {
     padding: 14,
@@ -1466,12 +1475,12 @@ const estilos = StyleSheet.create({
   txtBannerTitulo: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   txtBannerSub: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   btnReformularSemana: {
@@ -1479,14 +1488,14 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     paddingVertical: 12,
     borderRadius: Raio.md,
   },
   txtReformularSemana: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: '#080A0E',
+    color: cores.textoSobreDestaque,
   },
   cardItemCronograma: {
     padding: 14,
@@ -1495,32 +1504,32 @@ const estilos = StyleSheet.create({
   txtDiaSemanaNome: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   txtFocoAlocado: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 15,
-    color: Cores.texto.principal,
+    color: cores.texto,
     marginTop: 2,
   },
   txtQtdExAlocado: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 12,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 2,
   },
   btnAlterarDiaPlanejado: {
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: Raio.sm,
     borderWidth: 1,
-    borderColor: Cores.borda.sutil,
+    borderColor: cores.separador,
   },
   txtAlterarDiaPlanejado: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   badgeDivergenciaContainer: {
     flexDirection: 'row',
@@ -1536,44 +1545,44 @@ const estilos = StyleSheet.create({
   txtDivergencia: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   containerExerciciosExpandidos: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: cores.destaqueSuave,
     gap: 8,
   },
   itemExercicioExpandido: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     padding: 10,
     borderRadius: Raio.sm,
   },
   numExExpandido: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 12,
-    color: Cores.accent,
+    color: cores.destaque,
   },
   nomeExExpandido: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: 13,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subExExpandido: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 1,
   },
   badgeGrupoExpandido: {
     fontFamily: FamiliaFonte.bold,
     fontSize: 10,
-    color: Cores.texto.secundario,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    color: cores.textoSecundario,
+    backgroundColor: cores.destaqueSuave,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
@@ -1581,7 +1590,7 @@ const estilos = StyleSheet.create({
   labelInput: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginBottom: 4,
   },
   rowInputs: {
@@ -1591,9 +1600,9 @@ const estilos = StyleSheet.create({
   modalAcoes: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 12 },
   modalAcoesSpace: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
   btnCancelar: { paddingVertical: 10, paddingHorizontal: 16 },
-  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: Cores.texto.secundario, fontSize: Fonte.corpo },
-  btnSalvar: { backgroundColor: Cores.accent, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
-  txtSalvar: { fontFamily: FamiliaFonte.bold, color: '#080A0E', fontSize: Fonte.corpo },
+  txtCancelar: { fontFamily: FamiliaFonte.semibold, color: cores.textoSecundario, fontSize: Fonte.corpo },
+  btnSalvar: { backgroundColor: cores.destaque, paddingVertical: 10, paddingHorizontal: 20, borderRadius: Raio.md },
+  txtSalvar: { fontFamily: FamiliaFonte.bold, color: cores.textoSobreDestaque, fontSize: Fonte.corpo },
   btnExcluir: { paddingVertical: 10, paddingHorizontal: 16 },
-  txtExcluir: { fontFamily: FamiliaFonte.semibold, color: Cores.feedback.erro, fontSize: Fonte.corpo },
+  txtExcluir: { fontFamily: FamiliaFonte.semibold, color: cores.erro, fontSize: Fonte.corpo },
 });

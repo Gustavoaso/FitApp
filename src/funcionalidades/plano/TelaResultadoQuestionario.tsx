@@ -6,28 +6,31 @@
 // sem emojis, utilizando exclusivamente a biblioteca SF Symbols.
 // ============================================================
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
-import { Cores, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 import { formatarAgua } from '@/compartilhado/utilidades';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import type { PlanoIAGerado } from '@/compartilhado/tipos';
 
 export default function TelaResultadoQuestionario() {
+  const { cores, escuro } = useTema();
+  const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
   const { plano, respostas } = useLocalSearchParams<{ plano: string; respostas?: string }>();
   const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
 
   // Parse dos dados do plano gerado e das respostas do questionário
   const dadosPlano: PlanoIAGerado | null = plano ? JSON.parse(plano) : null;
@@ -49,6 +52,7 @@ export default function TelaResultadoQuestionario() {
   }
 
   const aceitarEIniciar = async () => {
+    setErroSalvar(null);
     setSalvando(true);
     try {
       if (dadosPlano) {
@@ -59,7 +63,7 @@ export default function TelaResultadoQuestionario() {
     } catch (erro) {
       setSalvando(false);
       const mensagem = erro instanceof Error ? erro.message : 'Erro desconhecido ao salvar o planejamento.';
-      Alert.alert('Erro ao salvar planejamento', mensagem);
+      setErroSalvar(mensagem);
     }
   };
 
@@ -80,7 +84,7 @@ export default function TelaResultadoQuestionario() {
         <View style={estilos.noHeaderContainer}>
           {/* Nó Central Superior com SF Symbol */}
           <View style={estilos.noCentralOrb}>
-            <SymbolView name="sparkles" size={24} tintColor={Cores.accent} weight="bold" />
+            <SymbolView name="sparkles" size={24} tintColor={cores.destaque} weight="bold" />
           </View>
 
           {/* Linhas Conectoras */}
@@ -125,7 +129,7 @@ export default function TelaResultadoQuestionario() {
 
               <CardVidro semBorda estilo={estilos.cardTimelinePill}>
                 <View style={estilos.iconePillContainer}>
-                  <SymbolView name="fork.knife" size={18} tintColor={Cores.accent} />
+                  <SymbolView name="fork.knife" size={18} tintColor={cores.destaque} />
                 </View>
 
                 <View style={estilos.colTextosPill}>
@@ -134,7 +138,7 @@ export default function TelaResultadoQuestionario() {
                 </View>
 
                 <View style={estilos.checkmarkCircle}>
-                  <SymbolView name="checkmark" size={12} tintColor={Cores.accent} weight="bold" />
+                  <SymbolView name="checkmark" size={12} tintColor={cores.destaque} weight="bold" />
                 </View>
               </CardVidro>
             </View>
@@ -148,7 +152,7 @@ export default function TelaResultadoQuestionario() {
 
                 <CardVidro semBorda estilo={estilos.cardTimelinePill}>
                   <View style={estilos.iconePillContainer}>
-                    <SymbolView name="dumbbell.fill" size={18} tintColor={Cores.accent} />
+                    <SymbolView name="dumbbell.fill" size={18} tintColor={cores.destaque} />
                   </View>
 
                   <View style={estilos.colTextosPill}>
@@ -157,7 +161,7 @@ export default function TelaResultadoQuestionario() {
                   </View>
 
                   <View style={estilos.checkmarkCircle}>
-                    <SymbolView name="checkmark" size={12} tintColor={Cores.accent} weight="bold" />
+                    <SymbolView name="checkmark" size={12} tintColor={cores.destaque} weight="bold" />
                   </View>
                 </CardVidro>
               </View>
@@ -171,7 +175,7 @@ export default function TelaResultadoQuestionario() {
 
               <CardVidro semBorda estilo={estilos.cardTimelinePill}>
                 <View style={estilos.iconePillContainer}>
-                  <SymbolView name="drop.fill" size={18} tintColor={Cores.accent} />
+                  <SymbolView name="drop.fill" size={18} tintColor={cores.destaque} />
                 </View>
 
                 <View style={estilos.colTextosPill}>
@@ -180,7 +184,7 @@ export default function TelaResultadoQuestionario() {
                 </View>
 
                 <View style={estilos.checkmarkCircle}>
-                  <SymbolView name="checkmark" size={12} tintColor={Cores.accent} weight="bold" />
+                  <SymbolView name="checkmark" size={12} tintColor={cores.destaque} weight="bold" />
                 </View>
               </CardVidro>
             </View>
@@ -192,7 +196,7 @@ export default function TelaResultadoQuestionario() {
         {dadosPlano?.comentarios && dadosPlano.comentarios.length > 0 && (
           <View style={estilos.secaoComentarios}>
             <View style={estilos.headerComentariosRow}>
-              <SymbolView name="lightbulb.fill" size={18} tintColor={Cores.accent} />
+              <SymbolView name="lightbulb.fill" size={18} tintColor={cores.destaque} />
               <Text style={estilos.secaoTituloComentario}>Observações da IA</Text>
             </View>
             <CardVidro semBorda estilo={estilos.cardComentarios}>
@@ -209,7 +213,12 @@ export default function TelaResultadoQuestionario() {
       </ScrollView>
 
       {/* ── 4. Floating Action Footer ── */}
-      <BlurView intensity={90} tint="dark" style={estilos.floatingFooter}>
+      <BlurView intensity={90} tint={escuro ? 'dark' : 'light'} style={estilos.floatingFooter}>
+        {erroSalvar ? (
+          <Text accessibilityRole="alert" style={estilos.textoErro}>
+            {erroSalvar}
+          </Text>
+        ) : null}
         <BotaoPrimario
           texto={salvando ? 'Ativando seu plano...' : 'Aceitar Planejamento'}
           aoPresionar={aceitarEIniciar}
@@ -230,10 +239,12 @@ export default function TelaResultadoQuestionario() {
   );
 }
 
-const estilos = StyleSheet.create({
+const criarEstilos = (cores: CoresTema) =>
+  StyleSheet.create({
+  textoErro: { color: cores.erro, fontSize: Fonte.label, textAlign: 'center', marginBottom: Espacamento.md },
   container: {
     flex: 1,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -251,9 +262,9 @@ const estilos = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     borderWidth: 1.5,
-    borderColor: Cores.accentBorda,
+    borderColor: cores.separador,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
@@ -270,7 +281,7 @@ const estilos = StyleSheet.create({
     top: 0,
     width: 2,
     height: 24,
-    backgroundColor: Cores.borda.sutil,
+    backgroundColor: cores.separador,
     transform: [{ rotate: '45deg' }],
   },
   linhaDiagonalEsqMeio: {
@@ -279,7 +290,7 @@ const estilos = StyleSheet.create({
     top: 0,
     width: 2,
     height: 24,
-    backgroundColor: Cores.borda.sutil,
+    backgroundColor: cores.separador,
     transform: [{ rotate: '15deg' }],
   },
   linhaDiagonalDirMeio: {
@@ -288,7 +299,7 @@ const estilos = StyleSheet.create({
     top: 0,
     width: 2,
     height: 24,
-    backgroundColor: Cores.borda.sutil,
+    backgroundColor: cores.separador,
     transform: [{ rotate: '-15deg' }],
   },
   linhaDiagonalDir: {
@@ -297,13 +308,13 @@ const estilos = StyleSheet.create({
     top: 0,
     width: 2,
     height: 24,
-    backgroundColor: Cores.borda.sutil,
+    backgroundColor: cores.separador,
     transform: [{ rotate: '-45deg' }],
   },
   linhaHorizontalConectora: {
     width: '84%',
     height: 2,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     marginTop: -2,
     marginBottom: -16,
     zIndex: 1,
@@ -322,9 +333,9 @@ const estilos = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: Cores.fundo.elevada,
+    backgroundColor: cores.elevada,
     borderWidth: 1.5,
-    borderColor: Cores.accent,
+    borderColor: cores.destaque,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -332,12 +343,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   noLabel: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 6,
   },
 
@@ -352,7 +363,7 @@ const estilos = StyleSheet.create({
     top: 16,
     bottom: 16,
     width: 2,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
     opacity: 0.4,
   },
   timelineItemsContainer: {
@@ -366,9 +377,9 @@ const estilos = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: Cores.fundo.principal,
+    backgroundColor: cores.fundo,
     borderWidth: 2,
-    borderColor: Cores.accent,
+    borderColor: cores.destaque,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -378,7 +389,7 @@ const estilos = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Cores.accent,
+    backgroundColor: cores.destaque,
   },
 
   // Cards da Timeline (Compactos)
@@ -395,7 +406,7 @@ const estilos = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: Raio.sm,
-    backgroundColor: Cores.accentSuave,
+    backgroundColor: cores.destaqueSuave,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
@@ -407,12 +418,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.bold,
     fontSize: 14,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   subtituloPill: {
     fontFamily: FamiliaFonte.regular,
     fontSize: 11,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
     marginTop: 1,
   },
   checkmarkCircle: {
@@ -420,8 +431,8 @@ const estilos = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Cores.accentBorda,
-    backgroundColor: Cores.accentSuave,
+    borderColor: cores.separador,
+    backgroundColor: cores.destaqueSuave,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -439,7 +450,7 @@ const estilos = StyleSheet.create({
   secaoTituloComentario: {
     fontFamily: FamiliaFonte.bold,
     fontSize: Fonte.subtitulo,
-    color: Cores.texto.principal,
+    color: cores.texto,
   },
   cardComentarios: {
     padding: Espacamento.md,
@@ -450,14 +461,14 @@ const estilos = StyleSheet.create({
     marginBottom: 6,
   },
   bulletComentario: {
-    color: Cores.accent,
+    color: cores.destaque,
     marginRight: 6,
     fontSize: 14,
   },
   textoComentario: {
     fontFamily: FamiliaFonte.regular,
     fontSize: Fonte.label,
-    color: Cores.texto.principal,
+    color: cores.texto,
     flex: 1,
     lineHeight: 18,
   },
@@ -471,9 +482,9 @@ const estilos = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 40,
-    backgroundColor: 'rgba(8, 10, 14, 0.95)',
+    backgroundColor: cores.elevada,
     borderTopWidth: 1,
-    borderTopColor: Cores.borda.sutil,
+    borderTopColor: cores.separador,
     alignItems: 'center',
   },
   botaoAceitarNativo: {
@@ -488,6 +499,6 @@ const estilos = StyleSheet.create({
   txtAjustarRespostasNativo: {
     fontFamily: FamiliaFonte.semibold,
     fontSize: Fonte.label,
-    color: Cores.texto.secundario,
+    color: cores.textoSecundario,
   },
 });

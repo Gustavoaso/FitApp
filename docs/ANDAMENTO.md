@@ -26,7 +26,7 @@ Fluxo: novo-projeto
 | 1. Fundação | Concluída (testador: APROVADO) | 1 | 6bf6e92 |
 | 2. Reorganizar por funcionalidade | Concluída (testador: APROVADO) | 1 | a5228ff |
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
-| 4. Navegação nativa e telas no tema novo | Pendente | | |
+| 4. Navegação nativa e telas no tema novo | Implementada, aguardando o testador | 1 | |
 | 5. Segredos fora do app | Pendente | | |
 | 6. Banco versionado (local) | Pendente | | |
 | 7. Base de conhecimento | Pendente | | |
@@ -92,6 +92,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 3: `CardVidro` manteve o nome (evita mexer nas telas) e virou superfície sólida com borda fina; `BotaoPrimario` virou cápsula de altura 50 com Headline (17 Semibold).
 - Etapa 3: `EstadoErro` reutiliza `EstadoVazio` (símbolo SF + frase + botão); `Skeleton` pulsa com Reanimated e para com Reduzir Movimento.
 - Etapa 3: nenhum componente base é botão só de ícone, então não houve onde pôr `hitSlop`; vale para os que a etapa 4 criar.
+- Etapa 4: cada aba virou pasta com uma `Stack` (`app/(tabs)/<aba>/_layout.tsx` + `index.tsx`) para ter `headerLargeTitle`; as opções comuns ficam em `compartilhado/navegacao.ts`. Tab bar = `NativeTabs` com `minimizeBehavior="onScrollDown"`; Dieta usa o símbolo `fork.knife` (antes `apple.logo`).
+- Etapa 4: telas migradas para `useTema()` com `criarEstilos(cores)` + `useMemo`. Mapeamento: `accent`→`destaque`, `accentBorda`/`borda.*`/`vidro.borda`→`separador`, `texto.desabilitado`→`textoSecundario`. A troca foi feita por script Node/Python fora do projeto (16 arquivos, mecânica); a revisão está no diff.
+- Etapa 4: macros por significado em gráfico, legenda e barras: carbo `#10B981`→`CoresMacros.carboidrato`, gordura `#A855F7`→`gordura`, proteína `#EAB308`→`proteina`.
+- Etapa 4: erro de carregamento → `EstadoErro` (gerar plano no questionário, com "Revisar respostas"; inspetor JSON do perfil). Erro de envio (login, cadastro, aceitar plano) → texto inline em `cores.erro` com `accessibilityRole="alert"` (alternativa: `EstadoErro` de tela cheia, que apagaria o formulário). `ActivityIndicator` → `Skeleton`. Alertas de validação, confirmação e sucesso ficaram.
+- Etapa 4: `BlurView` dos modais segue o tema (`tint` claro/escuro).
 
 ## Pendências
 
@@ -103,3 +108,6 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - `expo-doctor` acusa versões de patch antigas já existentes (`expo` 54.0.36→37, `expo-asset`, `expo-constants`, `react-native-worklets`): corrigir com `npx expo install --fix` numa etapa decidida pelo dono.
 - Etapa 3 → 4: as cores de macro do `GraficoDonutMacros`, das legendas do `CardRefeicao` e das barras da `TelaDieta` ainda são as antigas; trocar as três juntas por `CoresMacros` na etapa 4 (trocar só o gráfico desencontraria a legenda).
 - Etapa 2: `compartilhado/servicos/` tem dependência circular `progresso-servico` ↔ `plano-gestao-servico` (já existia); fica para uma etapa futura, se o dono quiser.
+- Etapa 4: o título grande não encolhe ao rolar, porque o `ScrollView` está dentro de um `View` (os modais são irmãos dele); resolver junto com a troca dos modais por sheets nativas.
+- Etapa 4: sobraram cores soltas sem par no tema (amarelo do raio/IA `#EAB308`, azul `#3B82F6`, botão amarelo do treino ao vivo, cores do inspetor JSON, overlays `rgba(0,0,0,…)`); e `Cores`/`Fonte`/`Glass` antigos ainda exportados em `tema.ts`, usados só pelo `IconesFitApp` (sem uso).
+- Etapa 4: `Alert` de sucesso (copiar refeição, plano salvo, treino concluído) deveria virar confirmação discreta com haptic (VISUAL); fica para a etapa 10 ou outra.

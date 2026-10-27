@@ -11,7 +11,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { AuthProvedor } from '@/compartilhado/AuthContexto';
-import { Cores } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 
 
 export { ErrorBoundary } from 'expo-router';
@@ -19,6 +19,7 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const { cores } = useTema();
   const [fontsLoaded] = useFonts({
     'SF-Compact-Rounded-Regular': require('../assets/fonts/SF-Compact-Rounded-Regular.otf'),
     'SF-Compact-Rounded-Medium': require('../assets/fonts/SF-Compact-Rounded-Medium.otf'),
@@ -41,7 +42,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: Cores.fundo.principal },
+          contentStyle: { backgroundColor: cores.fundo },
         }}
       >
         <Stack.Screen name="index" options={{ headerShown: false }} />
