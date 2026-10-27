@@ -135,6 +135,9 @@ export type Database = {
           embedding: string | null;
           fonte: string;
           id: number;
+          niveis: string[];
+          objetivos: string[];
+          tema: string;
           tipo: string;
           titulo: string;
         };
@@ -144,6 +147,9 @@ export type Database = {
           embedding?: string | null;
           fonte: string;
           id?: number;
+          niveis?: string[];
+          objetivos?: string[];
+          tema?: string;
           tipo: string;
           titulo: string;
         };
@@ -152,6 +158,9 @@ export type Database = {
           embedding?: string | null;
           fonte?: string;
           id?: number;
+          niveis?: string[];
+          objetivos?: string[];
+          tema?: string;
           tipo?: string;
           titulo?: string;
         };
@@ -846,12 +855,18 @@ export type Database = {
         }[];
       };
       buscar_conhecimento_rag: {
-        Args: { filtro_tipo: string; limite?: number; query_embedding: string };
+        Args: {
+          filtro_nivel?: string;
+          filtro_objetivo?: string;
+          limite?: number;
+          query_embedding: string;
+        };
         Returns: {
           conteudo: string;
           fonte: string;
           id: number;
           similaridade: number;
+          tema: string;
           tipo: string;
           titulo: string;
         }[];

@@ -22,6 +22,7 @@ Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `s
 | Testes | `npm test` (Jest + jest-expo, sem rede e sem banco; teste ao lado do arquivo, `*.test.ts`) |
 | Importar exercícios | `node scripts/importar-exercicios.js` (lê `SUPABASE_URL`/`SUPABASE_KEY`; escreve no banco apontado) |
 | Banco local | `npx supabase start` / `npx supabase db reset` (migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
+| Ingerir base de conhecimento | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node scripts/ingestao-conhecimento.ts` (Ollama local com `mxbai-embed-large`; recusa URL que não seja localhost/127.0.0.1; trechos em `scripts/conhecimento/trechos.json`) |
 | Testes de RLS | `npx supabase test db` (pgTAP em `supabase/tests/`, só banco local) |
 | Tipos do banco | `npx supabase gen types typescript --local --schema public > src/compartilhado/tipos/database.ts` e `npx prettier --write` no arquivo |
 

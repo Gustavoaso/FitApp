@@ -1,0 +1,425 @@
+[
+  {
+    "tipo": "treino",
+    "tema": "progressao",
+    "titulo": "Sobrecarga progressiva como base do treino de força",
+    "fonte": "American College of Sports Medicine. Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O posicionamento do ACSM sobre progressão no treino resistido parte de um princípio simples: o corpo só continua se adaptando quando o estímulo aumenta aos poucos. Essa sobrecarga progressiva pode vir de mais carga, mais repetições com a mesma carga, mais séries, mais frequência semanal ou mudanças na escolha dos exercícios. O documento destaca que a progressão precisa ser gradual e individual, porque aumentar tudo ao mesmo tempo eleva o risco de lesão e de cansaço acumulado. Também recomenda variar o estímulo de forma planejada ao longo das semanas, em vez de repetir indefinidamente o mesmo treino. Para quem usa um aplicativo, isso significa que o plano deve prever pequenos aumentos registráveis, como subir uma ou duas repetições antes de aumentar a carga, sempre com técnica preservada."
+  },
+  {
+    "tipo": "treino",
+    "tema": "carga",
+    "titulo": "Faixa de carga e repetições para iniciantes",
+    "fonte": "American College of Sports Medicine. Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+    "objetivos": [],
+    "niveis": ["iniciante"],
+    "conteudo": "Para quem está começando, o ACSM sugere cargas moderadas, que permitam algo entre oito e doze repetições por série, com uma a três séries por exercício. Nessa fase quase qualquer estímulo bem feito gera ganho de força, em boa parte por adaptação do sistema nervoso: o corpo aprende a coordenar melhor os músculos envolvidos no movimento. Por isso, a prioridade do iniciante é aprender a técnica correta, controlar a amplitude e criar o hábito de treinar com regularidade. A recomendação é aumentar a carga em passos pequenos, de cerca de dois a dez por cento, quando a pessoa consegue fazer uma ou duas repetições a mais do que o planejado em duas sessões seguidas. Isso mantém o progresso constante sem sacrificar a execução nem a segurança."
+  },
+  {
+    "tipo": "treino",
+    "tema": "frequencia",
+    "titulo": "Frequência semanal conforme o nível de experiência",
+    "fonte": "American College of Sports Medicine. Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O ACSM descreve uma progressão natural na frequência de treino. Iniciantes costumam responder bem a duas ou três sessões por semana trabalhando o corpo inteiro, o que dá tempo de recuperação entre os estímulos. Pessoas de nível intermediário podem passar para três ou quatro sessões, muitas vezes dividindo o corpo em partes, como superior e inferior. Já os avançados tendem a treinar de quatro a seis vezes por semana, com divisões que permitem mais volume por grupo muscular sem acumular fadiga excessiva. O ponto central é que a frequência deve acompanhar a capacidade de recuperação e a rotina da pessoa. Um plano que cabe na agenda e é cumprido com constância costuma render mais do que um plano mais intenso que é abandonado depois de poucas semanas."
+  },
+  {
+    "tipo": "treino",
+    "tema": "carga",
+    "titulo": "Cargas mais altas para força máxima",
+    "fonte": "American College of Sports Medicine. Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+    "objetivos": ["forca"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Quando o objetivo é força máxima, o ACSM recomenda que praticantes intermediários e avançados passem boa parte do tempo com cargas altas, em torno de oitenta a cem por cento da carga máxima para uma repetição, o que corresponde a séries de uma a seis repetições. O documento também sugere descansos mais longos entre as séries, de três a cinco minutos nos exercícios principais, para que a pessoa recupere a capacidade de produzir força a cada série. Movimentos multiarticulares, como agachamento, levantamento terra e supino, recebem prioridade porque permitem cargas maiores e treinam vários grupos musculares juntos. A periodização, alternando fases de mais volume e fases de mais intensidade, ajuda a continuar progredindo depois que os ganhos rápidos do início diminuem."
+  },
+  {
+    "tipo": "treino",
+    "tema": "ordem",
+    "titulo": "Ordem dos exercícios dentro da sessão",
+    "fonte": "Kraemer WJ, Ratamess NA. Fundamentals of resistance training: progression and exercise prescription. Med Sci Sports Exerc. 2004;36(4):674-688.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "Kraemer e Ratamess revisam os fundamentos da prescrição de treino resistido e mostram que a ordem dos exercícios muda o desempenho. Exercícios que vêm no início da sessão são feitos com mais carga e mais repetições, porque o músculo ainda não está cansado. Por isso, a recomendação geral é começar pelos movimentos multiarticulares, que envolvem grandes grupos musculares e exigem mais coordenação, e deixar os exercícios de isolamento para o final. Outra prática comum é alternar grupos, por exemplo um exercício de empurrar seguido de um de puxar, para dar tempo de recuperação local. A ordem pode ser invertida de propósito quando a pessoa quer priorizar um músculo específico, mas isso deve ser uma escolha consciente, e não um acaso da montagem do treino."
+  },
+  {
+    "tipo": "treino",
+    "tema": "volume",
+    "titulo": "Relação entre volume semanal e ganho de massa muscular",
+    "fonte": "Schoenfeld BJ, Ogborn D, Krieger JW. Dose-response relationship between weekly resistance training volume and increases in muscle mass: a systematic review and meta-analysis. J Sports Sci. 2017;35(11):1073-1082.",
+    "objetivos": ["hipertrofia", "definicao"],
+    "niveis": [],
+    "conteudo": "Esta meta-análise de Schoenfeld, Ogborn e Krieger reuniu estudos que compararam diferentes volumes de treino e encontrou uma relação de dose e resposta: mais séries semanais por grupo muscular tendem a produzir mais hipertrofia. Os autores observaram que fazer dez ou mais séries por semana para um músculo esteve associado a ganhos maiores do que fazer menos de cinco. Isso não quer dizer que mais seja sempre melhor, porque a capacidade de recuperação tem limite e volumes muito altos podem atrapalhar. Na prática, um bom ponto de partida para quem busca massa muscular é ficar em torno de dez séries semanais por grupo, ajustando para cima aos poucos conforme a resposta, a recuperação e a disponibilidade de tempo de cada pessoa."
+  },
+  {
+    "tipo": "treino",
+    "tema": "frequencia",
+    "titulo": "Treinar cada músculo pelo menos duas vezes por semana",
+    "fonte": "Schoenfeld BJ, Ogborn D, Krieger JW. Effects of resistance training frequency on measures of muscle hypertrophy: a systematic review and meta-analysis. Sports Med. 2016;46(11):1689-1697.",
+    "objetivos": ["hipertrofia", "definicao"],
+    "niveis": [],
+    "conteudo": "Nesta revisão sistemática com meta-análise, Schoenfeld e colegas compararam frequências de treino por grupo muscular. Os estudos indicaram que trabalhar cada músculo duas vezes por semana tendeu a gerar mais hipertrofia do que concentrá-lo em uma única sessão semanal, como acontece nas divisões clássicas em que cada dia é dedicado a um só grupo. Os dados não eram suficientes para afirmar se três vezes por semana seria ainda melhor. Uma explicação provável é que distribuir o volume em mais sessões mantém a qualidade das séries, já que o músculo chega menos cansado a cada estímulo. Para a montagem de um plano, isso favorece divisões como corpo inteiro, superior e inferior ou empurrar, puxar e pernas repetidas na semana."
+  },
+  {
+    "tipo": "treino",
+    "tema": "frequencia",
+    "titulo": "Frequência importa menos quando o volume é igualado",
+    "fonte": "Schoenfeld BJ, Grgic J, Krieger J. How many times per week should a muscle be trained to maximize muscle hypertrophy? A systematic review and meta-analysis of studies examining the effects of resistance training frequency. J Sports Sci. 2019;37(11):1286-1295.",
+    "objetivos": ["hipertrofia"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Uma revisão posterior do mesmo grupo de pesquisadores voltou à pergunta sobre frequência e chegou a uma conclusão mais refinada. Quando o número total de séries semanais é o mesmo, treinar um músculo uma, duas ou três vezes por semana produz ganhos de massa parecidos. A frequência passa a ser, sobretudo, uma ferramenta para organizar o volume: quem precisa de muitas séries semanais consegue distribuí-las melhor em várias sessões, sem que cada treino fique longo e cansativo demais. Para o praticante intermediário ou avançado, isso dá liberdade de escolher a divisão que melhor cabe na rotina. O que não deve mudar é o volume adequado e a qualidade das séries, que continuam sendo os fatores mais ligados ao resultado."
+  },
+  {
+    "tipo": "treino",
+    "tema": "carga",
+    "titulo": "Cargas leves e pesadas geram hipertrofia parecida",
+    "fonte": "Schoenfeld BJ, Grgic J, Ogborn D, Krieger JW. Strength and hypertrophy adaptations between low- vs. high-load resistance training: a systematic review and meta-analysis. J Strength Cond Res. 2017;31(12):3508-3523.",
+    "objetivos": ["hipertrofia", "definicao", "emagrecimento"],
+    "niveis": [],
+    "conteudo": "Esta meta-análise comparou treinos com cargas leves, que permitem muitas repetições, e treinos com cargas pesadas, que permitem poucas. Quando as séries eram levadas até perto da falha, os dois tipos geraram ganho de massa muscular semelhante. A diferença apareceu na força máxima, que melhorou mais com as cargas pesadas, o que faz sentido, já que a força é muito específica ao tipo de estímulo. Para quem tem como foco a hipertrofia ou a manutenção de músculo durante o emagrecimento, isso abre opções: dá para usar cargas moderadas ou leves quando há dor articular, falta de equipamento ou treino em casa, desde que o esforço de cada série seja realmente alto. A escolha pode seguir o conforto e a preferência da pessoa."
+  },
+  {
+    "tipo": "treino",
+    "tema": "mecanismos",
+    "titulo": "Mecanismos da hipertrofia muscular",
+    "fonte": "Schoenfeld BJ. The mechanisms of muscle hypertrophy and their application to resistance training. J Strength Cond Res. 2010;24(10):2857-2872.",
+    "objetivos": ["hipertrofia"],
+    "niveis": [],
+    "conteudo": "Schoenfeld descreve três fatores que parecem estimular o crescimento muscular. O principal é a tensão mecânica, ou seja, a força que as fibras fazem contra uma resistência, especialmente quando o músculo trabalha em boa amplitude. O segundo é o estresse metabólico, a sensação de queimação causada pelo acúmulo de metabólitos em séries mais longas. O terceiro é o dano muscular, cuja importância é hoje considerada menor do que se pensava. A aplicação prática é combinar exercícios com carga suficiente, amplitude completa e séries levadas perto da falha. Não é preciso buscar dor intensa no dia seguinte para crescer; o que importa é estímulo consistente e progressivo ao longo de semanas e meses, somado a recuperação e alimentação adequadas."
+  },
+  {
+    "tipo": "treino",
+    "tema": "descanso",
+    "titulo": "Descansos mais longos entre séries para quem já treina",
+    "fonte": "Schoenfeld BJ, Pope ZK, Benik FM, et al. Longer interset rest periods enhance muscle strength and hypertrophy in resistance-trained men. J Strength Cond Res. 2016;30(7):1805-1812.",
+    "objetivos": ["hipertrofia", "forca"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Neste estudo com homens já treinados, Schoenfeld e colegas compararam descansos de um minuto e de três minutos entre as séries, mantendo o mesmo programa. O grupo que descansou três minutos ganhou mais força e teve sinais de mais hipertrofia em alguns músculos. A explicação provável é que pausas maiores permitem repetir as séries seguintes com mais carga e mais repetições, aumentando o volume efetivo do treino. Descansos curtos deixam a sessão mais rápida, mas podem reduzir o desempenho nas séries finais. Para praticantes intermediários e avançados, especialmente nos exercícios multiarticulares pesados, faz sentido planejar pausas de dois a três minutos. Em exercícios de isolamento, pausas um pouco menores costumam ser suficientes."
+  },
+  {
+    "tipo": "treino",
+    "tema": "descanso",
+    "titulo": "Intervalo de descanso e ganho de força",
+    "fonte": "Grgic J, Schoenfeld BJ, Skrepnik M, Davies TB, Mikulic P. Effects of rest interval duration in resistance training on measures of muscular strength: a systematic review. Sports Med. 2018;48(1):137-151.",
+    "objetivos": ["forca"],
+    "niveis": [],
+    "conteudo": "Esta revisão sistemática analisou como o tempo de descanso entre séries afeta o ganho de força. Em pessoas já treinadas, pausas de dois minutos ou mais tenderam a produzir mais força do que pausas curtas, principalmente nos exercícios multiarticulares com cargas altas. Em iniciantes, a diferença foi menor, e descansos mais curtos, de um a dois minutos, pareceram suficientes, provavelmente porque as cargas usadas ainda são mais baixas. Os autores lembram que a escolha do descanso também depende do tempo disponível. Uma estratégia prática é usar pausas maiores nos primeiros exercícios da sessão, que são os mais pesados e importantes, e encurtá-las nos acessórios, sem prejudicar o resultado geral."
+  },
+  {
+    "tipo": "treino",
+    "tema": "volume",
+    "titulo": "Volume semanal e ganho de força",
+    "fonte": "Ralston GW, Kilgore L, Wyatt FB, Baker JS. The effect of weekly set volume on strength gain: a meta-analysis. Sports Med. 2017;47(12):2585-2601.",
+    "objetivos": ["forca"],
+    "niveis": [],
+    "conteudo": "Ralston e colegas reuniram estudos sobre o número de séries semanais e o ganho de força. Volumes médios e altos tenderam a render mais força do que volumes baixos, embora treinos com poucas séries também tenham produzido melhora, sobretudo em iniciantes e em exercícios com pouca técnica envolvida. A mensagem é parecida com a observada para hipertrofia: há uma relação de dose e resposta, mas o benefício extra diminui à medida que o volume cresce. Para quem busca força e tem tempo limitado, poucas séries bem feitas nos exercícios principais já trazem resultado. Quem quer continuar avançando depois dos primeiros meses pode aumentar o número de séries de forma gradual, sempre observando a recuperação entre as sessões."
+  },
+  {
+    "tipo": "treino",
+    "tema": "frequencia",
+    "titulo": "Frequência de treino e força",
+    "fonte": "Grgic J, Schoenfeld BJ, Davies TB, Lazinica B, Krieger JW, Pedisic Z. Effect of resistance training frequency on gains in muscular strength: a systematic review and meta-analysis. Sports Med. 2018;48(5):1207-1220.",
+    "objetivos": ["forca"],
+    "niveis": [],
+    "conteudo": "Esta meta-análise mostrou que treinar com mais frequência semanal tende a aumentar mais a força, mas o efeito praticamente desaparece quando o volume total é igualado entre os grupos. Em outras palavras, treinar mais vezes ajuda principalmente porque permite fazer mais séries sem sessões longas demais. Os autores notaram um possível benefício extra de frequências maiores para exercícios multiarticulares, o que se explica pela prática: repetir um movimento técnico várias vezes por semana melhora a habilidade de executá-lo. Para quem busca força, repetir os levantamentos principais duas ou três vezes por semana, com variações de carga entre os dias, é uma estratégia coerente com esses achados."
+  },
+  {
+    "tipo": "treino",
+    "tema": "intensidade",
+    "titulo": "Repetições em reserva para regular o esforço",
+    "fonte": "Helms ER, Cronin J, Storey A, Zourdos MC. Application of the repetitions in reserve-based rating of perceived exertion scale for resistance training. Strength Cond J. 2016;38(4):42-49.",
+    "objetivos": [],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Helms e colegas descrevem uma escala de esforço baseada em repetições em reserva: ao terminar a série, a pessoa estima quantas repetições ainda conseguiria fazer com boa técnica. Terminar com duas em reserva significa que havia mais duas possíveis. A vantagem é ajustar a carga ao dia, já que sono, estresse e alimentação mudam o desempenho de uma sessão para outra. Em vez de seguir um percentual fixo, o praticante escolhe a carga que deixa a série no esforço planejado. Os autores observam que a estimativa fica mais precisa com a experiência e perto da falha, por isso a escala funciona melhor para intermediários e avançados. Iniciantes podem usá-la de forma simples, apenas evitando a falha total."
+  },
+  {
+    "tipo": "treino",
+    "tema": "intensidade",
+    "titulo": "Proximidade da falha e hipertrofia",
+    "fonte": "Refalo MC, Helms ER, Trexler ET, Hamilton DL, Fyfe JJ. Influence of resistance training proximity-to-failure on skeletal muscle hypertrophy: a systematic review with meta-analysis. Sports Med. 2023;53(3):649-665.",
+    "objetivos": ["hipertrofia"],
+    "niveis": [],
+    "conteudo": "Refalo e colegas investigaram se é preciso levar cada série até a falha total para crescer. A meta-análise encontrou ganhos de massa muscular parecidos entre treinar até a falha e parar um pouco antes, desde que as séries fossem realmente desafiadoras. Treinar sempre até a falha aumenta a fadiga e o tempo de recuperação, o que pode reduzir a qualidade das sessões seguintes. Uma abordagem equilibrada é terminar a maioria das séries com uma a três repetições em reserva e deixar a falha para a última série de exercícios mais seguros, como máquinas e isolamentos. Em movimentos livres e pesados, como agachamento e terra, parar antes da falha também protege a técnica e reduz o risco de lesão."
+  },
+  {
+    "tipo": "treino",
+    "tema": "aerobico",
+    "titulo": "Treino aeróbico junto com musculação",
+    "fonte": "Wilson JM, Marin PJ, Rhea MR, Wilson SMC, Loenneke JP, Anderson JC. Concurrent training: a meta-analysis examining interference of aerobic and resistance exercises. J Strength Cond Res. 2012;26(5):1293-1307.",
+    "objetivos": ["hipertrofia", "forca", "definicao", "emagrecimento", "condicionamento"],
+    "niveis": [],
+    "conteudo": "Wilson e colegas estudaram o chamado treino concorrente, que combina exercício aeróbico e musculação. A meta-análise mostrou que o aeróbico pode atrapalhar um pouco os ganhos de força, potência e massa muscular, mas que esse efeito depende do tipo, da duração e da frequência. Corrida pareceu interferir mais do que bicicleta, e sessões longas e frequentes interferiram mais do que sessões curtas. Para quem quer ganhar massa ou força, não é preciso abandonar o cardio, que traz benefícios importantes para a saúde. A recomendação prática é dosar o volume, preferir modalidades de menor impacto e, quando possível, separar o aeróbico e a musculação em horários ou dias diferentes, para preservar a qualidade dos dois treinos."
+  },
+  {
+    "tipo": "treino",
+    "tema": "preparacao",
+    "titulo": "Treino de força e cardio durante a fase de definição",
+    "fonte": "Helms ER, Fitschen PJ, Aragon AA, Cronin J, Schoenfeld BJ. Recommendations for natural bodybuilding contest preparation: resistance and cardiovascular training. J Sports Med Phys Fitness. 2015;55(3):164-178.",
+    "objetivos": ["definicao", "emagrecimento"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Helms e colaboradores revisaram como treinar durante uma fase de perda de gordura em que se quer preservar músculo. A recomendação central é manter o treino de força pesado e com volume parecido ao da fase de ganho, porque é esse estímulo que sinaliza ao corpo que o músculo continua necessário. Reduzir drasticamente a carga na definição tende a acelerar a perda de massa magra. O cardio entra como ferramenta para aumentar o gasto calórico, mas em doses moderadas, para não prejudicar a recuperação do treino de força. Os autores sugerem ajustar o volume ao longo da dieta, pois a fadiga aumenta à medida que a ingestão de energia diminui e o percentual de gordura fica mais baixo."
+  },
+  {
+    "tipo": "saude",
+    "tema": "atividade_fisica",
+    "titulo": "Recomendações gerais de atividade física para adultos",
+    "fonte": "Bull FC, Al-Ansari SS, Biddle S, et al. World Health Organization 2020 guidelines on physical activity and sedentary behaviour. Br J Sports Med. 2020;54(24):1451-1462.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "As diretrizes da Organização Mundial da Saúde de 2020 recomendam que adultos façam de cento e cinquenta a trezentos minutos semanais de atividade aeróbica moderada, ou de setenta e cinco a cento e cinquenta minutos de atividade vigorosa, ou uma combinação equivalente. Além disso, orientam fortalecer os principais grupos musculares em dois ou mais dias por semana. O documento reforça que qualquer quantidade de movimento é melhor do que nenhuma e que reduzir o tempo sentado traz benefícios próprios. Para um aplicativo de treino, essas metas funcionam como piso de saúde: mesmo que o objetivo da pessoa seja estético, manter atividade aeróbica regular e treino de força frequente ajuda a proteger o coração, o metabolismo e a saúde mental."
+  },
+  {
+    "tipo": "saude",
+    "tema": "atividade_fisica",
+    "titulo": "Componentes de um programa completo de exercício",
+    "fonte": "Garber CE, Blissmer B, Deschenes MR, et al. American College of Sports Medicine position stand. Quantity and quality of exercise for developing and maintaining cardiorespiratory, musculoskeletal, and neuromotor fitness in apparently healthy adults. Med Sci Sports Exerc. 2011;43(7):1334-1359.",
+    "objetivos": ["condicionamento"],
+    "niveis": [],
+    "conteudo": "O posicionamento do ACSM de 2011 descreve um programa completo de exercício para adultos saudáveis com quatro componentes. O primeiro é o condicionamento cardiorrespiratório, com atividade aeróbica na maioria dos dias. O segundo é o treino de força para os grandes grupos musculares, de duas a três vezes por semana. O terceiro é a flexibilidade, trabalhada pelo menos duas vezes por semana. O quarto é o treino neuromotor, com equilíbrio, agilidade e coordenação, especialmente útil com o avançar da idade. O documento ressalta que o programa deve ser ajustado ao estado de saúde, às preferências e às metas de cada pessoa, e que a progressão gradual aumenta a adesão e reduz o risco de lesões e desconfortos."
+  },
+  {
+    "tipo": "saude",
+    "tema": "triagem",
+    "titulo": "Quando procurar avaliação médica antes de treinar",
+    "fonte": "Riebe D, Franklin BA, Thompson PD, et al. Updating ACSM's recommendations for exercise preparticipation health screening. Med Sci Sports Exerc. 2015;47(11):2473-2479.",
+    "objetivos": [],
+    "niveis": ["iniciante"],
+    "conteudo": "O ACSM atualizou em 2015 suas recomendações de triagem antes de começar a se exercitar. O modelo considera três pontos: se a pessoa já pratica exercício regularmente, se tem diagnóstico ou sinais de doença cardiovascular, metabólica ou renal, e qual intensidade pretende fazer. Pessoas sem sintomas e sem essas doenças podem, em geral, começar com intensidade leve a moderada e progredir aos poucos. Já quem tem diagnóstico conhecido ou sintomas como dor no peito, falta de ar desproporcional, tontura ou desmaio deve buscar liberação médica antes. Um aplicativo não substitui essa avaliação. Por isso, ao perceber qualquer desses sinais durante o treino, a orientação é interromper a atividade e procurar um profissional de saúde."
+  },
+  {
+    "tipo": "saude",
+    "tema": "idosos",
+    "titulo": "Treino de força para pessoas mais velhas",
+    "fonte": "Fragala MS, Cadore EL, Dorgo S, et al. Resistance training for older adults: position statement from the National Strength and Conditioning Association. J Strength Cond Res. 2019;33(8):2019-2052.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O posicionamento da NSCA sobre treino de força em idosos afirma que o treino resistido é uma das intervenções mais eficazes para combater a perda de massa e de força que acompanha o envelhecimento. Os benefícios incluem melhor capacidade de realizar tarefas do dia a dia, menor risco de quedas, ossos mais fortes e mais independência. A recomendação é treinar de duas a três vezes por semana, com uma a três séries por exercício, envolvendo os grandes grupos musculares e progredindo a carga de forma gradual. Os autores também sugerem incluir exercícios de potência, feitos com intenção de velocidade na fase concêntrica, e de equilíbrio. Doenças crônicas comuns na idade, em geral, não impedem o treino, mas exigem adaptação e acompanhamento."
+  },
+  {
+    "tipo": "saude",
+    "tema": "emagrecimento",
+    "titulo": "Atividade física para perder e manter o peso",
+    "fonte": "Donnelly JE, Blair SN, Jakicic JM, et al. American College of Sports Medicine position stand. Appropriate physical activity intervention strategies for weight loss and prevention of weight regain for adults. Med Sci Sports Exerc. 2009;41(2):459-471.",
+    "objetivos": ["emagrecimento", "definicao"],
+    "niveis": [],
+    "conteudo": "O ACSM revisou o papel da atividade física no controle do peso. Entre cento e cinquenta e duzentos e cinquenta minutos semanais de atividade moderada ajudam a evitar o ganho de peso, mas, sozinhos, produzem perdas modestas. Perdas mais expressivas aparecem com volumes maiores, acima de duzentos e cinquenta minutos por semana, ou quando o exercício é combinado com redução da ingestão calórica. Para manter o peso depois de emagrecer, volumes maiores de atividade também parecem úteis. O documento observa que o treino de força, mesmo sem grande efeito direto na balança, ajuda a preservar a massa magra durante a perda de peso. A mensagem é que dieta e exercício funcionam melhor juntos."
+  },
+  {
+    "tipo": "treino",
+    "tema": "aquecimento",
+    "titulo": "Alongamento estático e aquecimento antes do treino",
+    "fonte": "Behm DG, Chaouachi A. A review of the acute effects of static and dynamic stretching on performance. Eur J Appl Physiol. 2011;111(11):2633-2651.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "Behm e Chaouachi revisaram o efeito imediato do alongamento sobre o desempenho. Alongamentos estáticos longos, mantidos por mais de sessenta segundos por músculo, podem reduzir temporariamente a força e a potência logo em seguida. Alongamentos curtos, por outro lado, têm efeito pequeno ou nulo, sobretudo quando seguidos de um aquecimento ativo. Os alongamentos dinâmicos, feitos em movimento, tendem a não prejudicar e às vezes até melhoram o desempenho. Por isso, um aquecimento prático antes da musculação começa com alguns minutos de atividade leve, segue com movimentos dinâmicos para as articulações envolvidas e termina com séries de aproximação do primeiro exercício, com cargas progressivamente maiores, antes das séries de trabalho."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Quanto de proteína para ganhar massa muscular",
+    "fonte": "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+    "objetivos": ["hipertrofia", "forca", "definicao"],
+    "niveis": [],
+    "conteudo": "A meta-análise de Morton e colegas, publicada em 2018, reuniu dezenas de estudos sobre suplementação de proteína combinada ao treino de força. A proteína extra aumentou de forma modesta os ganhos de massa magra e de força. A análise indicou que o benefício praticamente se estabiliza em torno de um vírgula seis grama de proteína por quilo de peso corporal por dia, com um intervalo de confiança que chega a cerca de dois vírgula dois gramas. Os autores destacam que o treino é o principal motor do resultado e a proteína funciona como complemento. Na prática, mirar algo entre um vírgula seis e dois gramas por quilo por dia cobre a maioria das pessoas, sem necessidade de quantidades muito maiores."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Proteína e idade: resposta menor com o envelhecimento",
+    "fonte": "Morton RW, Murphy KT, McKellar SR, et al. A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength in healthy adults. Br J Sports Med. 2018;52(6):376-384.",
+    "objetivos": [],
+    "niveis": ["iniciante"],
+    "conteudo": "Na mesma meta-análise de Morton e colegas, alguns fatores mudaram o efeito da proteína extra. Pessoas mais velhas tiveram resposta menor à suplementação, o que reforça a ideia de que, com a idade, o músculo fica menos sensível ao estímulo da proteína e pode precisar de porções maiores por refeição. Pessoas com mais experiência em treino tenderam a se beneficiar um pouco mais do que iniciantes, possivelmente porque os ganhos iniciais são impulsionados principalmente pelo próprio treino. Para quem está começando, a lição é não depender de suplementos: comida comum que atinja a meta diária de proteína é suficiente, e a regularidade nos treinos é o que mais pesa nas primeiras semanas e meses."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Posicionamento da ISSN sobre proteína e exercício",
+    "fonte": "Jäger R, Kerksick CM, Campbell BI, et al. International Society of Sports Nutrition position stand: protein and exercise. J Int Soc Sports Nutr. 2017;14:20.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "A Sociedade Internacional de Nutrição Esportiva recomenda que a maioria das pessoas que se exercitam consuma entre um vírgula quatro e dois gramas de proteína por quilo de peso corporal por dia. O documento afirma que essa faixa é suficiente para construir e manter massa muscular e que, para pessoas saudáveis, não há evidência de prejuízo aos rins nessa quantidade. Também sugere dividir a proteína do dia em refeições a cada três ou quatro horas, com cerca de zero vírgula vinte e cinco gramas por quilo por refeição, ou algo entre vinte e quarenta gramas. Alimentos inteiros devem ser a base, e suplementos como o soro do leite servem como forma prática de completar a meta quando a comida não basta."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Proteína mais alta durante a restrição calórica",
+    "fonte": "Helms ER, Zinn C, Rowlands DS, Brown SR. A systematic review of dietary protein during caloric restriction in resistance trained lean athletes: a case for higher intakes. Int J Sport Nutr Exerc Metab. 2014;24(2):127-138.",
+    "objetivos": ["definicao", "emagrecimento"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Helms e colegas revisaram estudos com atletas treinados e magros em dieta para perder gordura. Nessas condições, o risco de perder massa muscular aumenta, porque o corpo tem menos energia disponível e o percentual de gordura já é baixo. A revisão sugeriu que ingestões de proteína mais altas, entre dois vírgula três e três vírgula um gramas por quilo de massa magra por dia, ajudam a preservar músculo. Os autores destacam que a necessidade cresce quanto mais magra a pessoa e quanto maior o déficit calórico. Para quem está em definição com experiência de treino, manter a proteína elevada é uma das medidas mais importantes, junto com a manutenção do treino de força pesado durante toda a dieta."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Distribuir a proteína ao longo do dia",
+    "fonte": "Schoenfeld BJ, Aragon AA. How much protein can the body use in a single meal for muscle-building? Implications for daily protein distribution. J Int Soc Sports Nutr. 2018;15:10.",
+    "objetivos": ["hipertrofia", "definicao"],
+    "niveis": [],
+    "conteudo": "Schoenfeld e Aragon discutem a ideia popular de que o corpo só aproveita cerca de vinte e cinco gramas de proteína por refeição. Eles explicam que o restante não é desperdiçado: parte é usada para outras funções e a absorção continua. Ainda assim, para estimular ao máximo a síntese de proteína muscular, os autores sugerem distribuir a ingestão em pelo menos quatro refeições, cada uma com cerca de zero vírgula quatro grama por quilo de peso corporal. Com isso, a pessoa chega a uma faixa diária próxima de um vírgula seis a dois vírgula dois gramas por quilo. Na prática, o mais importante é bater a meta diária; a distribuição é um ajuste fino que pode ajudar."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "proteina",
+    "titulo": "Proteína distribuída igualmente entre as refeições",
+    "fonte": "Mamerow MM, Mettler JA, English KL, et al. Dietary protein distribution positively influences 24-h muscle protein synthesis in healthy adults. J Nutr. 2014;144(6):876-880.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "Mamerow e colegas compararam duas formas de consumir a mesma quantidade diária de proteína. Em uma, a proteína ficava concentrada no jantar, como é comum em muitas rotinas; na outra, era distribuída de forma parecida entre café da manhã, almoço e jantar. A distribuição equilibrada resultou em maior síntese de proteína muscular ao longo de vinte e quatro horas. O estudo foi curto e com poucas pessoas, então não mede diretamente o ganho de músculo, mas reforça uma estratégia simples: incluir uma boa fonte de proteína em cada refeição principal. Café da manhã costuma ser a refeição mais pobre em proteína, e reforçá-la com ovos, iogurte ou leite é uma mudança fácil."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "momento",
+    "titulo": "Momento das refeições em relação ao treino",
+    "fonte": "Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O posicionamento da ISSN sobre o momento dos nutrientes conclui que a quantidade total de proteína e de carboidratos no dia é mais importante do que o horário exato das refeições. A chamada janela anabólica logo após o treino é mais larga do que se acreditava, especialmente quando a pessoa comeu algumas horas antes. Ainda assim, consumir proteína nas horas próximas ao treino, antes ou depois, é uma estratégia razoável e fácil de aplicar. Para quem treina em jejum pela manhã, faz mais sentido comer proteína logo depois. Em atletas com mais de uma sessão no mesmo dia, repor carboidrato rapidamente ganha importância. Para a maioria, basta organizar as refeições de forma confortável em torno do treino."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "dietas",
+    "titulo": "Dietas e composição corporal segundo a ISSN",
+    "fonte": "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+    "objetivos": ["emagrecimento", "definicao"],
+    "niveis": [],
+    "conteudo": "A ISSN revisou diferentes estilos de dieta, como as com pouco carboidrato, pouca gordura, jejum intermitente e alta proteína. A conclusão principal é que, para perder gordura, o fator decisivo é manter um déficit de energia ao longo do tempo, e não um tipo específico de dieta. As diferenças entre as abordagens tendem a ser pequenas quando calorias e proteína são iguais. Dietas com mais proteína ajudam a preservar massa magra e aumentam a saciedade, o que facilita seguir o plano. O documento ressalta que a melhor dieta é aquela que a pessoa consegue manter, respeitando preferências, cultura e rotina. Perdas mais lentas costumam preservar melhor o músculo do que cortes calóricos drásticos."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "dietas",
+    "titulo": "Superávit calórico para ganhar massa",
+    "fonte": "Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.",
+    "objetivos": ["hipertrofia"],
+    "niveis": [],
+    "conteudo": "No mesmo posicionamento, a ISSN aborda o ganho de massa muscular. Para maximizar o crescimento, a recomendação é manter um pequeno superávit de energia, comendo um pouco acima do gasto diário, combinado a treino de força e proteína suficiente. O tamanho ideal do superávit depende do nível da pessoa: iniciantes conseguem ganhar músculo com mais facilidade e podem tolerar um excedente maior, enquanto avançados ganham músculo mais devagar, e um superávit grande tende a virar principalmente gordura. Acompanhar o peso e as medidas a cada semana ajuda a calibrar a quantidade. Se o peso sobe rápido demais, reduzir um pouco as calorias evita acúmulo de gordura desnecessário."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "dietas",
+    "titulo": "Superávit de energia e hipertrofia",
+    "fonte": "Slater GJ, Dieter BP, Marsh DJ, Helms ER, Shaw G, Iraki J. Is an energy surplus required to maximize skeletal muscle hypertrophy associated with resistance training? Front Nutr. 2019;6:131.",
+    "objetivos": ["hipertrofia"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Slater e colegas discutem se é preciso comer acima do gasto para ganhar músculo. A revisão conclui que um superávit de energia favorece a hipertrofia, mas que ele não precisa ser grande. Os autores sugerem algo em torno de trezentas e cinquenta a quinhentas calorias acima da manutenção, ajustando conforme a resposta individual. Praticantes experientes, que ganham músculo mais devagar, se beneficiam de superávits menores, para limitar o ganho de gordura. Também lembram que iniciantes e pessoas com mais gordura corporal conseguem ganhar músculo mesmo em manutenção ou com pequeno déficit. Escolher o tamanho do superávit, portanto, depende de experiência, composição corporal e de quanto ganho de gordura a pessoa aceita."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "emagrecimento",
+    "titulo": "Ritmo de perda de peso e preservação de massa magra",
+    "fonte": "Garthe I, Raastad T, Refsnes PE, Koivisto A, Sundgot-Borgen J. Effect of two different weight-loss rates on body composition and strength and power-related performance in elite athletes. Int J Sport Nutr Exerc Metab. 2011;21(2):97-104.",
+    "objetivos": ["emagrecimento", "definicao"],
+    "niveis": [],
+    "conteudo": "Garthe e colegas compararam dois ritmos de perda de peso em atletas: um mais lento, de cerca de zero vírgula sete por cento do peso corporal por semana, e outro mais rápido, de cerca de um vírgula quatro por cento. Os dois grupos perderam peso, mas o grupo mais lento preservou mais massa magra e teve melhores resultados em força. Isso sugere que cortes calóricos menores, por mais tempo, são preferíveis quando o objetivo é emagrecer sem perder músculo. Para um aplicativo, a lição é estimar metas de perda semanal moderadas, próximas de meio a um por cento do peso, e evitar prometer resultados rápidos que exigem déficits agressivos e difíceis de sustentar."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "preparacao",
+    "titulo": "Nutrição para definição sem perder músculo",
+    "fonte": "Helms ER, Aragon AA, Fitschen PJ. Evidence-based recommendations for natural bodybuilding contest preparation: nutrition and supplementation. J Int Soc Sports Nutr. 2014;11:20.",
+    "objetivos": ["definicao"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Helms, Aragon e Fitschen reuniram recomendações de nutrição para atletas naturais em preparação para competição, que servem de referência para quem busca uma definição mais intensa. Os autores sugerem um ritmo de perda de cerca de zero vírgula cinco a um por cento do peso corporal por semana, proteína elevada, carboidratos suficientes para sustentar o treino e gordura em torno de quinze a trinta por cento das calorias. Também comentam que pausas planejadas na dieta e ajustes graduais ajudam a manter a adesão. Os suplementos com melhor evidência citados são poucos, como creatina e cafeína. A mensagem geral é que consistência e paciência valem mais do que estratégias extremas."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "carboidrato",
+    "titulo": "Carboidratos conforme a carga de treino",
+    "fonte": "Burke LM, Hawley JA, Wong SHS, Jeukendrup AE. Carbohydrates for training and competition. J Sports Sci. 2011;29(Suppl 1):S17-S27.",
+    "objetivos": ["condicionamento"],
+    "niveis": [],
+    "conteudo": "Burke e colegas propõem que a ingestão de carboidratos acompanhe a carga de treino do dia. Em atividades leves ou de baixa intensidade, de três a cinco gramas por quilo de peso corporal por dia costumam bastar. Em treinos moderados de cerca de uma hora, a necessidade sobe para cinco a sete gramas por quilo. Em treinos longos e intensos, de resistência, pode passar de seis a dez gramas por quilo. A ideia é que o carboidrato abasteça o músculo e o cérebro para manter a qualidade do treino. Para quem foca em condicionamento aeróbico, ajustar o carboidrato aos dias de treino mais pesados ajuda no desempenho, enquanto dias de descanso podem ter quantidades menores."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "geral",
+    "titulo": "Energia e nutrição para quem se exercita",
+    "fonte": "Thomas DT, Erdman KA, Burke LM. American College of Sports Medicine Joint Position Statement. Nutrition and athletic performance. Med Sci Sports Exerc. 2016;48(3):543-568.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O posicionamento conjunto do ACSM, da Academia de Nutrição e Dietética dos Estados Unidos e dos Nutricionistas do Canadá resume a nutrição para pessoas ativas. O documento recomenda proteína entre um vírgula dois e dois gramas por quilo por dia, carboidratos ajustados ao volume de treino e gorduras em quantidade suficiente, sem cortes extremos. Destaca também o risco da baixa disponibilidade de energia, quando a pessoa come muito pouco em relação ao que gasta, o que pode afetar hormônios, ossos, imunidade e desempenho. Por isso, déficits calóricos devem ser moderados e acompanhados. A base continua sendo alimentação variada com alimentos pouco processados, frutas, verduras e boa hidratação."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "hidratacao",
+    "titulo": "Hidratação durante o exercício",
+    "fonte": "American College of Sports Medicine; Sawka MN, Burke LM, Eichner ER, et al. American College of Sports Medicine position stand. Exercise and fluid replacement. Med Sci Sports Exerc. 2007;39(2):377-390.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "O ACSM orienta que a reposição de líquidos durante o exercício tenha como objetivo evitar perdas de água maiores do que cerca de dois por cento do peso corporal, porque desidratação acima disso pode prejudicar o desempenho, sobretudo no calor. A quantidade necessária varia muito entre pessoas, conforme o suor, o clima e a duração da atividade. Uma forma prática de estimar é pesar-se antes e depois do treino: a diferença indica quanto líquido foi perdido. O documento também alerta para o oposto, beber água em excesso, que pode baixar o sódio no sangue. Para treinos comuns de musculação, beber água ao longo do dia e durante a sessão, conforme a sede, costuma ser suficiente."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "gasto_energetico",
+    "titulo": "Estimativa do gasto em repouso pela equação de Mifflin-St Jeor",
+    "fonte": "Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241-247.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "Mifflin, St Jeor e colegas mediram o gasto energético em repouso de algumas centenas de adultos saudáveis e propuseram uma equação baseada em peso, altura, idade e sexo. A fórmula se tornou uma das mais usadas para estimar quantas calorias o corpo gasta em repouso, e revisões posteriores a apontaram como mais precisa do que equações mais antigas em boa parte da população. A partir desse valor, o gasto diário total é estimado multiplicando-o por um fator de atividade. É importante lembrar que se trata de uma estimativa: o gasto real pode variar de pessoa para pessoa. Por isso, a meta calórica calculada deve ser ajustada depois de algumas semanas, conforme a evolução do peso."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "suplementos",
+    "titulo": "Creatina: eficácia e segurança",
+    "fonte": "Kreider RB, Kalman DS, Antonio J, et al. International Society of Sports Nutrition position stand: safety and efficacy of creatine supplementation in exercise, sport, and medicine. J Int Soc Sports Nutr. 2017;14:18.",
+    "objetivos": ["hipertrofia", "forca"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "A ISSN considera a creatina monoidratada o suplemento ergogênico mais eficaz disponível para aumentar a capacidade de exercício de alta intensidade e a massa magra durante o treino. O posicionamento descreve duas formas de uso: uma fase de saturação curta com doses maiores, ou simplesmente uma dose diária de três a cinco gramas, que leva algumas semanas para saturar o músculo. Segundo a revisão, o uso de curto e de longo prazo em pessoas saudáveis, nas doses recomendadas, não mostrou efeitos prejudiciais. Um pequeno aumento de peso no início é comum e se deve, em grande parte, à água dentro do músculo. Pessoas com doença renal ou outra condição de saúde devem conversar com um profissional antes."
+  },
+  {
+    "tipo": "nutricao",
+    "tema": "suplementos",
+    "titulo": "Cafeína e desempenho no exercício",
+    "fonte": "Guest NS, VanDusseldorp TA, Nelson MT, et al. International Society of Sports Nutrition position stand: caffeine and exercise performance. J Int Soc Sports Nutr. 2021;18(1):1.",
+    "objetivos": [],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "A ISSN concluiu que a cafeína melhora o desempenho em vários tipos de exercício, como resistência aeróbica, força muscular e potência. As doses estudadas com mais frequência ficam entre três e seis miligramas por quilo de peso corporal, tomadas cerca de uma hora antes do treino. Doses menores também podem ajudar, e doses muito altas não trazem benefício extra, mas aumentam efeitos indesejados como ansiedade, taquicardia e problemas de sono. A resposta varia bastante entre as pessoas, em parte por diferenças genéticas e pelo hábito de consumo. Quem treina à noite deve considerar o impacto no sono. Gestantes, pessoas com problemas cardíacos ou sensíveis à cafeína devem ter cautela redobrada."
+  },
+  {
+    "tipo": "saude",
+    "tema": "sono",
+    "titulo": "Horas de sono recomendadas para adultos",
+    "fonte": "Hirshkowitz M, Whiton K, Albert SM, et al. National Sleep Foundation's sleep time duration recommendations: methodology and results summary. Sleep Health. 2015;1(1):40-43.",
+    "objetivos": [],
+    "niveis": [],
+    "conteudo": "A Fundação Nacional do Sono dos Estados Unidos reuniu um painel de especialistas para definir quantas horas de sono são adequadas em cada faixa etária. Para adultos de dezoito a sessenta e quatro anos, a recomendação é de sete a nove horas por noite; para pessoas com sessenta e cinco anos ou mais, de sete a oito horas. Dormir muito menos do que isso, de forma frequente, está ligado a pior recuperação, mais fome, menos disposição para treinar e maior risco de problemas de saúde. Para quem treina, o sono é parte do plano tanto quanto as séries e as refeições. Manter horários regulares e reduzir telas antes de deitar são medidas simples que ajudam a dormir melhor."
+  },
+  {
+    "tipo": "treino",
+    "tema": "periodizacao",
+    "titulo": "Variação planejada para continuar progredindo",
+    "fonte": "Kraemer WJ, Ratamess NA. Fundamentals of resistance training: progression and exercise prescription. Med Sci Sports Exerc. 2004;36(4):674-688.",
+    "objetivos": ["hipertrofia", "forca"],
+    "niveis": ["intermediario", "avancado"],
+    "conteudo": "Kraemer e Ratamess explicam que, à medida que a pessoa se torna mais treinada, os ganhos ficam mais lentos e o mesmo estímulo deixa de funcionar. Por isso, praticantes intermediários e avançados se beneficiam de variar de forma planejada as variáveis do treino, como carga, número de repetições, volume, escolha dos exercícios e tempo de descanso. Essa variação organizada ao longo de semanas é chamada de periodização. Ela pode ser linear, quando a carga sobe e as repetições caem gradualmente, ou ondulatória, quando a intensidade muda de sessão para sessão. Semanas mais leves, de tempos em tempos, também ajudam a dissipar a fadiga acumulada e a manter a motivação nos ciclos seguintes."
+  },
+  {
+    "tipo": "treino",
+    "tema": "execucao",
+    "titulo": "Velocidade de execução e amplitude de movimento",
+    "fonte": "American College of Sports Medicine. Progression models in resistance training for healthy adults. Med Sci Sports Exerc. 2009;41(3):687-708.",
+    "objetivos": [],
+    "niveis": ["iniciante", "intermediario"],
+    "conteudo": "O ACSM recomenda que iniciantes usem velocidades de execução lentas a moderadas, com controle tanto na subida quanto na descida da carga. Isso facilita o aprendizado da técnica e reduz o risco de lesão enquanto a coordenação ainda está se desenvolvendo. À medida que a pessoa progride, é possível incluir repetições com intenção de mover a carga mais rápido na fase de esforço, o que favorece força e potência, mantendo sempre a descida controlada. Trabalhar com amplitude completa, dentro do que a articulação permite sem dor, também é importante para desenvolver o músculo em todo o seu comprimento. Encurtar o movimento para levantar mais peso costuma trocar resultado por ego."
+  },
+  {
+    "tipo": "treino",
+    "tema": "condicionamento",
+    "titulo": "Intensidade do exercício aeróbico",
+    "fonte": "Garber CE, Blissmer B, Deschenes MR, et al. American College of Sports Medicine position stand. Quantity and quality of exercise for developing and maintaining cardiorespiratory, musculoskeletal, and neuromotor fitness in apparently healthy adults. Med Sci Sports Exerc. 2011;43(7):1334-1359.",
+    "objetivos": ["condicionamento", "emagrecimento"],
+    "niveis": [],
+    "conteudo": "Para melhorar o condicionamento cardiorrespiratório, o ACSM recomenda pelo menos trinta minutos de exercício aeróbico moderado em cinco ou mais dias por semana, ou vinte minutos de exercício vigoroso em três ou mais dias. A intensidade pode ser acompanhada pela frequência cardíaca ou pela percepção de esforço: no moderado, a pessoa consegue conversar, mas não cantar; no vigoroso, falar frases longas fica difícil. Pessoas pouco condicionadas já melhoram com intensidades mais baixas, e o volume pode ser acumulado em blocos de dez minutos ou mais. A progressão deve ser gradual, aumentando primeiro a duração e a frequência e só depois a intensidade, para reduzir o risco de lesões por excesso."
+  },
+  {
+    "tipo": "treino",
+    "tema": "condicionamento",
+    "titulo": "Treino de flexibilidade",
+    "fonte": "Garber CE, Blissmer B, Deschenes MR, et al. American College of Sports Medicine position stand. Quantity and quality of exercise for developing and maintaining cardiorespiratory, musculoskeletal, and neuromotor fitness in apparently healthy adults. Med Sci Sports Exerc. 2011;43(7):1334-1359.",
+    "objetivos": ["condicionamento"],
+    "niveis": [],
+    "conteudo": "O ACSM recomenda exercícios de flexibilidade pelo menos duas a três vezes por semana para melhorar a amplitude de movimento das articulações. Cada alongamento deve ser mantido por dez a trinta segundos, até um ponto de leve desconforto, sem dor, e repetido até somar cerca de sessenta segundos por exercício. O documento observa que o alongamento é mais eficaz quando o músculo está aquecido, como após uma caminhada leve ou ao final do treino. Diferentes tipos funcionam, incluindo estático, dinâmico e técnicas com contração e relaxamento. A flexibilidade adequada facilita a execução de exercícios com boa amplitude e ajuda nas tarefas do dia a dia, especialmente com o passar dos anos."
+  }
+]
