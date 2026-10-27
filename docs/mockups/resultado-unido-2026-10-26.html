@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Resultado do plano — unido (2026-10-26)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#2a2a2e;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;padding:32px;color:#fff}
+h1{font-size:22px;margin-bottom:6px}.sub{color:#A1A1AA;font-size:14px;margin-bottom:24px}
+.row{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start}
+.col{width:393px}.lab{font-weight:600;font-size:15px;margin-bottom:10px}
+.note{font-size:13px;color:#A1A1AA;margin-top:12px;line-height:1.4}
+.dark{--bg:#000;--s1:#121418;--s2:#1A1D24;--t:#fff;--t2:#A1A1AA;--sep:#2a2d35;--glass:rgba(30,32,38,.55);--gb:rgba(255,255,255,.18);--btn:#fff;--btnt:#000;--orb1:#1A1D24;--line:#2a2d35}
+.light{--bg:#F2F2F7;--s1:#fff;--s2:#F4F4F5;--t:#0A0A0A;--t2:#52525B;--sep:#E4E4E7;--glass:rgba(255,255,255,.6);--gb:rgba(0,0,0,.08);--btn:#0A0A0A;--btnt:#fff;--orb1:#fff;--line:#D4D4D8}
+.phone{width:393px;height:852px;border-radius:55px;background:var(--bg);color:var(--t);position:relative;overflow:hidden;box-shadow:0 0 0 10px #111,0 0 0 11px #444}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:126px;height:37px;border-radius:20px;background:#000;z-index:9}
+.status{height:54px;display:flex;justify-content:space-between;align-items:center;padding:14px 32px 0;font-weight:600;font-size:16px}
+.scroll{position:absolute;top:54px;bottom:0;left:0;right:0;overflow:hidden;padding:0 16px 140px}
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--t);z-index:9}
+.nav{display:flex;justify-content:space-between;align-items:center;height:44px}
+.gbtn{width:44px;height:44px;border-radius:22px;background:var(--glass);border:.5px solid var(--gb);backdrop-filter:blur(20px) saturate(180%);display:flex;align-items:center;justify-content:center}
+.eyebrow{font-size:13px;color:var(--t2);letter-spacing:.2px}
+.title{font:700 28px/1.15 "SF Pro Display",-apple-system,sans-serif;margin:4px 0 2px}
+.tn{font-variant-numeric:tabular-nums;font-family:"SF Pro Rounded",-apple-system}
+.card{background:var(--s1);border-radius:20px;padding:16px;margin-top:12px}
+.cap{font-size:13px;color:var(--t2)}
+/* orbe */
+.orbwrap{display:flex;justify-content:center;margin:14px 0 6px}
+.orb{width:200px;height:200px;border-radius:50%;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--orb1)}
+.orb svg{position:absolute;inset:0}
+.kcal{font:700 46px/1 "SF Pro Rounded",-apple-system,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+/* nós */
+.nodes{display:flex;justify-content:space-between;margin-top:14px}
+.node{width:80px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.circ{width:64px;height:64px;border-radius:50%;background:var(--s1);border:2.5px solid var(--c);display:flex;align-items:center;justify-content:center;font:700 17px "SF Pro Rounded",-apple-system,sans-serif;font-variant-numeric:tabular-nums}
+.circ small{font-size:12px;font-weight:600;color:var(--t2);margin-left:1px}
+/* timeline */
+.tl{position:relative;margin-top:6px}
+.step{display:flex;gap:12px;position:relative;padding:10px 0}
+.step:not(:last-child)::after{content:"";position:absolute;left:15px;top:42px;bottom:-10px;width:2px;background:var(--line)}
+.dot{width:32px;height:32px;border-radius:16px;background:var(--s2);display:flex;align-items:center;justify-content:center;flex:none}
+.pill{display:inline-block;font-size:13px;font-weight:600;padding:4px 10px;border-radius:12px;background:var(--s2)}
+.stxt{font-size:15px;margin-top:4px}
+.why li{list-style:none;font-size:15px;line-height:1.35;padding:8px 0;border-top:.5px solid var(--sep)}
+.why li:first-child{border-top:0}
+.src{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--t2);text-decoration:underline;min-height:28px}
+.warn{display:flex;gap:10px;font-size:13px;color:var(--t2);line-height:1.4;padding:14px 4px}
+.bar{position:absolute;left:0;right:0;bottom:0;padding:12px 16px 30px;background:var(--glass);backdrop-filter:blur(24px) saturate(180%);border-top:.5px solid var(--gb);z-index:5}
+.cta{height:50px;border-radius:25px;background:var(--btn);color:var(--btnt);font:600 17px -apple-system,sans-serif;display:flex;align-items:center;justify-content:center}
+.sec{font-size:13px;text-align:center;color:var(--t2);margin-top:10px}
+/* var B */
+.hero2{display:flex;align-items:center;gap:16px}
+.orb2{width:128px;height:128px;flex:none}
+.rings{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:14px}
+.rg{display:flex;flex-direction:column;align-items:center;gap:4px}
+</style></head><body>
+<h1>Resultado do plano — antes + depois unidos</h1>
+<div class="sub">Expo SDK 54 · tokens de constantes/Cores.ts · P #F05A28 · C #EAB308 · G #A1A1AA · Água #38BDF8 (sugestão, ver nota) · cards sólidos raio 20 · vidro só em botões do topo e barra do CTA</div>
+<div class="row">
+
+<!-- ===================== VARIAÇÃO A (escuro) ===================== -->
+<div class="col"><div class="lab">A · Orbe central + nós + linha do tempo (preferida) — escuro</div>
+<div class="phone dark" id="A">
+<div class="island"></div><div class="status"><span>9:41</span><span>●●● 100%</span></div>
+<div class="scroll">
+ <div class="nav"><div class="gbtn" aria-label="Voltar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></div><div class="gbtn" aria-label="Compartilhar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6"/></svg></div></div>
+ <div class="eyebrow">Plano de hipertrofia · 82 kg · 4 treinos/semana</div>
+ <div class="title">Gustavo, seu plano<br>está pronto</div>
+ <div class="orbwrap"><div class="orb">
+  <svg viewBox="0 0 200 200"><g transform="rotate(-90 100 100)" fill="none" stroke-width="10" stroke-linecap="round">
+   <circle cx="100" cy="100" r="92" stroke="var(--line)" stroke-width="10"/>
+   <circle cx="100" cy="100" r="92" stroke="#F05A28" stroke-dasharray="148 430" stroke-dashoffset="0"/>
+   <circle cx="100" cy="100" r="92" stroke="#EAB308" stroke-dasharray="276 302" stroke-dashoffset="-154"/>
+   <circle cx="100" cy="100" r="92" stroke="#A1A1AA" stroke-dasharray="136 442" stroke-dashoffset="-436"/></g></svg>
+  <div class="cap">Meta diária</div><div class="kcal">2.480</div><div class="cap">kcal · +300 de superávit</div>
+ </div></div>
+ <div class="nodes">
+  <div class="node"><div class="circ" style="--c:#F05A28">164<small>g</small></div><span class="cap">Proteína</span></div>
+  <div class="node"><div class="circ" style="--c:#EAB308">301<small>g</small></div><span class="cap">Carboidrato</span></div>
+  <div class="node"><div class="circ" style="--c:#A1A1AA">69<small>g</small></div><span class="cap">Gordura</span></div>
+  <div class="node"><div class="circ" style="--c:#38BDF8">2,9<small>L</small></div><span class="cap">Água</span></div>
+ </div>
+ <div class="card"><div class="tl">
+  <div class="step"><div class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F05A28" stroke-width="2.2" stroke-linecap="round"><path d="M7 3v8a2 2 0 002 2v8M11 3v8M17 3c-2 0-3 3-3 6s1 4 3 4v8"/></svg></div><div><span class="pill">Refeições</span><div class="stxt">5 refeições · ~33 g de proteína cada</div></div></div>
+  <div class="step"><div class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg></div><div><span class="pill">Treino A</span><div class="stxt">Peito, ombro e tríceps · seg e qui</div></div></div>
+  <div class="step"><div class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg></div><div><span class="pill">Treino B</span><div class="stxt">Costas, bíceps e pernas · ter e sex</div></div></div>
+  <div class="step"><div class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 7 6 11a6 6 0 01-12 0c0-4 6-11 6-11z"/></svg></div><div><span class="pill">Hidratação</span><div class="stxt">2,9 L ao longo do dia</div></div></div>
+ </div></div>
+ <div class="card why"><div style="font:600 17px -apple-system,sans-serif;margin-bottom:6px">Por que estes números</div><ul>
+  <li>Proteína de 2 g/kg para o seu objetivo de hipertrofia.<br><a class="src">Morton et al., 2018 ›</a></li>
+  <li>Superávit leve de 300 kcal: ganho com menos gordura.<br><a class="src">Iraki et al., 2019 ›</a></li></ul></div>
+ <div class="warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>Estimativa geral, não substitui nutricionista ou médico.</div>
+</div>
+<div class="bar"><div class="cta">Começar meu plano</div><div class="sec">Ajustar respostas</div></div>
+<div class="home"></div></div>
+<div class="note"><b>Prioriza:</b> a identidade do "antes" intacta (orbe no topo, 4 nós, timeline com pills), agora com título pessoal, kcal herói dentro do orbe e o anel do orbe dividido nas cores fixas dos macros. <b>Custo:</b> M — anel com react-native-svg (já usado), nós e timeline em View; barra com expo-blur/GlassView.</div></div>
+
+<!-- ===================== VARIAÇÃO B (escuro) ===================== -->
+<div class="col"><div class="lab">B · Orbe lateral + nós como anéis + timeline com "porquê" — escuro</div>
+<div class="phone dark">
+<div class="island"></div><div class="status"><span>9:41</span><span>●●● 100%</span></div>
+<div class="scroll">
+ <div class="nav"><div class="gbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></div><div class="gbtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 002 2h10a2 2 0 002-2v-6"/></svg></div></div>
+ <div class="title">Gustavo, seu plano<br>de hipertrofia</div>
+ <div class="eyebrow">82 kg · 4 treinos por semana</div>
+ <div class="card"><div class="hero2">
+  <div class="orb orb2"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="none" stroke="#F05A28" stroke-width="12" opacity=".9"/></svg><div class="kcal" style="font-size:30px">2.480</div><div class="cap">kcal/dia</div></div>
+  <div><div style="font:600 17px -apple-system,sans-serif">Meta diária</div><div class="cap" style="margin-top:4px;line-height:1.4">Manutenção 2.180 + superávit de 300 kcal para ganhar massa.</div></div>
+ </div>
+ <div class="rings">
+  <div class="rg"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#F05A28" stroke-width="5" stroke-linecap="round" stroke-dasharray="43 163" transform="rotate(-90 30 30)"/><text x="30" y="35" text-anchor="middle" fill="currentColor" font-size="15" font-weight="700">164</text></svg><span class="cap">Prot. g</span></div>
+  <div class="rg"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#EAB308" stroke-width="5" stroke-linecap="round" stroke-dasharray="80 163" transform="rotate(-90 30 30)"/><text x="30" y="35" text-anchor="middle" fill="currentColor" font-size="15" font-weight="700">301</text></svg><span class="cap">Carbo g</span></div>
+  <div class="rg"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="var(--line)" stroke-width="5"/><circle cx="30" cy="30" r="26" fill="none" stroke="#A1A1AA" stroke-width="5" stroke-linecap="round" stroke-dasharray="40 163" transform="rotate(-90 30 30)"/><text x="30" y="35" text-anchor="middle" fill="currentColor" font-size="15" font-weight="700">69</text></svg><span class="cap">Gord. g</span></div>
+  <div class="rg"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#38BDF8" stroke-width="5"/><text x="30" y="35" text-anchor="middle" fill="currentColor" font-size="15" font-weight="700">2,9</text></svg><span class="cap">Água L</span></div>
+ </div></div>
+ <div class="card"><div class="tl">
+  <div class="step"><div class="dot" style="background:#F05A28;color:#000;font-weight:700">1</div><div><span class="pill">Refeições</span><div class="stxt">5 por dia, ~33 g de proteína cada</div><a class="src">Por quê: 2 g/kg para hipertrofia · Morton 2018 ›</a></div></div>
+  <div class="step"><div class="dot" style="font-weight:700">2</div><div><span class="pill">Treino A</span> <span class="pill">Treino B</span><div class="stxt">Alternados, 4x por semana</div><a class="src">Por quê: cada músculo 2x/semana · Schoenfeld 2016 ›</a></div></div>
+  <div class="step"><div class="dot" style="background:#38BDF8;color:#000;font-weight:700">3</div><div><span class="pill">Hidratação</span><div class="stxt">2,9 L ao longo do dia</div><a class="src">Por quê: ~35 ml/kg · EFSA 2010 ›</a></div></div>
+ </div></div>
+ <div class="warn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>Estimativa geral, não substitui nutricionista ou médico.</div>
+</div>
+<div class="bar"><div class="cta">Começar meu plano</div><div class="sec">Ajustar respostas</div></div>
+<div class="home"></div></div>
+<div class="note"><b>Prioriza:</b> densidade — tudo cabe sem rolar muito; o "por que" vira parte de cada passo da timeline (fontes tocáveis no lugar). Perde parte do impacto do orbe grande. <b>Custo:</b> M — mesmos componentes da A, anéis em react-native-svg.</div></div>
+
+<!-- ===================== VARIAÇÃO A (claro) ===================== -->
+<div class="col"><div class="lab">A · modo claro</div><div id="Alight"></div>
+<div class="note">Mesma estrutura da A com tokens claros propostos: fundo #F2F2F7, card #FFFFFF, texto #0A0A0A, secundário #52525B (≈7:1), CTA preto. Laranja e amarelo só em anéis/ícones (não em texto: #EAB308 sobre branco ≈2:1).</div></div>
+</div>
+<script>
+const a=document.getElementById('A').cloneNode(true);a.id='';a.classList.replace('dark','light');document.getElementById('Alight').replaceWith(a);
+</script>
+</body></html>

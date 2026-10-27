@@ -1,0 +1,231 @@
+# Plano
+
+> Aprovado pelo dono em 2026-10-26 (validação 2). Depois disso o desenvolvimento segue sem novas aprovações até o resultado.
+> Plano anterior (adoção): `docs/plano-de-acao-retomada.md`. Os itens de código não feitos viraram as etapas abaixo. Os manuais estão em "Ações do dono" no `ANDAMENTO.md`.
+
+**Testes finais:** testes práticos de segurança sim · teste de usuário ios (simulador) · banco de teste supabase local (Docker)
+
+**Regras gerais de todas as etapas**
+- Nenhuma escrita no Supabase remoto (`asuxqjbwgetdcldjoaqm`). Migrations são testadas só no banco local (`npx supabase db reset`). Aplicar no remoto é ação do dono.
+- Testes unitários sem rede: o Ollama e o Supabase entram como dublês.
+- Convenções: `fitapp-padroes` (português, kebab-case nos arquivos novos) e a skill `code-design`.
+
+## Etapa 1: fundação
+
+- **Escopo:** só o que falta para verificar o projeto.
+  - Scripts `typecheck` (`tsc --noEmit`), `lint` (ESLint com `eslint-config-expo`) e `test` (Jest + `jest-expo` + React Native Testing Library).
+  - Testes de `utilidades/calculos.ts`, cobrindo RN01 a RN05.
+  - `.gitignore` com `.env*` (exceto `.env.example`) e `scratch/exercicios-bd-ptbr/`.
+  - `.env.example` com as variáveis reais e sem valores, incluindo `EXPO_PUBLIC_OLLAMA_URL`.
+  - Scripts úteis de `scratch/` vão para `scripts/`; os experimentos são apagados.
+  - Docs desatualizados (`task.md`, `implementation_plan.*`, `checklist_construcao.md`, relatórios de julho) vão para `docs/arquivo/`.
+  - Atualizar a tabela de comandos do `.agents/AGENTS.md`.
+- **Pronto quando:** `npm run typecheck`, `npm run lint` e `npm test` passam; os testes cobrem RN01 a RN05.
+- **Dependências permitidas:** `eslint`, `eslint-config-expo`, `jest`, `jest-expo`, `@testing-library/react-native`, `@types/jest`. Todas de dev, gratuitas.
+- **Premissas:** não se aplica.
+
+## Etapa 2: reorganizar por funcionalidade
+
+- **Escopo:** só mover arquivos (`git mv`).
+  - Estrutura `funcionalidades/{autenticacao,questionario,plano,treino,dieta,inicio,perfil}/` + `compartilhado/` (ui, tema, supabase, utilidades, tipos).
+  - Alias `@/` e fim dos aliases `@fitapp/*`.
+  - As rotas de `app/` ficam finas (só importam a tela).
+  - Ajustar os imports e renomear os arquivos fora do padrão para kebab-case.
+  - Atualizar a skill `fitapp-padroes` (tirar Turborepo/Next, pôr a estrutura nova) e o `AGENTS.md`.
+  - **Nenhuma mudança de lógica, de visual ou de nome de função.**
+- **Pronto quando:**
+  - typecheck, lint e testes passam;
+  - `npx expo export --platform ios` compila;
+  - nenhuma funcionalidade importa de outra (só de `compartilhado/`).
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** não se aplica.
+
+## Etapa 3: tema, modo claro e componentes base
+
+- **Escopo:**
+  - Tokens em `compartilhado/tema`, com tema escuro e claro por `useColorScheme`:
+    - texto secundário `#A1A1AA` no escuro;
+    - escala tipográfica da HIG com mínimo de 13 pt;
+    - raio 20;
+    - cores fixas por macro: P `#F05A28`, C `#EAB308`, G `#A1A1AA`.
+  - Hook `useTema()`.
+  - O `CardVidro` vira superfície sólida; o vidro fica só na navegação e nas ações fixas.
+  - Novos componentes base `Skeleton`, `EstadoVazio` e `EstadoErro` (com "Tentar de novo").
+  - Acessibilidade nos componentes base:
+    - `accessibilityRole` e `accessibilityLabel`;
+    - `hitSlop` nos botões só de ícone;
+    - resumo em texto para o VoiceOver em `AnelProgresso`, `GraficoDonutMacros` e `GraficoEvolucao`.
+  - `app.json` com `userInterfaceStyle: automatic` (mantido).
+- **Conceitos novos:** tema dinâmico, estados base, acessibilidade.
+- **Pronto quando:**
+  - testes dos componentes base (renderizam nos dois temas; `EstadoErro` chama a ação ao tocar);
+  - o contraste do texto secundário é de pelo menos 4,5:1 nos dois temas (teste sobre os tokens);
+  - typecheck, lint e testes passam.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode (tons do tema claro).
+
+## Etapa 4: navegação nativa e telas no tema novo
+
+- **Escopo:**
+  - Trocar a barra de abas feita à mão por `NativeTabs` (`expo-router/unstable-native-tabs`).
+  - `headerLargeTitle` em Início, Treino, Dieta e Perfil.
+  - Migrar todas as telas para `useTema()`, para o modo claro funcionar.
+  - Trocar os `ActivityIndicator` soltos e os `Alert` de erro pelos estados base.
+- **Pronto quando:**
+  - nenhuma tela importa as cores fixas antigas (Grep);
+  - `npx expo export --platform ios` compila;
+  - typecheck, lint e testes passam.
+- **Dependências permitidas:** nenhuma nova (API instável do SDK 54, aprovada).
+- **Premissas:** pode.
+
+## Etapa 5: segredos fora do app
+
+- **Escopo:**
+  - Remover `EXPO_PUBLIC_GROQ_KEY` e o caminho Groq.
+  - Tirar do app a chave RapidAPI de `tacoSincronizacaoServico`: a sincronização das bases passa a acontecer só pela function `sincronizar-bases` (secret) ou por script local com `.env`.
+  - Garantir que nenhum `EXPO_PUBLIC_` carregue segredo.
+- **Pronto quando:**
+  - um Grep por chaves no código do app e no bundle (`expo export`) não encontra nada;
+  - typecheck, lint e testes passam.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** **sem premissa**.
+
+## Etapa 6: banco versionado (local)
+
+- **Escopo:**
+  - Migration de baseline consolidando 001–028.
+    - A 028 está corrigida: `id bigint`.
+    - Inclui `base_conhecimento` e `vector`.
+  - RLS conferida em toda tabela de usuário; `base_*` só leitura para `authenticated`.
+  - Funções com `search_path` fixo.
+  - Coluna `is_curado` em `base_exercicios`, com uma migration de curadoria: remove olímpicos, alongamentos e itens mal classificados.
+  - Tipos gerados em `compartilhado/tipos/database.ts` a partir do banco local.
+  - Testes de RLS em SQL (usuário A não lê nem escreve dados de B).
+- **Conceitos novos:** baseline, testes SQL.
+- **Pronto quando:**
+  - `npx supabase db reset` aplica sem erro;
+  - os testes de RLS passam no banco local;
+  - typecheck passa com os tipos novos.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** **sem premissa** (RLS).
+
+## Etapa 7: base de conhecimento
+
+- **Escopo:**
+  - Tabela `base_conhecimento`: `tipo`, `tema`, `titulo`, `fonte`, `conteudo`, `objetivos[]`, `niveis[]` e `embedding vector(1024)` (dimensão do `mxbai-embed-large`).
+  - RPC `buscar_conhecimento_rag(embedding, objetivo, nivel, limite)`.
+  - Arquivo de 40 a 60 trechos curados, todos com a fonte (RN15).
+  - Script `scripts/ingestao-conhecimento.ts`, que gera os embeddings no Ollama local e faz upsert no banco local.
+- **Pronto quando:**
+  - cada trecho tem a fonte preenchida (teste);
+  - a RPC retorna os trechos filtrados no banco local (teste SQL);
+  - o script roda com o Ollama ligado e falha com uma mensagem clara se o Ollama estiver desligado.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode (seleção dos trechos), sempre com a fonte.
+
+## Etapa 8: motor de geração assistida (lógica pura)
+
+- **Escopo:** em `funcionalidades/plano/motor/`.
+  - Divisão semanal determinística de 2 a 7 dias (RN08).
+  - Volume, séries e reps por objetivo e nível.
+  - Montagem do JSON Schema com `enum` de IDs por grupo e por slot (RN07).
+  - Prompt sem dados pessoais (RN12).
+  - Gramas por mínimos quadrados com limites, ±5% (RN09).
+  - Validador (RN10) e travas de saúde (RN16).
+- **Conceitos novos:** schema restrito, mínimos quadrados, validador.
+- **Pronto quando:** testes unitários cobrem:
+  - 2, 3, 4, 5, 6 e 7 dias;
+  - macros dentro de ±5% em pelo menos 5 perfis;
+  - um prompt sem nome, e-mail e ID;
+  - a rejeição de menor de 18 anos, de IMC fora de 16–45 e de calorias abaixo do piso;
+  - nenhum grupo em dias seguidos.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode, exceto RN16.
+
+## Etapa 9: geração ponta a ponta com Ollama local
+
+- **Escopo:**
+  - Cliente Ollama em `funcionalidades/plano/`: URL `EXPO_PUBLIC_OLLAMA_URL`, `format` = schema, timeout de 60 s.
+  - Recuperação de exercícios e alimentos por SQL e de conhecimento por vetor (RN14).
+  - 1 retry com os erros (RN10).
+  - RPC transacional `salvar_plano_gerado(jsonb)`, com rate limit de 5 por dia no fuso de São Paulo (RN11, RN13).
+  - Log em `planos_ia_gerados`.
+  - O questionário passa a usar esse fluxo; `iaLocalServico.ts` e a function `gerar-plano` são aposentados (apagados).
+  - Mensagem de erro de rede da seção 8 do `PROJETO.md`.
+- **Pronto quando:**
+  - testes com o Ollama simulado cobrem: sucesso, retry, falha dupla sem gravar nada e Ollama fora do ar com a mensagem certa;
+  - um teste SQL da RPC cobre a transação e a 6ª geração no dia, que é recusada.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode (textos).
+
+## Etapa 10: tela de Resultado e momentos de conquista
+
+- **Escopo:**
+  - Redesenho do Resultado segundo o mockup aprovado (`docs/mockups/resultado-unido-2026-10-26.html`, **variação A**: orbe grande com anel dos macros, 4 nós incluindo a água `#38BDF8`, linha do tempo, card "Por que estes números"; versão clara no mesmo arquivo):
+    - justificativas e fontes vindas da `base_conhecimento`, com as fontes tocáveis abrindo um formSheet;
+    - aviso profissional;
+    - ação fixa em vidro.
+  - Momento de conquista ao aceitar o plano e ao concluir o treino: mola + haptic Success, respeitando `useReducedMotion`.
+- **Pronto quando:**
+  - teste de componente: o Resultado mostra kcal, os 3 macros, pelo menos 1 fonte e o aviso;
+  - com Reduzir Movimento ligado, não há animação (teste).
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode (textos).
+
+## Etapa 11: consentimento de saúde e exclusão de conta
+
+- **Escopo:**
+  - Tela de Consentimento (mockup aprovado). O aceite é gravado com data em `perfis` e o questionário fica bloqueado sem ele.
+  - Excluir conta no Perfil, com confirmação destrutiva.
+  - Edge Function `excluir-conta`, que apaga o usuário do Auth (`service_role` só na function) e todos os dados por cascade.
+- **Conceitos novos:** consentimento, exclusão.
+- **Pronto quando:**
+  - teste SQL: depois da exclusão, não sobra nenhuma linha do usuário em nenhuma tabela;
+  - teste de tela: sem o aceite, o Continuar fica desabilitado;
+  - a function recusa chamada sem JWT (teste Deno).
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** **sem premissa** (exclusão de dados).
+
+## Etapa 12: Sign in with Apple
+
+- **Escopo:**
+  - Botão "Continuar com a Apple" no login (mockup aprovado), com `signInWithIdToken` do Supabase.
+  - Plugin no `app.json`.
+  - O e-mail vira a opção secundária.
+- **Pronto quando:**
+  - teste com o módulo simulado: o token vai para o Supabase e o cancelamento não mostra erro;
+  - `expo export` compila.
+  - O teste real depende da ação do dono (provedor Apple no Supabase).
+- **Dependências permitidas:** `expo-apple-authentication` (gratuita; exige Apple Developer para o build real).
+- **Premissas:** não pode.
+
+## Etapa 13: avaliação da qualidade dos planos
+
+- **Escopo:**
+  - Script `scripts/avaliar-planos.ts` com 8 a 10 perfis-teste fixos e fictícios:
+    - iniciante em casa;
+    - avançado 6x;
+    - mulher 50+ em emagrecimento;
+    - vegano;
+    - sem lactose;
+    - 2x por semana;
+    - restrição no joelho.
+  - O script roda contra o Ollama real e o banco local, aplica as checagens do validador e salva o relatório em `docs/avaliacoes/`.
+- **Pronto quando:** o script roda e gera o relatório; falha com uma mensagem clara se o Ollama estiver desligado. Não entra no `npm test`.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode.
+
+## Etapa 14: preparação para os testes finais
+
+- **Escopo:**
+  - `supabase/seed.sql` com 2 contas fictícias (A e B), um plano aceito e alguns registros, além de amostras das bases.
+  - `scripts/instancia-teste.sh subir|derrubar`:
+    - confere que aponta para o banco local, nunca para a URL do `.env` de produção;
+    - roda `supabase start` e `db reset`;
+    - sobe o app (Expo web numa porta livre e/ou simulador iOS) com as variáveis do banco local;
+    - grava os PIDs em `$TMPDIR/fitapp-instancia-teste.pid`.
+- **Pronto quando:** `subir` deixa o app acessível com o banco local e o login das contas fictícias funciona; `derrubar` libera portas e processos.
+
+## Etapa 15: Testes finais: correções
+
+- Reservada. Só os CORRIGIR dos testes finais, sem dependência nova e sem premissa nova.
