@@ -25,7 +25,7 @@ Fluxo: novo-projeto
 |---|---|---|---|
 | 1. Fundação | Implementada, aguardando o testador | 1 | |
 | 2. Reorganizar por funcionalidade | Implementada, aguardando o testador | 1 | |
-| 3. Tema, modo claro e componentes base | Implementada, aguardando o testador | 1 | |
+| 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
 | 4. Navegação nativa e telas no tema novo | Pendente | | |
 | 5. Segredos fora do app | Pendente | | |
 | 6. Banco versionado (local) | Pendente | | |
