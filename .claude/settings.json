@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm test)", "Bash(npm test *)", "Bash(CI=true npm test *)", "Bash(CI=true npm test)",
+      "Bash(npm run typecheck)", "Bash(npm run lint)", "Bash(npm run lint *)", "Bash(npm run test *)",
+      "Bash(npm install)", "Bash(npm ci)", "Bash(npm audit)", "Bash(npm audit *)",
+      "Bash(npx --no tsc *)", "Bash(npx --no eslint *)", "Bash(npx --no jest *)",
+      "Bash(npx expo install *)", "Bash(npx expo-doctor)", "Bash(npx expo export *)",
+      "Bash(npx supabase start)", "Bash(npx supabase status)", "Bash(npx supabase db reset)", "Bash(npx supabase db lint *)",
+      "Bash(scripts/instancia-teste.sh *)",
+      "Bash(xcrun simctl list *)", "Bash(xcrun simctl io * screenshot *)",
+      "Bash(git status *)", "Bash(git status)", "Bash(git diff *)", "Bash(git diff)", "Bash(git log *)",
+      "Bash(git show *)", "Bash(git add *)", "Bash(git commit -F *)", "Bash(git commit -m *)",
+      "Bash(git restore --staged *)", "Bash(git check-ignore *)", "Bash(git ls-files *)",
+      "Bash(git rev-parse *)", "Bash(git branch --show-current)", "Bash(git grep *)",
+      "Bash(lsof -i *)", "Bash(node --version)"
+    ],
+    "deny": [
+      "Bash(git push *)", "Bash(git pull *)", "Bash(git fetch *)", "Bash(git merge *)",
+      "Bash(git rebase *)", "Bash(git reset *)", "Bash(git clean *)", "Bash(git stash *)",
+      "Bash(git checkout *)", "Bash(git switch *)", "Bash(git commit --amend *)",
+      "Bash(git push)", "Bash(git branch -D *)", "Bash(git branch -d *)",
+      "Bash(npm install -g *)", "Bash(npm publish *)",
+      "Bash(npx supabase db push *)", "Bash(npx supabase link *)", "Bash(npx supabase functions deploy *)",
+      "Bash(npx supabase secrets *)", "Bash(eas submit *)", "Bash(eas build *)", "Bash(eas update *)",
+      "Read(./.env)", "Read(./.env.local)", "Read(./.env.production)"
+    ]
+  }
+}
