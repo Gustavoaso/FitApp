@@ -34,7 +34,7 @@ Fluxo: novo-projeto
 | 9. Geração com Ollama local | Concluída (testador: APROVADO) | 1 | 1570805 |
 | 10. Resultado e conquistas | Concluída (testador: APROVADO) | 1 | 56ba4d3 |
 | 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
-| 12. Sign in with Apple | Pendente | | |
+| 12. Sign in with Apple | Implementada, aguardando o testador | 1 | |
 | 13. Avaliação dos planos | Pendente | | |
 | 14. Preparação para os testes finais | Pendente | | |
 | 15. Testes finais: correções | Pendente | | |

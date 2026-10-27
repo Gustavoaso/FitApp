@@ -5,7 +5,10 @@
 // Permite entrar com e-mail/senha ou navegar para o cadastro.
 // ============================================================
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { entrarComApple } from './entrar-com-apple-servico';
+import { possuiConsentimentoSaude } from '@/compartilhado/servicos/consentimento-servico';
 import {
   View,
   Text,
@@ -34,6 +37,21 @@ export default function TelaLogin() {
   const [erro, setErro] = useState<string | null>(null);
   const { entrarComEmail } = useAuth();
   const router = useRouter();
+  const [appleDisponivel, setAppleDisponivel] = useState(false);
+
+  // Só iOS tem Sign in with Apple nativo; nas outras plataformas fica só o e-mail.
+  useEffect(() => {
+    AppleAuthentication.isAvailableAsync().then(setAppleDisponivel).catch(() => setAppleDisponivel(false));
+  }, []);
+
+  const lidarComApple = async () => {
+    setErro(null);
+    const resultado = await entrarComApple();
+    if (resultado.status === 'erro') setErro(resultado.mensagem);
+    if (resultado.status !== 'ok') return;
+    // Conta nova (ou sem aceite) passa pelo consentimento, como no cadastro por e-mail.
+    router.replace((await possuiConsentimentoSaude()) ? '/' : '/consentimento');
+  };
 
   const lidarComEntrar = async () => {
     const valEmail = validarEmail(email);
@@ -71,6 +89,19 @@ export default function TelaLogin() {
           <Text style={estilos.titulo}>FitApp</Text>
           <Text style={estilos.subtitulo}>Seu treino e dieta sob medida</Text>
         </View>
+
+        {appleDisponivel ? (
+          <>
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+              cornerRadius={25}
+              style={estilos.botaoApple}
+              onPress={lidarComApple}
+            />
+            <Text style={estilos.separadorTexto}>ou com e-mail</Text>
+          </>
+        ) : null}
 
         {/* Card de Formulário Glass */}
         <CardVidro estilo={estilos.cardFormulario}>
@@ -157,6 +188,13 @@ const criarEstilos = (cores: CoresTema) =>
     fontSize: Fonte.corpo,
     color: cores.textoSecundario,
     marginTop: 4,
+  },
+  botaoApple: { height: 50, width: '100%' },
+  separadorTexto: {
+    fontSize: Fonte.label,
+    color: cores.textoSecundario,
+    textAlign: 'center',
+    marginVertical: Espacamento.lg,
   },
   cardFormulario: {
     marginBottom: Espacamento.xxl,
