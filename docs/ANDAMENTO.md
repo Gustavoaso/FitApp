@@ -47,7 +47,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 | Agente | Veredito | Rodadas | Observação |
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
-| seguranca | REPROVADO (rodada 1) | 1 | CORRIGIR 2 (sincronizar-bases sem checar chamador), 3 (esm.sh sem versão); DECIDIR 1 (token sbp_ em repo PÚBLICO), 4 (auth fraco) |
+| seguranca | REPROVADO só com DECIDIR | 2 | rodada 2 (e75e0c5): CORRIGIR nenhum; DECIDIR 1 (revogar sbp_/RapidAPI/Groq, repo privado), 4 (política de senha no painel remoto); Baixas: limite só no RPC, npm audit em tooling, console.warn com objetos, CORS *, pg_trgm em public |
 | testador-usuario | | | |
 
 ## Ações do dono
