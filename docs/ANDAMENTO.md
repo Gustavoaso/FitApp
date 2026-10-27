@@ -86,6 +86,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 2: `constantes/Cores.ts` virou `compartilhado/tema.ts`; o resto de `constantes/` (hoje sem uso) foi para `compartilhado/constantes/`; `IconesFitApp` (sem uso) ficou em `compartilhado/ui/`. A tela de resultado do questionário ficou em `plano/`; o portão de entrada (`app/index`) em `autenticacao/TelaInicialRaiz.tsx`.
 - Etapa 1: `.env.example` lista só as variáveis em uso (`SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OLLAMA_URL`, `SUPABASE_KEY`); Groq e TACO ficaram de fora porque saem do app na etapa 5.
 
+- Etapa 2: estrutura em `src/` (alias `@/` → `src/`); serviços usados por 2+ funcionalidades e `AuthContexto` em `src/compartilhado/`; `constantes/Cores.ts` virou `src/compartilhado/tema.ts`; `_layout.tsx` ficam em `app/`.
+
 ## Pendências
 
 - `scratch/exercicios-bd-ptbr` está no índice como repositório embutido: `git rm --cached scratch/exercicios-bd-ptbr` (dono).
