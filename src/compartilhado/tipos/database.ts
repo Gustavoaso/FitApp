@@ -892,6 +892,7 @@ export type Database = {
       };
       e_dono_plano_dieta: { Args: { plano: string }; Returns: boolean };
       e_dono_plano_treino: { Args: { plano: string }; Returns: boolean };
+      salvar_plano_gerado: { Args: { p_dados: Json }; Returns: string };
       show_limit: { Args: Record<PropertyKey, never>; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };
       validar_compatibilidade_planejamento: { Args: Record<PropertyKey, never>; Returns: Json };

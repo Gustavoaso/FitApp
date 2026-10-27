@@ -846,62 +846,7 @@ export const repositorioPlano = {
 
       // 3. Salva Plano de Treino no Supabase e Localmente
       if (plano.treino && Array.isArray(plano.treino.dias)) {
-        await supabase
-          .from('planos_treino')
-          .delete()
-          .eq('usuario_id', userId);
-
-        const { error: erroPlanoTreino } = await supabase.from('planos_treino').insert([{
-          usuario_id: userId,
-          // Campos mantidos para instalações antigas do schema.
-          dia_semana: plano.treino.dias?.[0]?.nome || 'semanal',
-          foco: plano.treino.nomeDivisao || 'Plano de treino',
-          exercicios: plano.treino.dias || [],
-          nome: plano.treino.nomeDivisao || 'Plano de treino',
-          dias_por_semana: Math.max(2, Math.min(6, plano.treino.dias.filter((d: any) => Array.isArray(d.exercicios) && d.exercicios.length > 0).length)),
-          ativo: true,
-        }]).select('id').single();
-
-        if (erroPlanoTreino) throw erroBanco('Não foi possível criar o plano de treino', erroPlanoTreino);
-
-        const { data: planoTreinoAtivo } = await supabase
-          .from('planos_treino')
-          .select('id')
-          .eq('usuario_id', userId)
-          .eq('ativo', true)
-          .order('criado_em', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (!planoTreinoAtivo) throw new Error('Plano de treino não foi criado.');
-
-        const diasTreino = plano.treino.dias.map((dia: any) => ({
-          plano_treino_id: planoTreinoAtivo.id,
-          dia_semana: Math.max(0, Math.min(6, Number(dia.diaSemana))),
-          nome: dia.nome || 'Treino',
-        }));
-        const { data: diasCriados, error: erroDias } = await supabase
-          .from('dias_treino')
-          .insert(diasTreino)
-          .select('id, dia_semana');
-        if (erroDias || !diasCriados) throw erroBanco('Não foi possível criar os dias de treino', erroDias);
-
-        const exerciciosPlano = plano.treino.dias.flatMap((dia: any, diaIdx: number) => {
-          // Busca o dia pelo índice de inserção para evitar confusão entre dias com mesmo diaSemana
-          const diaCriado = diasCriados[diaIdx];
-          return (dia.exercicios || []).map((ex: any, ordem: number) => ({
-            dia_treino_id: diaCriado?.id,
-            exercicio_id: ex.exercicioId || null, // nullable — salva mesmo sem ID do banco
-            nome: ex.nome,
-            ordem: ordem + 1,
-            series: [{ numero: 1, repeticoes: ex.repeticoes, descansoSegundos: ex.descansoSegundos, quantidade: ex.series }],
-          }));
-        }).filter((item: any) => item.dia_treino_id); // só descarta se não encontrou o dia
-        if (exerciciosPlano.length > 0) {
-          const { error: erroExercicios } = await supabase.from('exercicios_plano').insert(exerciciosPlano);
-          if (erroExercicios) throw erroBanco('Não foi possível salvar os exercícios do plano', erroExercicios);
-        }
-
+        // O plano remoto já foi gravado pela RPC salvar_plano_gerado (RN11); aqui só o cache local.
         const treinosLocais = plano.treino.dias.map((d: any, idx: number) => ({
           id: `dia-${Date.now()}-${idx}`,
           diaSemana: d.nome || `Dia ${idx + 1}`,
@@ -953,69 +898,6 @@ export const repositorioPlano = {
         }));
 
         await AsyncStorage.setItem(`@fitapp_historico_dieta_${hojeStr}`, JSON.stringify(paraSalvar));
-
-        await supabase.from('planos_dieta').update({ ativo: false }).eq('usuario_id', userId);
-        const { data: planoDieta, error: erroDieta } = await supabase
-          .from('planos_dieta')
-          .insert([{
-            usuario_id: userId,
-            // Aliases históricos e colunas obrigatórias da tabela planos_dieta
-            meta_calorias: plano.resumo?.caloriasAlvo || 0,
-            calorias_alvo: plano.resumo?.caloriasAlvo || 0,
-            meta_calories: plano.resumo?.caloriasAlvo || 0,
-            meta_proteinas_g: plano.resumo?.macros?.proteinas || 0,
-            proteinas_alvo_g: plano.resumo?.macros?.proteinas || 0,
-            meta_protein_g: plano.resumo?.macros?.proteinas || 0,
-            meta_carbos_g: plano.resumo?.macros?.carboidratos || 0,
-            meta_carboidratos_g: plano.resumo?.macros?.carboidratos || 0,
-            carboidratos_alvo_g: plano.resumo?.macros?.carboidratos || 0,
-            meta_carbs_g: plano.resumo?.macros?.carboidratos || 0,
-            meta_gorduras_g: plano.resumo?.macros?.gorduras || 0,
-            gorduras_alvo_g: plano.resumo?.macros?.gorduras || 0,
-            meta_fat_g: plano.resumo?.macros?.gorduras || 0,
-            meta_agua_ml: plano.resumo?.metaAguaMl || 0,
-            water_goal_ml: plano.resumo?.metaAguaMl || 0,
-            ativo: true,
-          }])
-          .select('id')
-          .single();
-        if (erroDieta || !planoDieta) throw erroBanco('Não foi possível criar o plano de dieta', erroDieta);
-
-        const refeicoesPlano = [0, 1, 2, 3, 4, 5, 6].flatMap((diaSemana) =>
-          plano.dieta.refeicoes.map((ref: any) => ({
-            plano_dieta_id: planoDieta.id,
-            dia_semana: diaSemana,
-            tipo: obterTipoRefeicao(ref.nome),
-            nome: ref.nome,
-            horario_sugerido: ref.horario || null,
-          }))
-        );
-        const { data: refeicoesCriadas, error: erroRefeicoes } = await supabase
-          .from('refeicoes_plano')
-          .insert(refeicoesPlano)
-          .select('id, dia_semana, nome');
-        if (erroRefeicoes || !refeicoesCriadas) {
-          throw erroBanco('Não foi possível salvar as refeições planejadas. Verifique se a migration 007 foi aplicada', erroRefeicoes);
-        }
-
-        const alimentosPlano = refeicoesCriadas.flatMap((ref: any) => {
-          const alimentoRef = plano.dieta.refeicoes.find((item: any) => item.nome === ref.nome);
-          return (alimentoRef?.alimentos || []).map((alimento: any) => ({
-            refeicao_plano_id: ref.id,
-            alimento_id: Number(alimento.alimentoId),
-            nome: alimento.nome,
-            porcao_gramas: extrairGramas(alimento.porcao),
-            calorias: Number(alimento.calorias || 0),
-            proteinas: Number(alimento.proteinas || 0),
-            carboidratos: Number(alimento.carboidratos || 0),
-            gorduras: Number(alimento.gorduras || 0),
-          }));
-        }).filter((item: any) => item.alimento_id != null && !isNaN(item.alimento_id));
-
-        if (alimentosPlano.length > 0) {
-          const { error: erroAlimentos } = await supabase.from('alimentos_refeicao').insert(alimentosPlano);
-          if (erroAlimentos) throw erroBanco('Não foi possível salvar os alimentos planejados', erroAlimentos);
-        }
       }
 
       await repositorioDieta.salvarPlanoDietaEditavel(plano, null);
@@ -1025,19 +907,3 @@ export const repositorioPlano = {
     }
   },
 };
-
-function extrairGramas(porcao: unknown): number {
-  if (typeof porcao === 'number') return porcao > 0 ? porcao : 100;
-  const str = String(porcao || '');
-  const encontrado = str.match(/(\d+(?:[.,]\d+)?)/);
-  return encontrado ? Number(encontrado[1].replace(',', '.')) : 100;
-}
-
-function obterTipoRefeicao(nome: string): string {
-  const texto = String(nome || '').toLowerCase();
-  if (texto.includes('café') || texto.includes('manhã')) return 'cafe_da_manha';
-  if (texto.includes('lanche')) return 'lanche_tarde';
-  if (texto.includes('jantar')) return 'jantar';
-  if (texto.includes('ceia')) return 'ceia';
-  return 'almoco';
-}

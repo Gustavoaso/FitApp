@@ -25,7 +25,7 @@ import type {
   SlotDia,
 } from './tipos';
 
-const EQUIPAMENTOS_PERMITIDOS: Record<EquipamentosDisponiveis, EquipamentosDisponiveis[]> = {
+export const EQUIPAMENTOS_PERMITIDOS: Record<EquipamentosDisponiveis, EquipamentosDisponiveis[]> = {
   academia_completa: ['academia_completa', 'home_gym', 'peso_corporal'],
   home_gym: ['home_gym', 'peso_corporal'],
   peso_corporal: ['peso_corporal'],

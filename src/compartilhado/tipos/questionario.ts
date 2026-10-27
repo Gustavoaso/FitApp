@@ -122,3 +122,30 @@ export interface PlanoIAGerado {
   };
   comentarios?: string[];
 }
+
+/** Respostas do questionário como a tela as coleta (textos das opções). */
+export interface DadosQuestionario {
+  perfil: {
+    nome: string;
+    sexo_biologico: string;
+    idade: number;
+    peso_atual: number;
+    altura: number;
+  };
+  objetivo: {
+    objetivo_principal: string;
+    atividade_fora_treino: string;
+    nivel_experiencia: string;
+  };
+  treino: {
+    dias_disponiveis_semana: number;
+    local_treino: string;
+    tempo_sessao: string;
+    divisao_preferida: string;
+    restricao_fisica: string[];
+  };
+  dieta: {
+    restricao_alimentar: string[];
+    refeicoes_por_dia: number;
+  };
+}

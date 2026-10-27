@@ -18,11 +18,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { CardVidro, BotaoPrimario, EstadoErro, Skeleton } from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
 import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
-import { gerarPlanoComIALocal as gerarPlanoComIA, DadosQuestionario } from './ia-local-servico';
 import { supabase } from '@/compartilhado/supabase';
+import type { DadosQuestionario } from '@/compartilhado/tipos';
 import {
   validarIdade,
   validarPeso,
@@ -37,8 +37,6 @@ export default function TelaQuestionario() {
   const { dadosFormulario, origem } = useLocalSearchParams<{ dadosFormulario?: string; origem?: string }>();
 
   const [etapa, setEtapa] = useState(1);
-  const [erroGeracao, setErroGeracao] = useState<string | null>(null);
-  const [carregando, setCarregando] = useState(false);
   const [nomeUsuario, setNomeUsuario] = useState('Atleta');
 
   // ETAPA 1
@@ -169,73 +167,38 @@ export default function TelaQuestionario() {
     }
   };
 
-  const finalizarQuestionario = async () => {
-    setErroGeracao(null);
-    setCarregando(true);
-    try {
-      const payload: DadosQuestionario = {
-        perfil: {
-          nome: nomeUsuario,
-          sexo_biologico: sexoBiologico,
-          idade: safeParseNumber(idade),
-          peso_atual: safeParseNumber(pesoAtual),
-          altura: safeParseNumber(altura)
-        },
-        objetivo: {
-          objetivo_principal: objetivoPrincipal,
-          atividade_fora_treino: atividadeForaTreino,
-          nivel_experiencia: nivelExperiencia
-        },
-        treino: {
-          dias_disponiveis_semana: safeParseNumber(diasDisponiveis),
-          local_treino: localTreino,
-          tempo_sessao: tempoSessao,
-          divisao_preferida: divisaoPreferida,
-          restricao_fisica: restricaoFisica
-        },
-        dieta: {
-          restricao_alimentar: restricaoAlimentar,
-          refeicoes_por_dia: safeParseNumber(refeicoesPorDia)
-        }
-      };
-
-      const planoGerado = await gerarPlanoComIA(payload);
-
-      setCarregando(false);
-      router.replace({
-        pathname: '/questionario/resultado',
-        params: {
-          plano: JSON.stringify(planoGerado),
-          respostas: JSON.stringify(payload),
-        },
-      });
-    } catch (err: unknown) {
-      setCarregando(false);
-      const msg = err instanceof Error ? err.message : 'Erro ao gerar o plano';
-      setErroGeracao(msg);
-    }
+  // A geração acontece no Resultado (funcionalidade plano): aqui só vão as respostas.
+  const finalizarQuestionario = () => {
+    const payload: DadosQuestionario = {
+      perfil: {
+        nome: nomeUsuario,
+        sexo_biologico: sexoBiologico,
+        idade: safeParseNumber(idade),
+        peso_atual: safeParseNumber(pesoAtual),
+        altura: safeParseNumber(altura)
+      },
+      objetivo: {
+        objetivo_principal: objetivoPrincipal,
+        atividade_fora_treino: atividadeForaTreino,
+        nivel_experiencia: nivelExperiencia
+      },
+      treino: {
+        dias_disponiveis_semana: safeParseNumber(diasDisponiveis),
+        local_treino: localTreino,
+        tempo_sessao: tempoSessao,
+        divisao_preferida: divisaoPreferida,
+        restricao_fisica: restricaoFisica
+      },
+      dieta: {
+        restricao_alimentar: restricaoAlimentar,
+        refeicoes_por_dia: safeParseNumber(refeicoesPorDia)
+      }
+    };
+    router.replace({
+      pathname: '/questionario/resultado',
+      params: { respostas: JSON.stringify(payload) },
+    });
   };
-
-  if (erroGeracao) {
-    return (
-      <View style={[estilos.container, estilos.centralizado]}>
-        <EstadoErro mensagem={erroGeracao} aoTentarDeNovo={finalizarQuestionario} />
-        <TouchableOpacity accessibilityRole="button" onPress={() => setErroGeracao(null)} hitSlop={12}>
-          <Text style={estilos.subTextoCarregando}>Revisar respostas</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (carregando) {
-    return (
-      <View style={[estilos.container, estilos.centralizado]}>
-        <Skeleton largura={120} altura={120} raio={60} />
-        <Text style={estilos.textoCarregando}>Criando seu plano personalizado...</Text>
-        <Text style={estilos.subTextoCarregando}>Conectando IA e calculando variáveis</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={estilos.container}>
@@ -413,7 +376,6 @@ export default function TelaQuestionario() {
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
   container: { flex: 1, backgroundColor: cores.fundo },
-  centralizado: { justifyContent: 'center', alignItems: 'center', padding: Espacamento.xl },
   topoHeader: { paddingHorizontal: 20, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 10 },
   btnSairQuestionario: {
     flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
@@ -443,6 +405,4 @@ const criarEstilos = (cores: CoresTema) =>
   acoesRow: { flexDirection: 'row', gap: Espacamento.md, alignItems: 'center' },
   btnVoltar: { paddingVertical: 14, paddingHorizontal: 20, borderRadius: Raio.md, borderWidth: 1, borderColor: cores.separador },
   txtVoltar: { fontFamily: FamiliaFonte.semibold, fontSize: Fonte.corpo, color: cores.textoSecundario },
-  textoCarregando: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: cores.texto, marginTop: 20, textAlign: 'center' },
-  subTextoCarregando: { fontFamily: FamiliaFonte.regular, fontSize: Fonte.label, color: cores.textoSecundario, marginTop: 8, textAlign: 'center' },
 });

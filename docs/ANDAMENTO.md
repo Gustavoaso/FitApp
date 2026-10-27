@@ -31,7 +31,7 @@ Fluxo: novo-projeto
 | 6. Banco versionado (local) | Concluída (testador: APROVADO) | 1 | 5d5c02c |
 | 7. Base de conhecimento | Concluída (testador: APROVADO) | 1 | b8542c5 |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
-| 9. Geração com Ollama local | Pendente | | |
+| 9. Geração com Ollama local | Implementada, aguardando o testador | 1 | |
 | 10. Resultado e conquistas | Pendente | | |
 | 11. Consentimento e excluir conta | Pendente | | |
 | 12. Sign in with Apple | Pendente | | |

@@ -6,7 +6,7 @@
 // sem emojis, utilizando exclusivamente a biblioteca SF Symbols.
 // ============================================================
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -17,30 +17,91 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario, EstadoErro, Skeleton } from '@/compartilhado/ui';
 import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarAgua } from '@/compartilhado/utilidades';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
-import type { PlanoIAGerado } from '@/compartilhado/tipos';
+import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
+import { gerarPlano } from './gerar-plano-servico';
+
+function lerJson<T>(texto: string | undefined): T | null {
+  if (!texto) return null;
+  try {
+    return JSON.parse(texto) as T;
+  } catch {
+    return null;
+  }
+}
 
 export default function TelaResultadoQuestionario() {
   const { cores, escuro } = useTema();
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
-  const { plano, respostas } = useLocalSearchParams<{ plano: string; respostas?: string }>();
+  const { plano, respostas } = useLocalSearchParams<{ plano?: string; respostas?: string }>();
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
 
-  // Parse dos dados do plano gerado e das respostas do questionário
-  const dadosPlano: PlanoIAGerado | null = plano ? JSON.parse(plano) : null;
-  const dadosRespostas = respostas ? JSON.parse(respostas) : null;
+  const dadosRespostas = useMemo(() => lerJson<DadosQuestionario>(respostas), [respostas]);
+  // Sem plano pronto nos parâmetros, a tela gera a partir das respostas.
+  const [dadosPlano, setDadosPlano] = useState<PlanoIAGerado | null>(() => lerJson<PlanoIAGerado>(plano));
+  const [gerarAoAbrir] = useState(!dadosPlano && !!dadosRespostas);
+  const [gerando, setGerando] = useState(gerarAoAbrir);
+  const [erroGeracao, setErroGeracao] = useState<string | null>(null);
+
+  const gerar = useCallback(async () => {
+    if (!dadosRespostas) return;
+    setErroGeracao(null);
+    setGerando(true);
+    try {
+      setDadosPlano((await gerarPlano(dadosRespostas)).plano);
+    } catch (erro) {
+      setErroGeracao(erro instanceof Error ? erro.message : 'Não consegui gerar o plano.');
+    } finally {
+      setGerando(false);
+    }
+  }, [dadosRespostas]);
+
+  // Gera uma vez ao abrir; "Tentar de novo" chama gerar de novo.
+  useEffect(() => {
+    if (gerarAoAbrir) gerar();
+  }, [gerarAoAbrir, gerar]);
 
   const resumo = dadosPlano?.resumo;
 
   const refeicoes = dadosPlano?.dieta?.refeicoes || [];
 
   const diasTreino = dadosPlano?.treino?.dias || [];
+
+  const ajustarRespostas = () => {
+    router.push({
+      pathname: '/questionario',
+      params: {
+        dadosFormulario: respostas || JSON.stringify(dadosRespostas || {}),
+      },
+    });
+  };
+
+  if (gerando) {
+    return (
+      <View style={[estilos.container, estilos.centralizado]}>
+        <Skeleton largura={120} altura={120} raio={60} />
+        <Text style={estilos.tituloPill}>Criando seu plano personalizado...</Text>
+        <Text style={estilos.subtituloPill}>Isso pode levar até um minuto.</Text>
+      </View>
+    );
+  }
+
+  if (erroGeracao) {
+    return (
+      <View style={[estilos.container, estilos.centralizado]}>
+        <EstadoErro mensagem={erroGeracao} aoTentarDeNovo={gerar} />
+        <TouchableOpacity accessibilityRole="button" onPress={ajustarRespostas} hitSlop={12}>
+          <Text style={estilos.subtituloPill}>Revisar respostas</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (!dadosPlano || !resumo) {
     return (
@@ -67,14 +128,6 @@ export default function TelaResultadoQuestionario() {
     }
   };
 
-  const ajustarRespostas = () => {
-    router.push({
-      pathname: '/questionario',
-      params: {
-        dadosFormulario: respostas || JSON.stringify(dadosRespostas || {}),
-      },
-    });
-  };
 
   return (
     <View style={estilos.container}>
@@ -246,6 +299,7 @@ const criarEstilos = (cores: CoresTema) =>
     flex: 1,
     backgroundColor: cores.fundo,
   },
+  centralizado: { justifyContent: 'center', alignItems: 'center', padding: Espacamento.xl, gap: Espacamento.md },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 50,
