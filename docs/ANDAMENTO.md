@@ -33,7 +33,7 @@ Fluxo: novo-projeto
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Concluída (testador: APROVADO) | 1 | 1570805 |
 | 10. Resultado e conquistas | Concluída (testador: APROVADO) | 1 | 56ba4d3 |
-| 11. Consentimento e excluir conta | Implementada, aguardando o testador | 1 | |
+| 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
 | 12. Sign in with Apple | Pendente | | |
 | 13. Avaliação dos planos | Pendente | | |
 | 14. Preparação para os testes finais | Pendente | | |
@@ -119,8 +119,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 - Etapa 9: a tela de Resultado dispara a geração; o plano fica ativo ao ser gerado (o anterior fica inativo, não apagado); `planos_ia_gerados` sem políticas de UPDATE/DELETE (protege o limite); o limite só é checado ao salvar. PREMISSAs: mapeamento de grupos e equipamentos, papel do alimento pelo macro dominante, restrições por palavras do nome, treinos a partir de segunda.
 - Etapa 10: campo opcional `fundamentos` no plano; fonte em rota `app/questionario/fonte.tsx` (formSheet); sem botões Voltar/Compartilhar do mockup; PREMISSA nos textos do aviso e da conquista.
+- Etapa 11: aceite sem perfil cria o perfil com os valores iniciais do cadastro; barra do Continuar sólida (sem vidro); handler da `excluir-conta` separado com exclusão injetada.
 
 ## Pendências
+
+- `excluir-conta` não foi chamada de verdade (edge-runtime desligado): conferir no teste de ponta a ponta.
 
 - Decidir: plano gerado e não aceito também fica ativo (etapa 9).
 - Lint do banco: `v_dia_semana` sem uso em `salvar_plano_gerado`; troca de dia no fuso de São Paulo sem teste.

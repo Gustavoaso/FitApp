@@ -43,3 +43,4 @@ __pycache__/
 # Base de exercícios baixada (repositório próprio)
 scratch/exercicios-bd-ptbr/
 supabase/.branches/
+deno.lock
