@@ -107,6 +107,7 @@ describe('gerarPlano com o Ollama simulado', () => {
     expect(plano.treino.dias).toHaveLength(4);
     expect(plano.dieta.refeicoes).toHaveLength(4);
     expect(plano.comentarios).toEqual(['Volume semanal (Schoenfeld 2017)']);
+    expect(plano.fundamentos).toEqual([TRECHO]);
     const [{ prompt }] = chamadasGenerate(fetchMock);
     expect(prompt).not.toContain('Pessoa Teste');
     expect(prompt).toContain('Diretriz fictícia de volume.');

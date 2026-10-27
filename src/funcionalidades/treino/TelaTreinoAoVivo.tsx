@@ -13,13 +13,12 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
-import { CardVidro, BotaoPrimario, AnelProgresso } from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario, AnelProgresso, MomentoConquista } from '@/compartilhado/ui';
 import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
@@ -61,6 +60,7 @@ export default function TelaTreinoAoVivo() {
   const [cargaUsada, setCargaUsada] = useState('');
   const [tempoRestante, setTempoRestante] = useState(90);
   const [emDescanso, setEmDescanso] = useState(false);
+  const [concluido, setConcluido] = useState(false);
 
   useEffect(() => {
     async function carregarTreinoReal() {
@@ -102,8 +102,8 @@ export default function TelaTreinoAoVivo() {
       }, 1000);
     } else if (tempoRestante === 0 && emDescanso) {
       setEmDescanso(false);
+      // Confirmação discreta: o haptic e o rótulo do timer, que vira "Pronto".
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Descanso Concluído!', 'Hora da próxima série!');
     }
     return () => {
       if (interval) clearInterval(interval);
@@ -136,11 +136,10 @@ export default function TelaTreinoAoVivo() {
         setTempoRestante(listaExercicios[indexExercicio + 1].descansoSegundos);
         setEmDescanso(true);
       } else {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         const { incrementarTreinoRealizado } = await import('@/compartilhado/servicos/progresso-servico');
         await incrementarTreinoRealizado();
-        Alert.alert('Parabéns!', 'Treino concluído com sucesso!');
-        sairDoTreino();
+        // O MomentoConquista dá o haptic Success e sai do treino ao terminar.
+        setConcluido(true);
       }
     }
   };
@@ -228,6 +227,14 @@ export default function TelaTreinoAoVivo() {
           estilo={estilos.botaoConcluir}
         />
       </View>
+
+      {concluido ? (
+        <MomentoConquista
+          titulo="Treino concluído"
+          subtitulo={tituloTreino}
+          aoTerminar={sairDoTreino}
+        />
+      ) : null}
     </View>
   );
 }

@@ -121,6 +121,15 @@ export interface PlanoIAGerado {
     refeicoes: RefeicaoPlanoIA[];
   };
   comentarios?: string[];
+  /** Trechos da base_conhecimento que embasaram o plano (justificativa + fonte). */
+  fundamentos?: FundamentoPlano[];
+}
+
+/** Trecho da base de conhecimento mostrado no Resultado. */
+export interface FundamentoPlano {
+  titulo: string;
+  fonte: string;
+  conteudo: string;
 }
 
 /** Respostas do questionário como a tela as coleta (textos das opções). */

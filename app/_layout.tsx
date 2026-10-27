@@ -51,6 +51,15 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)/cadastro" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/index" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/resultado" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="questionario/fonte"
+          options={{
+            headerShown: false,
+            presentation: 'formSheet',
+            sheetAllowedDetents: [0.5, 1],
+            sheetGrabberVisible: true,
+          }}
+        />
         <Stack.Screen name="treino-ao-vivo/index" options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       </Stack>
     </AuthProvedor>

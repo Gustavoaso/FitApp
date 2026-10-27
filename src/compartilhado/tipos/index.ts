@@ -25,6 +25,7 @@ export type {
   AlimentoPlanoIA,
   RefeicaoPlanoIA,
   PlanoIAGerado,
+  FundamentoPlano,
   DadosQuestionario,
 } from './questionario';
 

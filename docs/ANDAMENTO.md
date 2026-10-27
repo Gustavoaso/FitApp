@@ -32,7 +32,7 @@ Fluxo: novo-projeto
 | 7. Base de conhecimento | Concluída (testador: APROVADO) | 1 | b8542c5 |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Concluída (testador: APROVADO) | 1 | 1570805 |
-| 10. Resultado e conquistas | Pendente | | |
+| 10. Resultado e conquistas | Implementada, aguardando o testador | 1 | |
 | 11. Consentimento e excluir conta | Pendente | | |
 | 12. Sign in with Apple | Pendente | | |
 | 13. Avaliação dos planos | Pendente | | |

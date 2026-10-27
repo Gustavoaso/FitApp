@@ -169,7 +169,10 @@ export async function gerarPlano(dados: DadosQuestionario): Promise<{ plano: Pla
     const trechos = await buscarDiretrizes(entrada);
     const { plano, divisao } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
     const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
-    const gerado = paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`));
+    const gerado = {
+      ...paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`)),
+      fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
+    };
     return { plano: gerado, planoIaId: await salvar(dados, gerado) };
   } catch (erro) {
     if (erro instanceof ErroGeracao || erro instanceof ErroOllama) throw erro;

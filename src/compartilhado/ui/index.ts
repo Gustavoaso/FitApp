@@ -11,3 +11,4 @@ export { AnelProgresso } from './AnelProgresso';
 export { Skeleton } from './Skeleton';
 export { EstadoVazio } from './EstadoVazio';
 export { EstadoErro } from './EstadoErro';
+export { MomentoConquista } from './MomentoConquista';
