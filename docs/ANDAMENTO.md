@@ -26,7 +26,7 @@ Fluxo: novo-projeto
 | 1. Fundação | Concluída (testador: APROVADO) | 1 | 6bf6e92 |
 | 2. Reorganizar por funcionalidade | Concluída (testador: APROVADO) | 1 | a5228ff |
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
-| 4. Navegação nativa e telas no tema novo | Implementada, aguardando o testador | 1 | |
+| 4. Navegação nativa e telas no tema novo | Concluída (testador: APROVADO) | 1 | 028b004 |
 | 5. Segredos fora do app | Pendente | | |
 | 6. Banco versionado (local) | Pendente | | |
 | 7. Base de conhecimento | Pendente | | |
