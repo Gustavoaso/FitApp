@@ -10,8 +10,8 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
-import { AuthProvedor } from '../contextos/AuthContexto';
-import { Cores } from '../constantes/Cores';
+import { AuthProvedor } from '@/compartilhado/AuthContexto';
+import { Cores } from '@/compartilhado/tema';
 
 
 export { ErrorBoundary } from 'expo-router';

@@ -17,7 +17,7 @@ import {
   Animated,
 } from 'react-native';
 import { SymbolView, SymbolViewProps } from 'expo-symbols';
-import { Cores } from '../../constantes/Cores';
+import { Cores } from '@/compartilhado/tema';
 
 const SIMBOLOS = {
   inicio: { inativo: 'house', ativo: 'house.fill' },

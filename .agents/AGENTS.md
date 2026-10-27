@@ -12,6 +12,8 @@ As diretrizes abaixo devem ser aplicadas em TODAS as interações e tarefas de c
 
 Documentação: [PROJETO.md](../docs/PROJETO.md) (regras), [VISUAL.md](../docs/VISUAL.md) (identidade), [PLANO.md](../docs/PLANO.md) (etapas), [ANDAMENTO.md](../docs/ANDAMENTO.md) (situação e decisões). Regra de negócio nova vai para o `PROJETO.md` antes do código.
 
+Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `src/compartilhado/` (alias `@/` → `src/`). Uma funcionalidade não importa de outra.
+
 | O quê | Comando |
 |---|---|
 | Rodar | `npx expo start` |

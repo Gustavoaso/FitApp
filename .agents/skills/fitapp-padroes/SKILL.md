@@ -24,18 +24,32 @@ description: Convenções, padrões de nomenclatura, estrutura de pastas e decis
 | Pastas | português sem acento | `utilidades/`, `componentes/`, `servicos/` |
 | Componentes React | PascalCase em português | `CardVidro`, `BotaoPrimario`, `AnelProgresso` |
 
-## Estrutura de Pacotes
+## Estrutura por funcionalidade
 
-- **Monorepo Turborepo** com 3 workspaces: `apps/*`, `packages/*`
-- **Pacotes compartilhados**: `@fitapp/tipos`, `@fitapp/utilidades`, `@fitapp/constantes`
-- Cada pacote exporta via barrel (`index.ts`) para imports limpos
+```
+app/                         só rotas (expo-router); cada arquivo reexporta a tela
+src/
+  funcionalidades/
+    autenticacao/ questionario/ plano/ treino/ dieta/ inicio/ perfil/
+                             telas (Tela*.tsx), componentes e serviços daquela funcionalidade
+  compartilhado/
+    ui/                      componentes base (CardVidro, BotaoPrimario, AnelProgresso)
+    servicos/                acesso a dados usado por 2+ funcionalidades (repositorio, progresso...)
+    tipos/ utilidades/ constantes/
+    tema.ts                  cores, espaços, fontes
+    supabase.ts              cliente único
+    AuthContexto.tsx
+```
+
+- Alias `@/` aponta para `src/` (ex.: `@/compartilhado/ui`).
+- Uma funcionalidade não importa de outra; o que 2+ usam fica em `compartilhado/`, que nunca importa de `funcionalidades/`.
+- Teste ao lado do arquivo (`*.test.ts`).
 
 ## Stack
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Mobile | React Native + Expo (SDK 52+) |
-| Web | Next.js 15 + React 19 |
+| Mobile | React Native + Expo (SDK 54) + expo-router |
 | Backend | Supabase (BaaS) + Edge Functions |
 | Banco | PostgreSQL (via Supabase) |
 | Auth | Supabase Auth |
@@ -45,9 +59,9 @@ description: Convenções, padrões de nomenclatura, estrutura de pastas e decis
 ## Padrões de Código
 
 - **Prettier** para formatação (single quotes, trailing commas, 100 chars)
-- **TypeScript strict mode** em todos os pacotes
-- **Tipos compartilhados** via `@fitapp/tipos` — nunca definir o mesmo tipo em dois lugares
-- **Imports absolutos** usando `@fitapp/` prefix
+- **TypeScript strict mode**
+- **Tipos compartilhados** em `@/compartilhado/tipos` — nunca definir o mesmo tipo em dois lugares
+- **Imports absolutos** com `@/`; relativo só dentro da mesma pasta
 - **Comentários**: bloco de documentação no topo de cada arquivo explicando o propósito
 
 ## Decisões Arquiteturais
@@ -56,5 +70,5 @@ description: Convenções, padrões de nomenclatura, estrutura de pastas e decis
 - Distribuição de macros: percentual fixo por objetivo (não IA)
 - Cálculos matemáticos no motor de regras, combinações criativas na IA
 - Row Level Security (RLS) do Supabase para isolamento de dados por usuário
-- **Acompanhamento de tarefas**: mantido atualizado no arquivo `docs/checklist_construcao.md` ao longo das fases do projeto
+- **Acompanhamento de tarefas**: `docs/ANDAMENTO.md`
 
