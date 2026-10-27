@@ -2,7 +2,7 @@
 
 Fluxo: novo-projeto
 **Modo:** adotado
-**Fase:** desenvolvimento
+**Fase:** testes finais
 **Branch:** agente/fitapp (base: gustavo-branch)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
@@ -37,7 +37,7 @@ Fluxo: novo-projeto
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
-| 14. Preparação para os testes finais | Implementada, aguardando o testador | 2 | Correção: rls.test.sql independente do seed; .env.example com EXPO_PUBLIC_SUPABASE_URL |
+| 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
 | 15. Testes finais: correções | Pendente | | |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
@@ -126,6 +126,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Maestro (2026-10-27): etapa 13b acrescentada ao plano para corrigir a qualidade da geração, com a autonomia dada pelo dono.
 - Etapa 13b: nunca amplia equipamento (degraus: nível → qualquer nível → grupo secundário); apelidos curtos de ID no prompt; timeout 180 s; PREMISSAs nas palavras de risco por articulação e nos textos de fase. Avaliação: 7/8, média 51 s (vegano reprova por falta de proteína vegetal na base).
 - Maestro (2026-10-27): o seed da etapa 14 inclui tofu e proteína de soja (dados nutricionais de referência, sem dado pessoal) para o perfil vegano.
+- Etapa 14: Expo web não sobe (exigiria `react-native-web`, fora do plano); o script abre o Expo Go no simulador; `COM_EDGE=1` sobe o edge-runtime; tofu pela TACO e PTS pelo USDA FDC 174275; senha fictícia `senha-teste-123` só no banco local. Tentativa 2: `rls.test.sql` independente do seed; `.env.example` com `EXPO_PUBLIC_SUPABASE_URL`.
 
 ## Pendências
 
