@@ -23,8 +23,8 @@ Fluxo: novo-projeto
 
 | Etapa | Situação | Tentativas | Commit |
 |---|---|---|---|
-| 1. Fundação | Implementada, aguardando o testador | 1 | |
-| 2. Reorganizar por funcionalidade | Implementada, aguardando o testador | 1 | |
+| 1. Fundação | Concluída (testador: APROVADO) | 1 | 6bf6e92 |
+| 2. Reorganizar por funcionalidade | Concluída (testador: APROVADO) | 1 | a5228ff |
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
 | 4. Navegação nativa e telas no tema novo | Pendente | | |
 | 5. Segredos fora do app | Pendente | | |
