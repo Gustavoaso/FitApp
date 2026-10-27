@@ -35,7 +35,7 @@ Fluxo: novo-projeto
 | 10. Resultado e conquistas | Concluída (testador: APROVADO) | 1 | 56ba4d3 |
 | 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
-| 13. Avaliação dos planos | Pendente | | |
+| 13. Avaliação dos planos | Implementada, aguardando o testador | 1 | |
 | 14. Preparação para os testes finais | Pendente | | |
 | 15. Testes finais: correções | Pendente | | |
 

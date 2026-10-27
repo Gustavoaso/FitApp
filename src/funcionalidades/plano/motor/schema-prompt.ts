@@ -64,7 +64,7 @@ export function montarSchemaEscolha(
   return {
     type: 'object',
     properties: {
-      dias: { type: 'array', prefixItems: itensDias, items: false, minItems: dias.length, maxItems: dias.length },
+      dias: { type: 'array', prefixItems: itensDias, minItems: dias.length, maxItems: dias.length },
       refeicoes: {
         type: 'object',
         properties: Object.fromEntries(REFEICOES.map((r) => [r, refeicao])),

@@ -159,20 +159,25 @@ async function salvar(dados: DadosQuestionario, plano: PlanoIAGerado): Promise<s
   return String(data);
 }
 
+/** Passos 1 a 3 sem gravar nada. Exportado para o script de avaliação (etapa 13). */
+export async function montarPlanoGerado(dados: DadosQuestionario): Promise<PlanoIAGerado> {
+  const entrada = mapearRespostas(dados);
+  const calculo = calcularTudo(entrada.pesoKg, entrada.alturaCm, entrada.idade, entrada.sexo, entrada.nivelAtividade, entrada.objetivo);
+  const travas = verificarTravasSaude({ ...entrada, caloriasAlvo: calculo.caloriasAlvo });
+  if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
+
+  const trechos = await buscarDiretrizes(entrada);
+  const { plano, divisao } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
+  const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
+  return {
+    ...paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`)),
+    fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
+  };
+}
+
 export async function gerarPlano(dados: DadosQuestionario): Promise<{ plano: PlanoIAGerado; planoIaId: string }> {
   try {
-    const entrada = mapearRespostas(dados);
-    const calculo = calcularTudo(entrada.pesoKg, entrada.alturaCm, entrada.idade, entrada.sexo, entrada.nivelAtividade, entrada.objetivo);
-    const travas = verificarTravasSaude({ ...entrada, caloriasAlvo: calculo.caloriasAlvo });
-    if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
-
-    const trechos = await buscarDiretrizes(entrada);
-    const { plano, divisao } = await escolherComRetry(entrada, metaDe(calculo), trechos.map((t) => t.conteudo));
-    const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
-    const gerado = {
-      ...paraPlanoGerado(plano, calculo, nomeDivisao, trechos.map((t) => `${t.titulo} (${t.fonte})`)),
-      fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
-    };
+    const gerado = await montarPlanoGerado(dados);
     return { plano: gerado, planoIaId: await salvar(dados, gerado) };
   } catch (erro) {
     if (erro instanceof ErroGeracao || erro instanceof ErroOllama) throw erro;
