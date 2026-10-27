@@ -31,7 +31,7 @@ Fluxo: novo-projeto
 | 6. Banco versionado (local) | Concluída (testador: APROVADO) | 1 | 5d5c02c |
 | 7. Base de conhecimento | Concluída (testador: APROVADO) | 1 | b8542c5 |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
-| 9. Geração com Ollama local | Implementada, aguardando o testador | 1 | |
+| 9. Geração com Ollama local | Concluída (testador: APROVADO) | 1 | 1570805 |
 | 10. Resultado e conquistas | Pendente | | |
 | 11. Consentimento e excluir conta | Pendente | | |
 | 12. Sign in with Apple | Pendente | | |
@@ -117,7 +117,12 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 6: índices duplicados da 019 (`*_compat`, `idx_*_usuario` cobertos por compostos) não entraram na baseline.
 - Etapa 6: tipos gerados em `src/compartilhado/tipos/database.ts` (`supabase gen types --local`, formatado com prettier); ainda sem uso no código.
 
+- Etapa 9: a tela de Resultado dispara a geração; o plano fica ativo ao ser gerado (o anterior fica inativo, não apagado); `planos_ia_gerados` sem políticas de UPDATE/DELETE (protege o limite); o limite só é checado ao salvar. PREMISSAs: mapeamento de grupos e equipamentos, papel do alimento pelo macro dominante, restrições por palavras do nome, treinos a partir de segunda.
+
 ## Pendências
+
+- Decidir: plano gerado e não aceito também fica ativo (etapa 9).
+- Lint do banco: `v_dia_semana` sem uso em `salvar_plano_gerado`; troca de dia no fuso de São Paulo sem teste.
 
 - Etapa 7: as 47 referências da `base_conhecimento` foram escritas de memória pelo agente; conferir as citações antes de exibi-las publicamente.
 
