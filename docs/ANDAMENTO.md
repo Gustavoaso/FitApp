@@ -36,7 +36,7 @@ Fluxo: novo-projeto
 | 11. Consentimento e excluir conta | Concluída (testador: APROVADO) | 1 | d01c1eb |
 | 12. Sign in with Apple | Concluída (testador: APROVADO) | 1 | f0efadc |
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
-| 13b. Qualidade da geração | Implementada, aguardando o testador | 1 | |
+| 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Pendente | | |
 | 15. Testes finais: correções | Pendente | | |
 
@@ -124,6 +124,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 12: botão só onde `isAvailableAsync()` confirma (iOS); sem nonce (exigiria `expo-crypto`); nome da Apple não é salvo (perfil padrão "Atleta").
 - Etapa 13: correção no motor (`items: false` quebrava o Ollama 0.32.5); `montarPlanoGerado` separado; `scripts/preparar-bases-locais.sh` popula as bases locais. Avaliação: 0/8 (tempo 82–128 s, vegano e peso do corpo sem candidatos, joelho ignorado).
 - Maestro (2026-10-27): etapa 13b acrescentada ao plano para corrigir a qualidade da geração, com a autonomia dada pelo dono.
+- Etapa 13b: nunca amplia equipamento (degraus: nível → qualquer nível → grupo secundário); apelidos curtos de ID no prompt; timeout 180 s; PREMISSAs nas palavras de risco por articulação e nos textos de fase. Avaliação: 7/8, média 51 s (vegano reprova por falta de proteína vegetal na base).
+- Maestro (2026-10-27): o seed da etapa 14 inclui tofu e proteína de soja (dados nutricionais de referência, sem dado pessoal) para o perfil vegano.
 
 ## Pendências
 
