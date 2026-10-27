@@ -29,7 +29,7 @@ Fluxo: novo-projeto
 | 4. Navegação nativa e telas no tema novo | Concluída (testador: APROVADO) | 1 | 028b004 |
 | 5. Segredos fora do app | Concluída (testador: APROVADO) | 1 | 092f1e1 |
 | 6. Banco versionado (local) | Concluída (testador: APROVADO) | 1 | 5d5c02c |
-| 7. Base de conhecimento | Implementada, aguardando o testador | 1 | |
+| 7. Base de conhecimento | Concluída (testador: APROVADO) | 1 | b8542c5 |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Pendente | | |
 | 10. Resultado e conquistas | Pendente | | |
@@ -118,6 +118,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 6: tipos gerados em `src/compartilhado/tipos/database.ts` (`supabase gen types --local`, formatado com prettier); ainda sem uso no código.
 
 ## Pendências
+
+- Etapa 7: as 47 referências da `base_conhecimento` foram escritas de memória pelo agente; conferir as citações antes de exibi-las publicamente.
 
 - `scratch/exercicios-bd-ptbr` está no índice como repositório embutido: `git rm --cached scratch/exercicios-bd-ptbr` (dono).
 - `expo-doctor`: patches desatualizados (expo, expo-asset, expo-constants, react-native-worklets). Correção: `npx expo install --fix`, se o dono quiser.
