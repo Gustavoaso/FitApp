@@ -2,7 +2,7 @@
 -- Rodar com: npx supabase test db (só no banco local).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(12);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-0000000000c1', 'c@teste.local');
@@ -45,7 +45,13 @@ select is((select count(*)::int from public.alimentos_refeicao), 7, 'refeição 
 select throws_ok(
   $$select public.salvar_plano_gerado(jsonb_set((select valor from dados),
     '{plano,treino,dias,0,exercicios,0,exercicioId}', '"00000000-0000-0000-0000-00000000dead"'))$$,
-  '23503', null, 'exercício fora da base é recusado'
+  '22023', 'plano_invalido', 'exercício fora da base é recusado sem detalhe interno'
+);
+
+-- Corpo malformado (dia sem nome): erro genérico, não o 23502 com a coluna.
+select throws_ok(
+  $$select public.salvar_plano_gerado((select valor from dados) #- '{plano,treino,dias,0,nome}')$$,
+  '22023', 'plano_invalido', 'campo obrigatório ausente vira plano_invalido'
 );
 select is((select count(*)::int from public.planos_ia_gerados), 1, 'falha não deixou log a mais');
 select is((select count(*)::int from public.planos_treino), 1, 'falha não deixou plano pela metade');

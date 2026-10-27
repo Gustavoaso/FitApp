@@ -24,11 +24,12 @@ Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `s
 | Banco local | `npx supabase start` / `npx supabase db reset` (o reset carrega `supabase/seed/*.sql` e `supabase/seed.sql`; migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
 | Ingerir base de conhecimento | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node scripts/ingestao-conhecimento.ts` (Ollama local com `mxbai-embed-large`; recusa URL que não seja localhost/127.0.0.1; trechos em `scripts/conhecimento/trechos.json`) |
 | Instância de teste | `bash scripts/instancia-teste.sh subir` / `derrubar` (Supabase local + `db reset` com seed + ingestão se o Ollama estiver no ar + Metro numa porta livre aberto no simulador iOS pelo Expo Go; `COM_EDGE=1` sobe o edge-runtime; PIDs em `$TMPDIR/fitapp-instancia-teste.pid`) |
-| Contas de teste (seed) | `conta-a@exemplo.com` (plano aceito e registros) e `conta-b@exemplo.com` (nova), senha `senha-teste-123`; só banco local |
+| Contas de teste (seed) | `conta-a@exemplo.com` (plano aceito e registros) e `conta-b@exemplo.com` (nova), senha `senha-teste-123` (atende ao mínimo de 8 com letras e números do `config.toml`; seed já confirmado); só banco local |
 | Popular bases locais | `bash scripts/preparar-bases-locais.sh` (exercícios do JSON em `scratch/`, seeds de `supabase/seed/`, curadoria e ingestão; só no container local) |
 | Avaliar planos | `SUPABASE_SERVICE_ROLE_KEY=<do npx supabase status> node --import ./scripts/avaliacao/carregador.mjs scripts/avaliar-planos.ts` (8 perfis fictícios em sequência, Ollama e Supabase locais, não grava; relatório em `docs/avaliacoes/`; fora do `npm test`) |
 | Testes de RLS | `npx supabase test db` (pgTAP em `supabase/tests/`, só banco local) |
-| Testes das Edge Functions | `deno test supabase/functions/excluir-conta/` (handler isolado, sem rede nem segredo) |
+| Testes das Edge Functions | `deno test supabase/functions/` (handlers isolados, sem rede nem segredo) |
+| Disparar sincronizar-bases | `POST` com cabeçalho `x-sincronizar-segredo` igual ao secret `SINCRONIZAR_SEGREDO` da function (sem ele: 401; GET: 405) |
 | Tipos do banco | `npx supabase gen types typescript --local --schema public > src/compartilhado/tipos/database.ts` e `npx prettier --write` no arquivo |
 
 Regras que não podem ser quebradas:

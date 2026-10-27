@@ -17,6 +17,12 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
+# Senha mínima de 8 com letras e números; e-mail confirmado antes do login.
+minimum_password_length = 8
+password_requirements = "letters_digits"
+
+[auth.email]
+enable_confirmations = true
 
 [auth.external.google]
 enabled = false
