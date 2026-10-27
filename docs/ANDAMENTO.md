@@ -28,7 +28,7 @@ Fluxo: novo-projeto
 | 3. Tema, modo claro e componentes base | Concluída (testador: APROVADO) | 1 | babb305 |
 | 4. Navegação nativa e telas no tema novo | Concluída (testador: APROVADO) | 1 | 028b004 |
 | 5. Segredos fora do app | Concluída (testador: APROVADO) | 1 | 092f1e1 |
-| 6. Banco versionado (local) | Pendente | | |
+| 6. Banco versionado (local) | Implementada, aguardando o testador | 1 | |
 | 7. Base de conhecimento | Pendente | | |
 | 8. Motor de geração assistida | Concluída (testador: APROVADO) | 1 | 2bfae19 |
 | 9. Geração com Ollama local | Pendente | | |
@@ -110,6 +110,12 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 8: calorias abaixo do piso da RN16 bloqueiam (não sobem para o piso), como pede o critério de pronto; dado de saúde inválido também bloqueia.
 - Etapa 8: `validador.ts:116` usa `as unknown as EscolhaLLM` depois de conferir cada campo (estreitar o objeto inteiro por type guard exigiria repetir a validação).
 - Etapa 8: o validador antigo `questionario/validador-plano-ia.ts` ficou; sai com o fluxo antigo na etapa 9.
+- Etapa 6: baseline `20261026000000_baseline.sql` gerada do banco local após 001–027 (`db dump`), reescrita limpa; as antigas foram para `supabase/migracoes-antigas/` (só consulta, o CLI não lê). Alternativa: manter 001–028 e só corrigir com migrations novas (o reset continuaria quebrando na 028).
+- Etapa 6: `historico_peso`, `historico_series_executadas`, `planos_ia_gerados` e `registro_refeicoes` estavam **sem RLS**; agora toda tabela com `usuario_id` tem ler/criar/alterar/apagar só do dono (PROJETO §3), e as filhas (dias, exercícios, refeições, alimentos) seguem o dono do plano por `e_dono_plano_treino/dieta`. Políticas duplicadas antigas sumiram; bases só `select` para `authenticated` (antes valia para qualquer papel com `auth.uid()`).
+- Etapa 6: `base_conhecimento` mínima (id bigint, tipo, titulo, fonte not null, conteudo, embedding vector(1024)); a etapa 7 acrescenta tema/objetivos/níveis. RPCs com `security invoker`, `search_path = public, extensions` e sem execução para `anon`.
+- Etapa 6: curadoria por `id_externo` (lista tirada do JSON do free-exercise-db em `scratch/`): fora levantamento olímpico, alongamento, strongman e rolo de espuma (179 ids). `is_curado` começa false (como em alimentos); sem `id_externo` (seed manual) entra. Alternativa: default true.
+- Etapa 6: índices duplicados da 019 (`*_compat`, `idx_*_usuario` cobertos por compostos) não entraram na baseline.
+- Etapa 6: tipos gerados em `src/compartilhado/tipos/database.ts` (`supabase gen types --local`, formatado com prettier); ainda sem uso no código.
 
 ## Pendências
 
@@ -124,4 +130,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 4: o título grande não encolhe ao rolar, porque o `ScrollView` está dentro de um `View` (os modais são irmãos dele); resolver junto com a troca dos modais por sheets nativas.
 - Etapa 4: sobraram cores soltas sem par no tema (amarelo do raio/IA `#EAB308`, azul `#3B82F6`, botão amarelo do treino ao vivo, cores do inspetor JSON, overlays `rgba(0,0,0,…)`); e `Cores`/`Fonte`/`Glass` antigos ainda exportados em `tema.ts`, usados só pelo `IconesFitApp` (sem uso).
 - Etapa 4: `Alert` de sucesso (copiar refeição, plano salvo, treino concluído) deveria virar confirmação discreta com haptic (VISUAL); fica para a etapa 10 ou outra.
+- Etapa 6 (dono): o remoto tem as migrations 001–028 registradas; antes de aplicar a baseline lá, marcar o histórico com `npx supabase migration repair` (reverted 001–028, applied 20261026000000) e aplicar só a de curadoria, depois de conferir as políticas novas. Nada foi feito no remoto.
+- Etapa 6: `alimentos_favoritos.alimento_id` é uuid, mas `base_alimentos.id` virou bigint (antiga 021): favoritos não conseguem referenciar alimentos; corrigir numa etapa futura.
+- Etapa 6: o seed (`supabase/seed/*.sql`) não é carregado pelo `db reset` (o config procura `supabase/seed.sql`); o banco local sobe sem bases. Ligar em `config.toml` na etapa 14.
 - A chave RapidAPI `b7ad…` e a do Groq estiveram no histórico do git: revogar/trocar no painel da RapidAPI e do Groq (dono).

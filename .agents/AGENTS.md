@@ -21,7 +21,9 @@ Estrutura: `app/` só rotas finas; código em `src/funcionalidades/<nome>/` e `s
 | Lint | `npm run lint` (ESLint com `eslint-config-expo`) |
 | Testes | `npm test` (Jest + jest-expo, sem rede e sem banco; teste ao lado do arquivo, `*.test.ts`) |
 | Importar exercícios | `node scripts/importar-exercicios.js` (lê `SUPABASE_URL`/`SUPABASE_KEY`; escreve no banco apontado) |
-| Banco local | `npx supabase start` / `npx supabase db reset` |
+| Banco local | `npx supabase start` / `npx supabase db reset` (migrations em `supabase/migrations/`, a partir da baseline; as antigas ficam em `supabase/migracoes-antigas/`, só consulta) |
+| Testes de RLS | `npx supabase test db` (pgTAP em `supabase/tests/`, só banco local) |
+| Tipos do banco | `npx supabase gen types typescript --local --schema public > src/compartilhado/tipos/database.ts` e `npx prettier --write` no arquivo |
 
 Regras que não podem ser quebradas:
 - RLS ligada em toda tabela exposta; cada usuário só lê e altera o que é dele; `base_*` só leitura para `authenticated`.
