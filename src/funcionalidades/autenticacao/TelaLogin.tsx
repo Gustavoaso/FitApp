@@ -126,7 +126,7 @@ export default function TelaLogin() {
             <Text style={estilos.label}>Senha</Text>
             <TextInput
               style={estilos.input}
-              placeholder="••••••••"
+              placeholder="Sua senha"
               placeholderTextColor={cores.textoSecundario}
               secureTextEntry
               value={senha}

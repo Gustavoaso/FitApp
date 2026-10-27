@@ -6,6 +6,7 @@
 // ============================================================
 
 import React, { useMemo, useState } from 'react';
+import { validarSenha } from './validar-senha';
 import {
   View,
   Text,
@@ -54,8 +55,9 @@ export default function TelaCadastro() {
       Alert.alert('Aviso', valEmail.mensagem);
       return;
     }
-    if (!senha || senha.length < 6) {
-      Alert.alert('Aviso', 'A senha deve ter no mínimo 6 caracteres.');
+    const valSenha = validarSenha(senha);
+    if (!valSenha.valido) {
+      Alert.alert('Aviso', valSenha.mensagem);
       return;
     }
 
@@ -118,7 +120,7 @@ export default function TelaCadastro() {
             <Text style={estilos.label}>Senha</Text>
             <TextInput
               style={estilos.input}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mín. 8, com letras e números"
               placeholderTextColor={cores.textoSecundario}
               secureTextEntry
               value={senha}
