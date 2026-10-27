@@ -1,0 +1,15 @@
+# Documentação e instruções dos agentes: texto mantido à mão, não código.
+.agents/
+.claude/
+docs/
+README.md
+CLAUDE.md
+
+# Migrations antigas, rascunhos, gerados e lockfiles
+supabase/migracoes-antigas/
+scratch/
+dist/
+.expo/
+package-lock.json
+deno.lock
+skills-lock.json
