@@ -8,7 +8,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Cores, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { FamiliaFonte, PesoFonte, Tipografia } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 
 export interface PropsAnelProgresso {
   titulo?: string;
@@ -40,7 +41,8 @@ export function AnelProgresso({
   const porcentagem = Math.min(Math.max(atual / (meta || 1), 0), 1);
   const strokeDashoffset = circunferencia * (1 - porcentagem);
 
-  const corStroke = cor || Cores.accent;
+  const { cores } = useTema();
+  const corStroke = cor || cores.destaque;
   const restante = Math.max(meta - atual, 0);
 
   const textoAbaixo = subtextoCustom
@@ -50,8 +52,14 @@ export function AnelProgresso({
       : `/${meta}${unidade}`;
 
   return (
-    <View style={estilos.container}>
-      {titulo ? <Text style={estilos.tituloLabel}>{titulo}</Text> : null}
+    <View
+      style={estilos.container}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={`${titulo ? `${titulo}: ` : ''}${atual}${unidade} de ${meta}${unidade}`}
+      accessibilityValue={{ min: 0, max: 100, now: Math.round(porcentagem * 100) }}
+    >
+      {titulo ? <Text style={[estilos.tituloLabel, { color: cores.textoSecundario }]}>{titulo}</Text> : null}
 
       <View style={[estilos.ringWrapper, { width: tamanho, height: tamanho }]}>
         <Svg width={tamanho} height={tamanho}>
@@ -60,7 +68,7 @@ export function AnelProgresso({
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
-            stroke="rgba(255, 255, 255, 0.12)"
+            stroke={cores.destaqueSuave}
             strokeWidth={espessura}
             fill="transparent"
           />
@@ -86,7 +94,7 @@ export function AnelProgresso({
             <Text
               style={[
                 estilos.valorTexto,
-                { fontSize: tamanho > 80 ? 20 : 13 },
+                { fontSize: tamanho > 80 ? Tipografia.titulo3 : Tipografia.legenda, color: cores.texto },
               ]}
               numberOfLines={1}
             >
@@ -96,7 +104,7 @@ export function AnelProgresso({
         )}
       </View>
 
-      {textoAbaixo ? <Text style={estilos.metaTexto}>{textoAbaixo}</Text> : null}
+      {textoAbaixo ? <Text style={[estilos.metaTexto, { color: cores.texto }]}>{textoAbaixo}</Text> : null}
     </View>
   );
 }
@@ -108,8 +116,7 @@ const estilos = StyleSheet.create({
   },
   tituloLabel: {
     fontFamily: FamiliaFonte.medio,
-    fontSize: 12,
-    color: Cores.texto.secundario,
+    fontSize: Tipografia.legenda,
     marginBottom: 8,
   },
   ringWrapper: {
@@ -125,12 +132,11 @@ const estilos = StyleSheet.create({
   valorTexto: {
     fontFamily: FamiliaFonte.bold,
     fontWeight: PesoFonte.bold,
-    color: Cores.texto.principal,
+    fontVariant: ['tabular-nums'],
   },
   metaTexto: {
     fontFamily: FamiliaFonte.bold,
-    fontSize: 11,
-    color: Cores.texto.principal,
+    fontSize: Tipografia.legenda,
     fontWeight: PesoFonte.bold,
     marginTop: 8,
   },

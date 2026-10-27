@@ -8,3 +8,6 @@
 export { CardVidro } from './CardVidro';
 export { BotaoPrimario } from './BotaoPrimario';
 export { AnelProgresso } from './AnelProgresso';
+export { Skeleton } from './Skeleton';
+export { EstadoVazio } from './EstadoVazio';
+export { EstadoErro } from './EstadoErro';

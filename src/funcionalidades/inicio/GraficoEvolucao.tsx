@@ -70,8 +70,17 @@ export function GraficoEvolucao({
     }
   });
 
+  const primeiro = dados[0];
+  const ultimo = dados[dados.length - 1];
+  const resumo = `${titulo ? `${titulo}: ` : ''}de ${primeiro.valor}${unidade} em ${primeiro.label} para ${ultimo.valor}${unidade} em ${ultimo.label}, mínimo ${minValor}${unidade}, máximo ${maxValor}${unidade}`;
+
   return (
-    <View style={estilos.container}>
+    <View
+      style={estilos.container}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={resumo}
+    >
       {titulo ? <Text style={estilos.titulo}>{titulo}</Text> : null}
 
       <View style={[estilos.svgWrapper, { height: altura }]}>

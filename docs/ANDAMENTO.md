@@ -25,7 +25,7 @@ Fluxo: novo-projeto
 |---|---|---|---|
 | 1. Fundação | Implementada, aguardando o testador | 1 | |
 | 2. Reorganizar por funcionalidade | Implementada, aguardando o testador | 1 | |
-| 3. Tema, modo claro e componentes base | Pendente | | |
+| 3. Tema, modo claro e componentes base | Implementada, aguardando o testador | 1 | |
 | 4. Navegação nativa e telas no tema novo | Pendente | | |
 | 5. Segredos fora do app | Pendente | | |
 | 6. Banco versionado (local) | Pendente | | |
@@ -87,6 +87,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 1: `.env.example` lista só as variáveis em uso (`SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, `EXPO_PUBLIC_OLLAMA_URL`, `SUPABASE_KEY`); Groq e TACO ficaram de fora porque saem do app na etapa 5.
 
 - Etapa 2: estrutura em `src/` (alias `@/` → `src/`); serviços usados por 2+ funcionalidades e `AuthContexto` em `src/compartilhado/`; `constantes/Cores.ts` virou `src/compartilhado/tema.ts`; `_layout.tsx` ficam em `app/`.
+- Etapa 3: tokens novos em `compartilhado/tema.ts` (`CoresEscuro`, `CoresClaro`, `Tipografia`, `CoresMacros`, `RAIO_CARTAO`, `razaoContraste`) e hook em `compartilhado/useTema.ts`; os exports antigos (`Cores`, `Fonte`, `Glass`...) ficam até a etapa 4 migrar as telas.
+- Etapa 3: PREMISSA (claro): separador `rgba(0,0,0,.10)`, esqueleto `#E4E4E7`, erro `#DC2626`, sucesso `#059669`; sem preferência do sistema, o tema é o escuro.
+- Etapa 3: `CardVidro` manteve o nome (evita mexer nas telas) e virou superfície sólida com borda fina; `BotaoPrimario` virou cápsula de altura 50 com Headline (17 Semibold).
+- Etapa 3: `EstadoErro` reutiliza `EstadoVazio` (símbolo SF + frase + botão); `Skeleton` pulsa com Reanimated e para com Reduzir Movimento.
+- Etapa 3: nenhum componente base é botão só de ícone, então não houve onde pôr `hitSlop`; vale para os que a etapa 4 criar.
 
 ## Pendências
 
@@ -96,4 +101,5 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 - `scratch/exercicios-bd-ptbr` está no índice do git como gitlink (repositório embutido). Está no `.gitignore`, mas tirar do índice exige `git rm --cached scratch/exercicios-bd-ptbr`, comando que o desenvolvedor não pode rodar: ação do dono.
 - `expo-doctor` acusa versões de patch antigas já existentes (`expo` 54.0.36→37, `expo-asset`, `expo-constants`, `react-native-worklets`): corrigir com `npx expo install --fix` numa etapa decidida pelo dono.
+- Etapa 3 → 4: as cores de macro do `GraficoDonutMacros`, das legendas do `CardRefeicao` e das barras da `TelaDieta` ainda são as antigas; trocar as três juntas por `CoresMacros` na etapa 4 (trocar só o gráfico desencontraria a legenda).
 - Etapa 2: `compartilhado/servicos/` tem dependência circular `progresso-servico` ↔ `plano-gestao-servico` (já existia); fica para uma etapa futura, se o dono quiser.

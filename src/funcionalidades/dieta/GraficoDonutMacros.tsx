@@ -45,7 +45,12 @@ export function GraficoDonutMacros({
   const offsetProteinas = -(lenCarbos + lenGorduras);
 
   return (
-    <View style={[estilos.container, { width: tamanho, height: tamanho }]}>
+    <View
+      style={[estilos.container, { width: tamanho, height: tamanho }]}
+      accessible
+      accessibilityRole="image"
+      accessibilityLabel={`${Math.round(calorias)} calorias: ${Math.round(proteinasGramas)} g de proteína, ${Math.round(carbosGramas)} g de carboidrato e ${Math.round(gordurasGramas)} g de gordura`}
+    >
       <Svg width={tamanho} height={tamanho}>
         <G rotation="-90" origin={`${tamanho / 2}, ${tamanho / 2}`}>
           {/* Fundo do Donut */}

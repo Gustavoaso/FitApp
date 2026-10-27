@@ -1,106 +1,60 @@
 // ============================================================
 // COMPONENTE: CardVidro
 // ============================================================
-// Container base de todos os cards do FitApp — Clean Dark UI.
-// Fundo escuro sólido, borda sutil opcional, sem glow colorido.
-// Border radius uniforme: 16px em toda a UI.
+// Container base dos cards. Apesar do nome (mantido para não mexer nas
+// telas), é superfície sólida: o vidro fica só na navegação (VISUAL.md).
 // ============================================================
 
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  ViewStyle,
-  Platform,
-} from 'react-native';
-import { Cores, Raio, Espacamento, Glass } from '@/compartilhado/tema';
+import { View, StyleSheet, ViewStyle } from 'react-native';
+import { Espacamento, Raio, RAIO_CARTAO } from '@/compartilhado/tema';
+import { useTema } from '@/compartilhado/useTema';
 
-/** Props do CardVidro */
 interface CardVidroProps {
-  /** Conteúdo que será exibido dentro do card */
   children: React.ReactNode;
-  /** Estilos extras para o container (opcional) */
   estilo?: ViewStyle;
-  /** Padding interno do card. Padrão: lg (16px) */
+  /** Padding interno. Padrão: lg (16). */
   padding?: keyof typeof Espacamento;
-  /** Raio da borda. Padrão: xl (20px) */
+  /** Raio da borda. Padrão: o raio dos cartões (20). */
   raio?: keyof typeof Raio;
-  /** Se true, remove totalmente a borda do card */
   semBorda?: boolean;
+  /** Resumo lido pelo VoiceOver; agrupa o card num elemento só. */
+  rotuloAcessibilidade?: string;
 }
 
-/**
- * CardVidro — Container de card com estética escuro minimalista.
- */
 export function CardVidro({
   children,
   estilo,
   padding = 'lg',
-  raio = 'xl',
+  raio,
   semBorda = false,
+  rotuloAcessibilidade,
 }: CardVidroProps) {
-  const borderRadius = Raio[raio];
-  const paddingValue = Espacamento[padding];
+  const { cores } = useTema();
 
   return (
     <View
+      accessible={rotuloAcessibilidade ? true : undefined}
+      accessibilityLabel={rotuloAcessibilidade}
       style={[
         estilos.container,
         {
-          borderRadius,
-          shadowColor: '#000000',
-          shadowOpacity: 0.35,
-          shadowRadius: 12,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: 3,
+          backgroundColor: cores.superficie,
+          borderRadius: raio ? Raio[raio] : RAIO_CARTAO,
+          padding: Espacamento[padding],
+          borderColor: cores.separador,
+          borderWidth: semBorda ? 0 : StyleSheet.hairlineWidth,
         },
         estilo,
       ]}
     >
-      <View
-        style={[
-          estilos.conteudo,
-          {
-            backgroundColor: Cores.fundo.superficie,
-            borderRadius,
-            padding: paddingValue,
-          },
-        ]}
-      >
-        {children}
-      </View>
-
-      {/* Borda sutil overlay — ocultada se semBorda === true */}
-      {!semBorda && (
-        <View
-          style={[
-            estilos.borda,
-            {
-              borderRadius,
-              borderColor: Cores.borda.sutil,
-            },
-          ]}
-          pointerEvents="none"
-        />
-      )}
+      {children}
     </View>
   );
 }
 
 const estilos = StyleSheet.create({
   container: {
-    position: 'relative',
     overflow: 'hidden',
-  },
-  conteudo: {
-    overflow: 'hidden',
-  },
-  borda: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderWidth: Glass.bordaLargura,
   },
 });

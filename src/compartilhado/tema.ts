@@ -113,3 +113,99 @@ export const Glass = {
   sombraRaio: 16,
   sombraOpacidade: 0.08,
 } as const;
+
+// ============================================================
+// TEMA DINÂMICO (claro e escuro) — etapa 3
+// ============================================================
+// Os exports acima continuam para as telas antigas; as telas migram para
+// useTema() na etapa 4. Valores do docs/VISUAL.md.
+
+/** Escala tipográfica da HIG (Dynamic Type padrão), com mínimo de 13 pt. */
+export const Tipografia = {
+  tituloGrande: 34,
+  titulo1: 28,
+  titulo2: 22,
+  titulo3: 20,
+  destaque: 17,
+  corpo: 17,
+  chamada: 16,
+  subtitulo: 15,
+  rodape: 13,
+  legenda: 13,
+} as const;
+
+/** Raio dos cartões (VISUAL.md). Botões usam cápsula (Raio.full). */
+export const RAIO_CARTAO = 20;
+
+/** Cores fixas por macro: o mesmo significado em gráficos, listas e anéis. */
+export const CoresMacros = {
+  proteina: '#F05A28',
+  carboidrato: '#EAB308',
+  gordura: '#A1A1AA',
+  agua: '#38BDF8',
+} as const;
+
+export interface CoresTema {
+  fundo: string;
+  superficie: string;
+  elevada: string;
+  texto: string;
+  textoSecundario: string;
+  separador: string;
+  /** Cor do botão principal (CTA) e do progresso. */
+  destaque: string;
+  /** Texto sobre a cor de destaque. */
+  textoSobreDestaque: string;
+  /** Fundo do botão secundário e trilha dos anéis. */
+  destaqueSuave: string;
+  esqueleto: string;
+  erro: string;
+  sucesso: string;
+}
+
+export const CoresEscuro: CoresTema = {
+  fundo: '#000000',
+  superficie: '#121418',
+  elevada: '#1A1D24',
+  texto: '#FFFFFF',
+  textoSecundario: '#A1A1AA',
+  separador: 'rgba(255, 255, 255, 0.12)',
+  destaque: '#FFFFFF',
+  textoSobreDestaque: '#080A0E',
+  destaqueSuave: 'rgba(255, 255, 255, 0.12)',
+  esqueleto: '#1A1D24',
+  erro: '#EF4444',
+  sucesso: '#10B981',
+};
+
+// PREMISSA: separador, esqueleto e tons de erro/sucesso do claro não estão no
+// VISUAL.md; escolhidos para manter contraste no fundo claro.
+export const CoresClaro: CoresTema = {
+  fundo: '#F2F2F7',
+  superficie: '#FFFFFF',
+  elevada: '#FFFFFF',
+  texto: '#0A0A0A',
+  textoSecundario: '#52525B',
+  separador: 'rgba(0, 0, 0, 0.10)',
+  destaque: '#0A0A0A',
+  textoSobreDestaque: '#FFFFFF',
+  destaqueSuave: 'rgba(0, 0, 0, 0.08)',
+  esqueleto: '#E4E4E7',
+  erro: '#DC2626',
+  sucesso: '#059669',
+};
+
+/** Razão de contraste WCAG entre duas cores hex de 6 dígitos (#RRGGBB). */
+export function razaoContraste(corA: string, corB: string): number {
+  const luminancia = (hex: string) => {
+    const valido = /^#[0-9a-f]{6}$/i.test(hex);
+    if (!valido) throw new Error(`Cor inválida: ${hex}`);
+    const [r, g, b] = [1, 3, 5].map((i) => {
+      const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const [claro, escuro] = [luminancia(corA), luminancia(corB)].sort((x, y) => y - x);
+  return (claro + 0.05) / (escuro + 0.05);
+}
