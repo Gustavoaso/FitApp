@@ -46,7 +46,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 | Agente | Veredito | Rodadas | Observação |
 |---|---|---|---|
-| testador (completo) | | | |
+| testador (completo) | REPROVADO (rodada 1: format:check e expo-doctor) → correções 8b21358, b160b5c; rodada 2 interrompida pelo limite da sessão | 1 | rodar de novo |
 | seguranca | | | |
 | testador-usuario | | | |
 
