@@ -2,7 +2,7 @@
 
 Fluxo: novo-projeto
 **Modo:** adotado
-**Fase:** testes finais
+**Fase:** concluído
 **Branch:** agente/fitapp (base: gustavo-branch)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
@@ -38,7 +38,7 @@ Fluxo: novo-projeto
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
-| 15. Testes finais: correções | Implementada, aguardando o testador (testador-usuario rodada final: objetivo/dados do Perfil vêm do banco e mostram "—" sem dado, teclado da carga com OK/tocar fora e ações visíveis, Início com texto XXL sem corte, sequência real (0 sem treinos)) | 2 | 671112d, 57f26c9, ver git log |
+| 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -48,7 +48,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
 | seguranca | REPROVADO só com DECIDIR | 2 | rodada 2 (e75e0c5): CORRIGIR nenhum; DECIDIR 1 (revogar sbp_/RapidAPI/Groq, repo privado), 4 (política de senha no painel remoto); Baixas: limite só no RPC, npm audit em tooling, console.warn com objetos, CORS *, pg_trgm em public |
-| testador-usuario | INCOMPLETO (rodada 3, final) | 3 | itens 1–10 da rodada anterior confirmados; CORRIGIR 1 objetivo errado no Perfil, 2 teclado numérico sem fechar no treino ao vivo, 3 cortes com texto XXL no Início; FALTOU: momento de conquista visto, erro de rede, excluir conta e cadastro no local |
+| testador-usuario | INCOMPLETO (rodada 3, final) | 3 | itens 1–10 da rodada anterior confirmados; CORRIGIR 1 objetivo errado no Perfil, 2 teclado numérico sem fechar no treino ao vivo, 3 cortes com texto XXL no Início; FALTOU: momento de conquista visto, erro de rede, excluir conta e cadastro no local  Correções finais em ab8de6d (testador rápido APROVADO); teclado e texto XXL não revistos no simulador. |
 
 ## Ações do dono
 
@@ -136,6 +136,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 14: Expo web não sobe (exigiria `react-native-web`, fora do plano); o script abre o Expo Go no simulador; `COM_EDGE=1` sobe o edge-runtime; tofu pela TACO e PTS pelo USDA FDC 174275; senha fictícia `senha-teste-123` só no banco local. Tentativa 2: `rls.test.sql` independente do seed; `.env.example` com `EXPO_PUBLIC_SUPABASE_URL`.
 
 ## Pendências
+
+- 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.
+- Não verificado: excluir conta e cadastro novo ponta a ponta (Edge Functions e e-mail não rodam no local); momento de conquista visto no simulador; teclado da carga e texto XXL depois de ab8de6d; erro de rede; VoiceOver real.
+- Migrations novas (baseline + 2026-10-26/27) ainda não aplicadas no remoto: fazer `supabase migration repair` das 001–028 antes do `db push`.
+- Revisar: plano gerado já fica ativo sem o aceite; superávit indicado × fonte (#13); 47 referências escritas de memória.
 
 - `excluir-conta` não foi chamada de verdade (edge-runtime desligado): conferir no teste de ponta a ponta.
 
