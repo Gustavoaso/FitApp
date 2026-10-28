@@ -48,7 +48,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
 | seguranca | REPROVADO só com DECIDIR | 2 | rodada 2 (e75e0c5): CORRIGIR nenhum; DECIDIR 1 (revogar sbp_/RapidAPI/Groq, repo privado), 4 (política de senha no painel remoto); Baixas: limite só no RPC, npm audit em tooling, console.warn com objetos, CORS *, pg_trgm em public |
-| testador-usuario | INCOMPLETO (rodada 1: sem ferramenta de toque; CORRIGIR 1 senha → 1af1577) | 1 | rodada 2 com Maestro interrompida (login da sessão revogado); rodar de novo |
+| testador-usuario | REPROVADO (rodada 2 com Maestro) | 2 | CORRIGIR 1–10 (progresso global no AsyncStorage entre contas; aceite não grava perfil; mapa semanal local; metas /0g; reps/kg vazios; sair do treino sem confirmar; erro em inglês; inspetor JSON visível; Resultado sob a status bar; FAB cobre Log) |
 
 ## Ações do dono
 
@@ -77,6 +77,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - 2026-10-26: plano de 15 etapas aprovado.
 
 - 2026-10-27 (maestro, autonomia do dono): seg. item 4 — endurecer o Auth no `config.toml` local (senha mín. 8 com letras e dígitos, confirmação de e-mail); replicar no painel remoto é ação do dono.
+
+- 2026-10-27 (maestro): DECIDIR do testador-usuario — #8 inspetor JSON só em `__DEV__`; #12 questionário começa vazio (placeholders); #15 garantir que o momento de conquista apareça antes de ir às abas; #13 (superávit × fonte) fica para revisão do dono.
 
 ## Decisões do agente
 
