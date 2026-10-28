@@ -44,10 +44,10 @@ export default function TelaInicio() {
   const router = useRouter();
 
   const [caloriasConsumidas, setCaloriasConsumidas] = useState(0);
-  const [caloriasMeta, setCaloriasMeta] = useState(2400);
+  const [caloriasMeta, setCaloriasMeta] = useState(0);
 
   const [proteina, setProteina] = useState(0);
-  const [proteinaMeta, setProteinaMeta] = useState(160);
+  const [proteinaMeta, setProteinaMeta] = useState(0);
 
   const [carboidrato, setCarboidrato] = useState(0);
   const [carboidratoMeta, setCarboidratoMeta] = useState(0);
@@ -312,7 +312,10 @@ export default function TelaInicio() {
                   <View
                     style={[
                       estilos.barraProgressoMacro,
-                      { width: `${Math.min((macro.atual / macro.meta) * 100, 100)}%` },
+                      // Sem meta, barra vazia (antes x/0 = Infinity enchia a barra).
+                      {
+                        width: `${macro.meta > 0 ? Math.min((macro.atual / macro.meta) * 100, 100) : 0}%`,
+                      },
                     ]}
                   />
                 </View>

@@ -134,10 +134,11 @@ export default function TelaDieta() {
 
   const [modalBuscaVisivel, setModalBuscaVisivel] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState<'diario' | 'planejado'>('diario');
-  const [metaCalorias, setMetaCalorias] = useState(2400);
-  const [metaProteinas, setMetaProteinas] = useState(160);
-  const [metaCarbos, setMetaCarbos] = useState(280);
-  const [metaGorduras, setMetaGorduras] = useState(72);
+  // Metas do plano ativo (mesma fonte do Início); 0 = sem plano, nunca valor inventado.
+  const [metaCalorias, setMetaCalorias] = useState(0);
+  const [metaProteinas, setMetaProteinas] = useState(0);
+  const [metaCarbos, setMetaCarbos] = useState(0);
+  const [metaGorduras, setMetaGorduras] = useState(0);
   const [estatisticas, setEstatisticas] = useState<{
     refeicoesConcluidas: number;
     totalRefeicoesPrevistas: number;
@@ -156,10 +157,10 @@ export default function TelaDieta() {
   const carregarDados = async () => {
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
     if (metas) {
-      setMetaCalorias(metas.caloriasMeta || 2400);
-      setMetaProteinas(metas.proteinaMeta || 160);
-      setMetaCarbos(metas.carboidratoMeta || 280);
-      setMetaGorduras(metas.gorduraMeta || 72);
+      setMetaCalorias(metas.caloriasMeta);
+      setMetaProteinas(metas.proteinaMeta);
+      setMetaCarbos(metas.carboidratoMeta);
+      setMetaGorduras(metas.gorduraMeta);
     }
 
     const salvo = await obterHistoricoDieta(dataSelecionada);

@@ -7,7 +7,7 @@
 // ============================================================
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
@@ -19,13 +19,15 @@ import { registrarExecucaoSerie } from '@/compartilhado/servicos/progresso-servi
 import {
   obterPlanoTreinoCustomizado,
   obterMapeamentoSemanal,
+  descreverSerie,
+  repeticoesAlvo,
 } from '@/compartilhado/servicos/plano-gestao-servico';
 
 interface ExercicioAoVivo {
   id: string;
   nome: string;
   series: number;
-  reps: number;
+  reps: number | string;
   cargaSugerida: number;
   descansoSegundos: number;
 }
@@ -62,7 +64,7 @@ export default function TelaTreinoAoVivo() {
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
 
-  const sairDoTreino = () => {
+  const fecharTreino = () => {
     if (router.canGoBack()) {
       router.back();
       return;
@@ -78,6 +80,20 @@ export default function TelaTreinoAoVivo() {
   const [tempoRestante, setTempoRestante] = useState(90);
   const [emDescanso, setEmDescanso] = useState(false);
   const [concluido, setConcluido] = useState(false);
+  const [seriesFeitas, setSeriesFeitas] = useState(0);
+
+  // Com séries registradas, sair por engano perderia o treino: pede confirmação.
+  const sairDoTreino = () => {
+    if (seriesFeitas === 0) return fecharTreino();
+    Alert.alert(
+      'Sair do treino?',
+      `Você já fez ${seriesFeitas} ${seriesFeitas === 1 ? 'série' : 'séries'}. O treino não será marcado como concluído.`,
+      [
+        { text: 'Continuar treino', style: 'cancel' },
+        { text: 'Sair', style: 'destructive', onPress: fecharTreino },
+      ],
+    );
+  };
 
   useEffect(() => {
     async function carregarTreinoReal() {
@@ -95,8 +111,9 @@ export default function TelaTreinoAoVivo() {
             id: ex.id,
             nome: ex.nome,
             series: ex.series || 4,
-            reps: ex.repeticoes || 10,
-            cargaSugerida: ex.cargaKg || 20,
+            // Valores do plano, sem inventar carga (0 = a pessoa informa).
+            reps: ex.repeticoes,
+            cargaSugerida: ex.cargaKg || 0,
             descansoSegundos: ex.tempoDescansoSegundos || 60,
           }));
           setListaExercicios(adaptados);
@@ -134,7 +151,14 @@ export default function TelaTreinoAoVivo() {
     const cargaFinal = parseFloat(cargaUsada) || exAtual.cargaSugerida;
 
     // Registra no histórico por série do exercício
-    await registrarExecucaoSerie(exAtual.id, exAtual.nome, serieAtual, cargaFinal, exAtual.reps);
+    await registrarExecucaoSerie(
+      exAtual.id,
+      exAtual.nome,
+      serieAtual,
+      cargaFinal,
+      repeticoesAlvo(exAtual.reps),
+    );
+    setSeriesFeitas((n) => n + 1);
 
     if (serieAtual < exAtual.series) {
       setSerieAtual(serieAtual + 1);
@@ -192,7 +216,7 @@ export default function TelaTreinoAoVivo() {
       <CardVidro semBorda estilo={estilos.cardSerie}>
         <Text style={estilos.serieDetalhes}>
           Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
-          {exAtual.reps} reps · {exAtual.cargaSugerida}kg
+          {descreverSerie(exAtual.cargaSugerida, exAtual.reps)}
         </Text>
       </CardVidro>
 
@@ -204,6 +228,8 @@ export default function TelaTreinoAoVivo() {
           tamanho={180}
           espessura={14}
           mostrarValor={false}
+          // O tempo já aparece no centro; o "0 restam" padrão confundia antes de começar.
+          subtextoCustom=" "
         />
         <View style={estilos.timerTextoAbsolute}>
           <Text style={estilos.timerTempo}>{formatarTempo(tempoRestante)}</Text>
@@ -217,7 +243,7 @@ export default function TelaTreinoAoVivo() {
         <TextInput
           style={estilos.inputCarga}
           keyboardType="numeric"
-          placeholder={String(exAtual.cargaSugerida)}
+          placeholder={exAtual.cargaSugerida > 0 ? String(exAtual.cargaSugerida) : 'Ex.: 20'}
           placeholderTextColor={cores.textoSecundario}
           value={cargaUsada}
           onChangeText={setCargaUsada}
@@ -241,7 +267,7 @@ export default function TelaTreinoAoVivo() {
         <MomentoConquista
           titulo="Treino concluído"
           subtitulo={tituloTreino}
-          aoTerminar={sairDoTreino}
+          aoTerminar={fecharTreino}
         />
       ) : null}
     </View>

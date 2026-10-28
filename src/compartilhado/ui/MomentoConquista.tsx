@@ -2,12 +2,13 @@
 // COMPONENTE: MomentoConquista
 // ============================================================
 // Confirmação de conquista (plano aceito, treino concluído) no lugar
-// do Alert: símbolo que entra com mola + haptic Success, e some sozinho.
+// do Alert: símbolo que entra com mola + haptic Success, e segue sozinho
+// depois de ~1,5 s ou antes, com um toque.
 // Com Reduzir Movimento ligado, aparece parado (sem animação).
 // ============================================================
 
 import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -20,7 +21,7 @@ import { Espacamento, FamiliaFonte, PesoFonte, Tipografia } from '@/compartilhad
 import { useTema } from '@/compartilhado/useTema';
 
 /** Tempo na tela antes de seguir (ms): o bastante para ler o título. */
-export const DURACAO_CONQUISTA = 1400;
+export const DURACAO_CONQUISTA = 1500;
 
 interface PropsMomentoConquista {
   titulo: string;
@@ -36,22 +37,32 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
   // Ref: o efeito roda uma vez, mesmo que o pai recrie aoTerminar a cada render.
   const aoTerminarRef = useRef(aoTerminar);
   aoTerminarRef.current = aoTerminar;
+  // Toque e tempo podem chegar juntos: segue uma vez só.
+  const terminou = useRef(false);
+  const terminar = () => {
+    if (terminou.current) return;
+    terminou.current = true;
+    aoTerminarRef.current();
+  };
+  const terminarRef = useRef(terminar);
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     if (!reduzirMovimento) escala.value = withSpring(1, { damping: 12, stiffness: 180 });
-    const espera = setTimeout(() => aoTerminarRef.current(), DURACAO_CONQUISTA);
+    const espera = setTimeout(() => terminarRef.current(), DURACAO_CONQUISTA);
     return () => clearTimeout(espera);
   }, [reduzirMovimento, escala]);
 
   const estiloAnimado = useAnimatedStyle(() => ({ transform: [{ scale: escala.value }] }));
 
   return (
-    <Animated.View
+    <Pressable
       style={[estilos.fundo, { backgroundColor: cores.fundo }]}
+      onPress={terminar}
       accessible
       accessibilityRole="alert"
       accessibilityLabel={subtitulo ? `${titulo}. ${subtitulo}` : titulo}
+      accessibilityHint="Toque para continuar"
       accessibilityLiveRegion="assertive"
     >
       <Animated.View style={[estilos.circulo, { backgroundColor: cores.sucesso }, estiloAnimado]}>
@@ -61,7 +72,7 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
       {subtitulo ? (
         <Text style={[estilos.subtitulo, { color: cores.textoSecundario }]}>{subtitulo}</Text>
       ) : null}
-    </Animated.View>
+    </Pressable>
   );
 }
 

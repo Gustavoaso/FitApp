@@ -9,13 +9,17 @@
 // Chaves separadas por usuário (mesma interface do AsyncStorage).
 import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
 import { obterEvolucaoCargas } from './progresso-servico';
+// Estático: o import dinâmico não roda no Jest (só a chamada usa o módulo, o ciclo é seguro).
+import { repositorioTreino } from './repositorio';
 
 export interface ExercicioCustomizado {
   id: string;
   nome: string;
   grupoMuscular: string;
   series: number;
-  repeticoes: number;
+  // Faixa do plano gerado ("8-12", "30s") ou número digitado pela pessoa.
+  repeticoes: number | string;
+  // 0 = sem carga definida no plano.
   cargaKg: number;
   tempoDescansoSegundos: number;
 }
@@ -24,7 +28,36 @@ export interface DiaTreinoCustomizado {
   id: string;
   diaSemana: string;
   foco: string;
+  // Dia da semana do plano no servidor (0 = domingo); ausente em treino criado à mão.
+  diaSemanaIndice?: number;
   exercicios: ExercicioCustomizado[];
+}
+
+const ABREVIACOES_DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+/** Mapa semanal (abreviação → id do treino) a partir dos dias do plano ativo. */
+export function derivarMapeamentoSemanal(planos: DiaTreinoCustomizado[]): Record<string, string> {
+  const mapa: Record<string, string> = {};
+  for (const dia of planos) {
+    const indice = dia.diaSemanaIndice;
+    if (typeof indice === 'number' && indice >= 0 && indice <= 6) {
+      mapa[ABREVIACOES_DIAS[indice]] = dia.id;
+    }
+  }
+  return mapa;
+}
+
+/** Texto de séries de um exercício: "20 kg × 8-12 reps", ou só as reps sem carga definida. */
+export function descreverSerie(cargaKg: number, repeticoes: number | string): string {
+  const reps = String(repeticoes ?? '').trim() || '—';
+  return cargaKg > 0 ? `${cargaKg} kg × ${reps} reps` : `${reps} reps`;
+}
+
+/** Repetições-alvo numéricas para registrar a série ("8-12" → 8; sem número → 0). */
+export function repeticoesAlvo(repeticoes: number | string): number {
+  if (typeof repeticoes === 'number') return Number.isFinite(repeticoes) ? repeticoes : 0;
+  const numero = parseInt(String(repeticoes ?? ''), 10);
+  return Number.isFinite(numero) ? numero : 0;
 }
 
 const CHAVE_PLANO_TREINO = '@fitapp_plano_treino_custom_v1';
@@ -163,8 +196,6 @@ const TREINOS_PADRAO: DiaTreinoCustomizado[] = [
   },
 ];
 
-const MAPEAMENTO_INICIAL_SEMANAL: Record<string, string> = {};
-
 /**
  * Obtém os dias de treino customizados.
  */
@@ -175,7 +206,6 @@ export async function obterPlanoTreinoCustomizado(): Promise<DiaTreinoCustomizad
       return JSON.parse(json);
     }
 
-    const { repositorioTreino } = await import('./repositorio');
     const doBanco = await repositorioTreino.buscarPlanosTreino();
     if (doBanco && doBanco.length > 0) {
       await AsyncStorage.setItem(CHAVE_PLANO_TREINO, JSON.stringify(doBanco));
@@ -195,7 +225,6 @@ export async function obterPlanoTreinoCustomizado(): Promise<DiaTreinoCustomizad
 export async function salvarPlanoTreinoCustomizado(planos: DiaTreinoCustomizado[]): Promise<void> {
   try {
     await AsyncStorage.setItem(CHAVE_PLANO_TREINO, JSON.stringify(planos));
-    const { repositorioTreino } = await import('./repositorio');
     await repositorioTreino.salvarPlanosTreino(planos);
   } catch (erro) {
     console.error('Erro ao salvar plano de treino:', erro);
@@ -214,21 +243,17 @@ export async function salvarMapeamentoSemanal(mapeamento: Record<string, string>
 }
 
 /**
- * Rodada 2 — Ajuste 3: Obtém o mapeamento semanal de treinos.
+ * Mapa semanal de treinos. O que a pessoa ajustou no aparelho vale como override;
+ * sem ajuste, vem dos dias do plano ativo (servidor).
  */
 export async function obterMapeamentoSemanal(): Promise<Record<string, string>> {
   try {
     const json = await AsyncStorage.getItem(CHAVE_MAPEAMENTO_SEMANAL);
-    if (!json) {
-      await AsyncStorage.setItem(
-        CHAVE_MAPEAMENTO_SEMANAL,
-        JSON.stringify(MAPEAMENTO_INICIAL_SEMANAL),
-      );
-      return MAPEAMENTO_INICIAL_SEMANAL;
-    }
-    return JSON.parse(json);
-  } catch (erro) {
-    return MAPEAMENTO_INICIAL_SEMANAL;
+    const local: Record<string, string> = json ? JSON.parse(json) : {};
+    if (Object.keys(local).length > 0) return local;
+    return derivarMapeamentoSemanal(await obterPlanoTreinoCustomizado());
+  } catch {
+    return {};
   }
 }
 

@@ -7,7 +7,8 @@
 
 // Chaves separadas por usuário (mesma interface do AsyncStorage).
 import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
-import { obterPlanoTreinoCustomizado } from './plano-gestao-servico';
+import { obterMapeamentoSemanal, obterPlanoTreinoCustomizado } from './plano-gestao-servico';
+import { repositorioTreino } from './repositorio';
 
 export interface EntradaPeso {
   id: string;
@@ -93,7 +94,6 @@ export async function obterMetasSemanaisTodas(): Promise<Record<string, MetaSema
  */
 export async function calcularMetaDoCronograma(inicioSemana: string): Promise<MetaSemanal> {
   const treinos = await obterPlanoTreinoCustomizado();
-  const { obterMapeamentoSemanal } = await import('./plano-gestao-servico');
   const mapSemana = await obterMapeamentoSemanal();
 
   const diasAbrev = ['seg', 'ter', 'qua', 'qui', 'sex', 'sáb', 'dom'];
@@ -143,7 +143,9 @@ export async function obterOuGerarMetaSemanal(inicioSemanaStr?: string): Promise
   const inicioSemana = inicioSemanaStr || obterInicioSemanaAtual();
   const todasMetas = await obterMetasSemanaisTodas();
 
-  if (todasMetas[inicioSemana]) {
+  // Só a meta manual fica congelada; a automática acompanha o plano ativo
+  // (antes ficava presa em 0 treinos quando o plano chegava depois).
+  if (todasMetas[inicioSemana]?.origem === 'manual') {
     return todasMetas[inicioSemana];
   }
 
@@ -304,19 +306,23 @@ export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia>
     const meta = await obterOuGerarMetaSemanal(inicioSemana);
     const progresso = await obterProgressoSemanal(inicioSemana);
 
-    const treinosRealizados = progresso.treinosRealizados || 0;
-    const metaTreinos = meta.treinosPlanejados || 5;
+    // O app ainda não grava sessoes_treino: as do servidor (outro aparelho, seed) somam às locais.
+    const sessoesServidor = await repositorioTreino.contarSessoesConcluidas(inicioSemana);
+    const treinosRealizados = (progresso.treinosRealizados || 0) + sessoesServidor;
+    const metaTreinos = meta.treinosPlanejados;
 
     const exerciciosRealizados = progresso.exerciciosRealizados || 0;
-    const metaExercicios = meta.exerciciosPlanejados || 25;
+    const metaExercicios = meta.exerciciosPlanejados;
 
     const refeicoesRealizadas = progresso.refeicoesRealizadas || 0;
     const metaRefeicoes = meta.refeicoesPlanejadas || 20;
 
     // Cálculo estrito das porcentagens (sem inflar números fictícios)
-    const pctTreino = Math.min(100, (treinosRealizados / metaTreinos) * 100);
-    const pctExercicios = Math.min(100, (exerciciosRealizados / metaExercicios) * 100);
-    const pctRefeicoes = Math.min(100, (refeicoesRealizadas / metaRefeicoes) * 100);
+    const pct = (feito: number, meta: number) =>
+      meta > 0 ? Math.min(100, (feito / meta) * 100) : 0;
+    const pctTreino = pct(treinosRealizados, metaTreinos);
+    const pctExercicios = pct(exerciciosRealizados, metaExercicios);
+    const pctRefeicoes = pct(refeicoesRealizadas, metaRefeicoes);
 
     const porcentagemAderenciaGeral = Math.round((pctTreino + pctExercicios + pctRefeicoes) / 3);
 

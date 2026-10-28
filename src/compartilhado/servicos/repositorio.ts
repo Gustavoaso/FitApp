@@ -78,6 +78,34 @@ const CHAVE_FAVORITOS_LOCAL = '@fitapp_alimentos_favoritos_v1';
 const CHAVE_RECEITAS_LOCAL = '@fitapp_receitas_usuario_v1';
 const CHAVE_PLANO_EDITAVEL_LOCAL = '@fitapp_plano_dieta_editavel_v1';
 
+export interface MetasAtivas {
+  caloriasMeta: number;
+  proteinaMeta: number;
+  carboidratoMeta: number;
+  gorduraMeta: number;
+  metaAguaMl: number;
+}
+
+interface LinhaMetasDieta {
+  calorias_alvo: number | null;
+  proteinas_alvo_g: number | null;
+  carboidratos_alvo_g: number | null;
+  gorduras_alvo_g: number | null;
+  meta_agua_ml: number | null;
+}
+
+/** Metas do app a partir da linha ativa de planos_dieta (0 = sem meta, nunca valor inventado). */
+export function metasDoPlanoDieta(linha: LinhaMetasDieta | null): MetasAtivas {
+  const n = (valor: number | null | undefined) => Math.round(Number(valor) || 0);
+  return {
+    caloriasMeta: n(linha?.calorias_alvo),
+    proteinaMeta: n(linha?.proteinas_alvo_g),
+    carboidratoMeta: n(linha?.carboidratos_alvo_g),
+    gorduraMeta: n(linha?.gorduras_alvo_g),
+    metaAguaMl: n(linha?.meta_agua_ml),
+  };
+}
+
 /** Dados do questionário já traduzidos para os valores aceitos pela tabela perfis. */
 export interface AtualizacaoPerfil {
   idade?: number;
@@ -584,6 +612,7 @@ export const repositorioTreino = {
             'Sábado',
           ][dia.dia_semana] || dia.nome,
         foco: dia.nome,
+        diaSemanaIndice: Number(dia.dia_semana),
         exercicios: (dia.exercicios_plano || []).map((ex: any) => {
           const serie = Array.isArray(ex.series) ? ex.series[0] || {} : {};
           return {
@@ -591,7 +620,8 @@ export const repositorioTreino = {
             nome: ex.nome,
             grupoMuscular: 'Geral',
             series: Number(serie.quantidade || 1),
-            repeticoes: Number(serie.repeticoes || 1),
+            // O plano guarda faixa ("8-12"); Number() virava NaN.
+            repeticoes: serie.repeticoes ?? '',
             cargaKg: Number(serie.cargaKg || 0),
             tempoDescansoSegundos: Number(serie.descansoSegundos || 0),
           };
@@ -606,6 +636,20 @@ export const repositorioTreino = {
   /**
    * Salva os planos de treino customizados no Supabase.
    */
+  /** Sessões de treino finalizadas desde a data (YYYY-MM-DD); 0 se offline. */
+  async contarSessoesConcluidas(desde: string): Promise<number> {
+    try {
+      const { count, error } = await supabase
+        .from('sessoes_treino')
+        .select('id', { count: 'exact', head: true })
+        .gte('data', desde)
+        .not('finalizado_em', 'is', null);
+      return error ? 0 : count || 0;
+    } catch {
+      return 0;
+    }
+  },
+
   async salvarPlanosTreino(planos: DiaTreinoCustomizado[]): Promise<void> {
     try {
       const userRes = await supabase.auth.getUser();
@@ -856,18 +900,30 @@ export const repositorioPlano = {
   /**
    * Obtém as metas ativas salvas (calorias, macros, água).
    */
-  async obterMetasAtivasUsuario() {
+  async obterMetasAtivasUsuario(): Promise<MetasAtivas> {
     try {
       const json = await AsyncStorage.getItem('@fitapp_metas_ativas_v1');
       if (json) return JSON.parse(json);
     } catch {}
-    return {
-      caloriasMeta: 0,
-      proteinaMeta: 0,
-      carboidratoMeta: 0,
-      gorduraMeta: 0,
-      metaAguaMl: 0,
-    };
+    // Sem cache no aparelho (outro aparelho, conta do seed): o plano de dieta ativo no
+    // servidor é a fonte, a mesma para Início e Dieta.
+    try {
+      const { data } = await supabase
+        .from('planos_dieta')
+        .select(
+          'calorias_alvo, proteinas_alvo_g, carboidratos_alvo_g, gorduras_alvo_g, meta_agua_ml',
+        )
+        .eq('ativo', true)
+        .order('criado_em', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        const metas = metasDoPlanoDieta(data);
+        await AsyncStorage.setItem('@fitapp_metas_ativas_v1', JSON.stringify(metas));
+        return metas;
+      }
+    } catch {}
+    return metasDoPlanoDieta(null);
   },
 
   /**
@@ -941,13 +997,15 @@ export const repositorioPlano = {
           id: `dia-${Date.now()}-${idx}`,
           diaSemana: d.nome || `Dia ${idx + 1}`,
           foco: d.nome || 'Treino Especial',
+          diaSemanaIndice: Number(d.diaSemana),
           exercicios: (d.exercicios || []).map((ex: any, exIdx: number) => ({
-            id: `ex-${Date.now()}-${exIdx}`,
+            id: `ex-${Date.now()}-${idx}-${exIdx}`,
             nome: ex.nome,
             grupoMuscular: 'Geral',
             series: ex.series || 4,
-            repeticoes: ex.repeticoes || 10,
-            cargaKg: 20,
+            repeticoes: ex.repeticoes ?? '',
+            // O plano não define carga: a pessoa informa no treino ao vivo.
+            cargaKg: 0,
             tempoDescansoSegundos: ex.descansoSegundos || 60,
           })),
         }));

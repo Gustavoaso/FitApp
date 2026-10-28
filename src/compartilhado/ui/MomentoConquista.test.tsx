@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import * as Haptics from 'expo-haptics';
 import { useReducedMotion, withSpring } from 'react-native-reanimated';
 import { DURACAO_CONQUISTA, MomentoConquista } from './MomentoConquista';
@@ -47,6 +47,18 @@ it('com Reduzir Movimento ligado, não anima (mantém o haptic)', () => {
   expect(screen.getByText('Plano ativado')).toBeTruthy();
   expect(mockMola).not.toHaveBeenCalled();
   expect(Haptics.notificationAsync).toHaveBeenCalledWith('success');
+  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
+  expect(aoTerminar).toHaveBeenCalledTimes(1);
+});
+
+it('um toque segue antes do tempo, e o tempo não chama de novo', () => {
+  mockReduzir.mockReturnValue(false);
+  const aoTerminar = jest.fn();
+  render(<MomentoConquista titulo="Plano ativado" aoTerminar={aoTerminar} />);
+
+  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA - 100));
+  expect(aoTerminar).not.toHaveBeenCalled();
+  fireEvent.press(screen.getByLabelText('Plano ativado'));
   act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
   expect(aoTerminar).toHaveBeenCalledTimes(1);
 });

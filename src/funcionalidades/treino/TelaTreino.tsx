@@ -45,6 +45,7 @@ import {
   definirTreinoEspecialParaData,
   obterTreinoEspecialParaData,
   obterMapeamentoSemanal,
+  descreverSerie,
   salvarMapeamentoSemanal,
   DiaTreinoCustomizado,
   ExercicioCustomizado,
@@ -356,12 +357,12 @@ export default function TelaTreino() {
                 <SymbolView name="flag.checkered" size={20} tintColor={cores.destaque} />
                 <View style={{ flex: 1 }}>
                   <Text style={estilos.txtBannerTitulo}>
-                    {estatisticas?.diasTreinados || 0} de {estatisticas?.metaDiasTreino || 5}{' '}
+                    {estatisticas?.diasTreinados || 0} de {estatisticas?.metaDiasTreino || 0}{' '}
                     treinos concluídos
                   </Text>
                   <Text style={estilos.txtBannerSub}>
-                    {estatisticas?.exerciciosRealizados || 0} de{' '}
-                    {estatisticas?.metaExercicios || 25} exercícios executados nesta semana
+                    {estatisticas?.exerciciosRealizados || 0} de {estatisticas?.metaExercicios || 0}{' '}
+                    exercícios executados nesta semana
                   </Text>
                 </View>
               </View>
@@ -447,7 +448,7 @@ export default function TelaTreino() {
                           <View style={{ flex: 1 }}>
                             <Text style={estilos.nomeExExpandido}>{ex.nome}</Text>
                             <Text style={estilos.subExExpandido}>
-                              {ex.series} séries × {ex.repeticoes} reps ({ex.cargaKg} kg)
+                              {ex.series} séries × {descreverSerie(ex.cargaKg, ex.repeticoes)}
                             </Text>
                           </View>
                           <Text style={estilos.badgeGrupoExpandido}>{ex.grupoMuscular}</Text>
@@ -553,7 +554,7 @@ export default function TelaTreino() {
                         <View style={estilos.colExercicio}>
                           <Text style={estilos.exNome}>{ex.nome}</Text>
                           <Text style={estilos.exSub}>
-                            {ex.series} séries · {ex.repeticoes} reps ·{' '}
+                            {ex.series} séries · {String(ex.repeticoes || '—')} reps ·{' '}
                             {ex.tempoDescansoSegundos || 60}s descanso
                           </Text>
                         </View>
@@ -574,7 +575,7 @@ export default function TelaTreino() {
                               <Text style={estilos.txtNumeroSerie}>Série {nSerie}</Text>
                               <View style={estilos.linhaDivisoraPontilhada} />
                               <Text style={estilos.txtValoresSerie}>
-                                {cargaExibir} kg × {repsExibir} reps
+                                {descreverSerie(cargaExibir, repsExibir)}
                               </Text>
                             </View>
                           );
