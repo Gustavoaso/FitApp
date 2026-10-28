@@ -38,7 +38,7 @@ Fluxo: novo-projeto
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
-| 15. Testes finais: correções | Implementada, aguardando o testador (testador-usuario rodada 2: cache local por usuário + limpeza no logout, perfil no aceite, semana/metas/séries do plano ativo, treino ao vivo, erros do Auth em PT, inspetor só em `__DEV__`, área segura, Dieta, questionário vazio, conquista 1,5 s/toque) | 1 | 671112d, 57f26c9, ver git log |
+| 15. Testes finais: correções | Implementada, aguardando o testador (testador-usuario rodada final: objetivo/dados do Perfil vêm do banco e mostram "—" sem dado, teclado da carga com OK/tocar fora e ações visíveis, Início com texto XXL sem corte, sequência real (0 sem treinos)) | 2 | 671112d, 57f26c9, ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 

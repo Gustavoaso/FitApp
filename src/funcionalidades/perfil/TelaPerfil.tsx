@@ -29,6 +29,7 @@ import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/
 import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
+import { montarDadosFisicos, SEM_DADO } from './dados-fisicos';
 import { obterDadosRawTacoAPI } from './taco-sincronizacao-servico';
 import { obterDadosRawExerciseDB } from './exercise-db-sincronizacao-servico';
 import { excluirConta } from './excluir-conta-servico';
@@ -66,10 +67,10 @@ export default function TelaPerfil() {
 
   // Estados do Perfil e Físicos
   const [dadosFisicos, setDadosFisicos] = useState({
-    peso: '70 kg',
-    altura: '175 cm',
-    idade: '25 anos',
-    objetivo: 'Hipertrofia',
+    peso: SEM_DADO,
+    altura: SEM_DADO,
+    idade: SEM_DADO,
+    objetivo: SEM_DADO,
   });
 
   // Estados do Ajuste 5
@@ -98,28 +99,7 @@ export default function TelaPerfil() {
     const perfilBanco = await repositorioPlano.obterPerfilUsuario();
     const ultimasRespostas = await repositorioPlano.obterUltimasRespostasQuestionario();
 
-    const peso = ultimasRespostas?.pesoKg || perfilBanco?.peso_kg || 70;
-    const altura = ultimasRespostas?.alturaCm || perfilBanco?.altura_cm || 175;
-    const idade = ultimasRespostas?.idade || perfilBanco?.idade || 25;
-    const objRaw = ultimasRespostas?.objetivo || 'hipertrofia';
-
-    const mapaObjetivo: Record<string, string> = {
-      emagrecimento: 'Emagrecimento',
-      hipertrofia: 'Hipertrofia',
-      definicao: 'Definição Muscular',
-      manutencao: 'Manutenção',
-      saude: 'Saúde Geral',
-    };
-
-    setDadosFisicos({
-      peso: sistemaUnidades === 'metrico' ? `${peso} kg` : `${Math.round(peso * 2.20462)} lbs`,
-      altura:
-        sistemaUnidades === 'metrico'
-          ? `${altura} cm`
-          : `${Math.floor(altura / 30.48)} ft ${Math.round((altura % 30.48) / 2.54)} in`,
-      idade: `${idade} anos`,
-      objetivo: mapaObjetivo[objRaw] || 'Hipertrofia',
-    });
+    setDadosFisicos(montarDadosFisicos(perfilBanco, ultimasRespostas, sistemaUnidades));
   };
 
   const lidarComSair = async () => {
@@ -166,8 +146,8 @@ export default function TelaPerfil() {
   const iniciais =
     (usuario?.user_metadata?.nome as string | undefined)?.substring(0, 2).toUpperCase() || 'AT';
 
-  const nome = (usuario?.user_metadata?.nome as string | undefined) || 'Atleta';
-  const email = usuario?.email || 'atleta@fitapp.com';
+  const nome = (usuario?.user_metadata?.nome as string | undefined) || SEM_DADO;
+  const email = usuario?.email || '';
 
   const lidarComRecalcularPlano = async () => {
     const perfilBanco = await repositorioPlano.obterPerfilUsuario();

@@ -30,8 +30,10 @@ import {
   obterHistoricoPeso,
   adicionarEntradaPeso,
   calcularAderenciaSemanal,
+  obterEvolucaoCargas,
   EstatisticasAderencia,
 } from '@/compartilhado/servicos/progresso-servico';
+import { calcularSequenciaDias } from './calcular-sequencia';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
 import {
   obterPlanoTreinoCustomizado,
@@ -78,6 +80,8 @@ export default function TelaInicio() {
     porcentagemAderenciaGeral: 0,
   });
 
+  const [sequenciaDias, setSequenciaDias] = useState(0);
+
   // Modal registrar peso
   const [modalPesoVisivel, setModalPesoVisivel] = useState(false);
   const [novoPesoStr, setNovoPesoStr] = useState('85.0');
@@ -100,6 +104,11 @@ export default function TelaInicio() {
   );
 
   const carregarDadosProgresso = async () => {
+    const cargas = await obterEvolucaoCargas();
+    const datasTreino = cargas.flatMap((c) => c.historicoCargas.map((h) => h.data));
+    // Mesma referência de data (UTC) usada ao registrar a série.
+    setSequenciaDias(calcularSequenciaDias(datasTreino, new Date().toISOString().slice(0, 10)));
+
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
     if (metas) {
       if (metas.caloriasMeta) setCaloriasMeta(metas.caloriasMeta);
@@ -242,9 +251,13 @@ export default function TelaInicio() {
           </View>
 
           <View style={estilos.topBarDireita}>
-            <View style={estilos.streakBadge}>
+            <View
+              style={estilos.streakBadge}
+              accessible
+              accessibilityLabel={`Sequência: ${sequenciaDias} ${sequenciaDias === 1 ? 'dia' : 'dias'}`}
+            >
               <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
-              <Text style={estilos.streakTexto}>1</Text>
+              <Text style={estilos.streakTexto}>{sequenciaDias}</Text>
             </View>
           </View>
         </View>
@@ -253,13 +266,16 @@ export default function TelaInicio() {
         <View>
           <CardVidro semBorda estilo={estilos.cardCalorias}>
             <View style={estilos.rowCalorias}>
-              <AnelProgresso
-                atual={caloriasConsumidas}
-                meta={caloriasMeta}
-                tamanho={88}
-                espessura={5}
-                mostrarValor={true}
-              />
+              {/* Não encolhe com a coluna ao lado; com texto grande, o "restam" quebra linha. */}
+              <View style={estilos.colAnelCalorias}>
+                <AnelProgresso
+                  atual={caloriasConsumidas}
+                  meta={caloriasMeta}
+                  tamanho={88}
+                  espessura={5}
+                  mostrarValor={true}
+                />
+              </View>
 
               <View style={estilos.colInfoCalorias}>
                 <Text style={estilos.labelCalorias}>Calorias hoje</Text>
@@ -576,6 +592,10 @@ const criarEstilos = (cores: CoresTema) =>
       alignItems: 'center',
       gap: 20,
     },
+    colAnelCalorias: {
+      flexShrink: 0,
+      maxWidth: '45%',
+    },
     colInfoCalorias: {
       flex: 1,
     },
@@ -688,9 +708,11 @@ const criarEstilos = (cores: CoresTema) =>
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      gap: 12,
       marginBottom: 12,
     },
     tituloEvolucao: {
+      flexShrink: 1,
       fontFamily: FamiliaFonte.bold,
       fontSize: 15,
       fontWeight: PesoFonte.bold,

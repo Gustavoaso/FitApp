@@ -146,5 +146,6 @@ const estilos = StyleSheet.create({
     fontSize: Tipografia.legenda,
     fontWeight: PesoFonte.bold,
     marginTop: 8,
+    textAlign: 'center',
   },
 });

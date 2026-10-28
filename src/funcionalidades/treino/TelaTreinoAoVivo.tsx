@@ -7,7 +7,19 @@
 // ============================================================
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Platform,
+  Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  InputAccessoryView,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
@@ -191,91 +203,131 @@ export default function TelaTreinoAoVivo() {
   };
 
   return (
-    <View style={estilos.container}>
-      {/* Topo / Progresso da Sessão */}
-      <View style={estilos.topo}>
-        <TouchableOpacity style={estilos.btnSairAmarelo} onPress={sairDoTreino} activeOpacity={0.8}>
-          <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
-          <Text style={estilos.txtSairAmarelo}>Sair</Text>
-        </TouchableOpacity>
+    // Tocar fora do campo fecha o teclado; o KeyboardAvoidingView sobe as ações para
+    // "Concluir Série" não ficar escondido atrás do teclado numérico.
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <KeyboardAvoidingView
+        style={estilos.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {/* Topo / Progresso da Sessão */}
+        <View style={estilos.topo}>
+          <TouchableOpacity
+            style={estilos.btnSairAmarelo}
+            onPress={sairDoTreino}
+            activeOpacity={0.8}
+          >
+            <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
+            <Text style={estilos.txtSairAmarelo}>Sair</Text>
+          </TouchableOpacity>
 
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={estilos.tituloTreino}>{tituloTreino}</Text>
-          <Text style={estilos.progressoTexto}>
-            Exercício {indexExercicio + 1}/{listaExercicios.length}
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={estilos.tituloTreino}>{tituloTreino}</Text>
+            <Text style={estilos.progressoTexto}>
+              Exercício {indexExercicio + 1}/{listaExercicios.length}
+            </Text>
+          </View>
+        </View>
+
+        {/* Nome do Exercício */}
+        <View style={estilos.exercicioHeader}>
+          <Text style={estilos.exercicioNome}>{exAtual.nome}</Text>
+        </View>
+
+        {/* Card da Série Atual */}
+        <CardVidro semBorda estilo={estilos.cardSerie}>
+          <Text style={estilos.serieDetalhes}>
+            Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
+            {descreverSerie(exAtual.cargaSugerida, exAtual.reps)}
           </Text>
+        </CardVidro>
+
+        {/* Timer de Descanso Circular */}
+        <View style={estilos.timerContainer}>
+          <AnelProgresso
+            atual={tempoRestante}
+            meta={exAtual.descansoSegundos}
+            tamanho={180}
+            espessura={14}
+            mostrarValor={false}
+            // O tempo já aparece no centro; o "0 restam" padrão confundia antes de começar.
+            subtextoCustom=" "
+          />
+          <View style={estilos.timerTextoAbsolute}>
+            <Text style={estilos.timerTempo}>{formatarTempo(tempoRestante)}</Text>
+            <Text style={estilos.timerLabel}>{emDescanso ? 'Descansando' : 'Pronto'}</Text>
+          </View>
         </View>
-      </View>
 
-      {/* Nome do Exercício */}
-      <View style={estilos.exercicioHeader}>
-        <Text style={estilos.exercicioNome}>{exAtual.nome}</Text>
-      </View>
-
-      {/* Card da Série Atual */}
-      <CardVidro semBorda estilo={estilos.cardSerie}>
-        <Text style={estilos.serieDetalhes}>
-          Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
-          {descreverSerie(exAtual.cargaSugerida, exAtual.reps)}
-        </Text>
-      </CardVidro>
-
-      {/* Timer de Descanso Circular */}
-      <View style={estilos.timerContainer}>
-        <AnelProgresso
-          atual={tempoRestante}
-          meta={exAtual.descansoSegundos}
-          tamanho={180}
-          espessura={14}
-          mostrarValor={false}
-          // O tempo já aparece no centro; o "0 restam" padrão confundia antes de começar.
-          subtextoCustom=" "
-        />
-        <View style={estilos.timerTextoAbsolute}>
-          <Text style={estilos.timerTempo}>{formatarTempo(tempoRestante)}</Text>
-          <Text style={estilos.timerLabel}>{emDescanso ? 'Descansando' : 'Pronto'}</Text>
+        {/* Campo de Carga Real */}
+        <View style={estilos.inputCargaContainer}>
+          <Text style={estilos.cargaLabel}>Carga usada (kg):</Text>
+          <TextInput
+            style={estilos.inputCarga}
+            keyboardType="numeric"
+            placeholder={exAtual.cargaSugerida > 0 ? String(exAtual.cargaSugerida) : 'Ex.: 20'}
+            placeholderTextColor={cores.textoSecundario}
+            value={cargaUsada}
+            onChangeText={setCargaUsada}
+            returnKeyType="done"
+            onSubmitEditing={Keyboard.dismiss}
+            inputAccessoryViewID={ID_ACESSORIO_CARGA}
+          />
         </View>
-      </View>
+        {Platform.OS === 'ios' ? (
+          // O teclado numérico do iOS não tem tecla de confirmar: este "OK" fecha o teclado.
+          <InputAccessoryView nativeID={ID_ACESSORIO_CARGA}>
+            <View style={estilos.barraTeclado}>
+              <TouchableOpacity onPress={Keyboard.dismiss} accessibilityRole="button" hitSlop={12}>
+                <Text style={estilos.textoOkTeclado}>OK</Text>
+              </TouchableOpacity>
+            </View>
+          </InputAccessoryView>
+        ) : null}
 
-      {/* Campo de Carga Real */}
-      <View style={estilos.inputCargaContainer}>
-        <Text style={estilos.cargaLabel}>Carga usada (kg):</Text>
-        <TextInput
-          style={estilos.inputCarga}
-          keyboardType="numeric"
-          placeholder={exAtual.cargaSugerida > 0 ? String(exAtual.cargaSugerida) : 'Ex.: 20'}
-          placeholderTextColor={cores.textoSecundario}
-          value={cargaUsada}
-          onChangeText={setCargaUsada}
-        />
-      </View>
+        {/* Ações Inferiores */}
+        <View style={estilos.acoesContainer}>
+          <TouchableOpacity style={estilos.botaoPular} onPress={pularExercicio}>
+            <Text style={estilos.textoPular}>Pular Exercício</Text>
+          </TouchableOpacity>
 
-      {/* Ações Inferiores */}
-      <View style={estilos.acoesContainer}>
-        <TouchableOpacity style={estilos.botaoPular} onPress={pularExercicio}>
-          <Text style={estilos.textoPular}>Pular Exercício</Text>
-        </TouchableOpacity>
+          <BotaoPrimario
+            texto={serieAtual === exAtual.series ? 'Finalizar Exercício' : 'Concluir Série'}
+            aoPresionar={concluirSerie}
+            estilo={estilos.botaoConcluir}
+          />
+        </View>
 
-        <BotaoPrimario
-          texto={serieAtual === exAtual.series ? 'Finalizar Exercício' : 'Concluir Série'}
-          aoPresionar={concluirSerie}
-          estilo={estilos.botaoConcluir}
-        />
-      </View>
-
-      {concluido ? (
-        <MomentoConquista
-          titulo="Treino concluído"
-          subtitulo={tituloTreino}
-          aoTerminar={fecharTreino}
-        />
-      ) : null}
-    </View>
+        {concluido ? (
+          <MomentoConquista
+            titulo="Treino concluído"
+            subtitulo={tituloTreino}
+            aoTerminar={fecharTreino}
+          />
+        ) : null}
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
+const ID_ACESSORIO_CARGA = 'acessorio-carga';
+
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
+    barraTeclado: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingHorizontal: Espacamento.md,
+      paddingVertical: Espacamento.sm,
+      backgroundColor: cores.superficie,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: cores.separador,
+    },
+    textoOkTeclado: {
+      color: cores.destaque,
+      fontSize: Fonte.corpo,
+      fontWeight: PesoFonte.semibold,
+    },
     container: {
       flex: 1,
       backgroundColor: cores.fundo,
