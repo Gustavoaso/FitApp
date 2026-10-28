@@ -48,7 +48,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
 | seguranca | REPROVADO só com DECIDIR | 2 | rodada 2 (e75e0c5): CORRIGIR nenhum; DECIDIR 1 (revogar sbp_/RapidAPI/Groq, repo privado), 4 (política de senha no painel remoto); Baixas: limite só no RPC, npm audit em tooling, console.warn com objetos, CORS *, pg_trgm em public |
-| testador-usuario | | | |
+| testador-usuario | INCOMPLETO (rodada 1: sem ferramenta de toque; CORRIGIR 1 senha → 1af1577) | 1 | rodada 2 com Maestro interrompida (login da sessão revogado); rodar de novo |
 
 ## Ações do dono
 
