@@ -15,6 +15,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/compartilhado/supabase';
+import {
+  definirUsuarioLocal,
+  limparCacheLocalUsuario,
+} from '@/compartilhado/servicos/armazenamento-usuario';
 
 interface AuthContextoTipo {
   sessao: Session | null;
@@ -31,19 +35,37 @@ interface AuthContextoTipo {
 
 const AuthContexto = createContext<AuthContextoTipo | undefined>(undefined);
 
-function traduzirErroAuth(erro: { message?: string } | null): string | null {
+// O Supabase Auth responde em inglês; a pessoa vê sempre português.
+const ERROS_AUTH: Array<[RegExp, string]> = [
+  [
+    /network request failed|failed to fetch|network error/i,
+    'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.',
+  ],
+  [/invalid login credentials/i, 'E-mail ou senha incorretos.'],
+  [/user already registered|already been registered/i, 'Já existe uma conta com este e-mail.'],
+  [
+    /password should be|weak password|password is too/i,
+    'Senha fraca: use ao menos 8 caracteres com letras e números.',
+  ],
+  [/invalid email|unable to validate email|email address .* is invalid/i, 'E-mail inválido.'],
+  [/rate limit|too many requests/i, 'Muitas tentativas. Aguarde um pouco e tente de novo.'],
+  [/signups not allowed|signup is disabled/i, 'Cadastro desativado no momento.'],
+];
+
+export function traduzirErroAuth(erro: { message?: string } | null): string | null {
   if (!erro) return null;
-  const mensagem = erro.message || 'Não foi possível concluir a autenticação.';
-  if (/network request failed|failed to fetch|network error/i.test(mensagem)) {
-    return 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.';
-  }
-  return mensagem;
+  const mensagem = erro.message || '';
+  const traducao = ERROS_AUTH.find(([padrao]) => padrao.test(mensagem));
+  return traducao ? traducao[1] : 'Não foi possível concluir a autenticação. Tente de novo.';
 }
 
 export function AuthProvedor({ children }: { children: React.ReactNode }) {
   const [sessao, setSessao] = useState<Session | null>(null);
   const [usuario, setUsuario] = useState<User | null>(null);
   const [carregando, setCarregando] = useState(true);
+
+  // Na renderização (e não num efeito) para valer antes de as telas filhas lerem o cache.
+  definirUsuarioLocal(usuario?.id ?? null);
 
   useEffect(() => {
     // 1. Busca a sessão local e confirma que o usuário ainda existe no Auth.
@@ -100,7 +122,7 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
     if (error) {
       if (error.message.includes('Email not confirmed')) {
         return {
-          erro: 'Confirmação de e-mail pendente no Supabase. Verifique seu e-mail ou desative "Confirm email" no painel do Supabase (Authentication > Providers > Email).',
+          erro: 'Confirme seu e-mail pelo link que enviamos antes de entrar.',
         };
       }
       return { erro: traduzirErroAuth(error) };
@@ -163,6 +185,8 @@ export function AuthProvedor({ children }: { children: React.ReactNode }) {
 
   /** Realiza o logout */
   const sair = async () => {
+    // Progresso e metas ficam no aparelho: não podem sobrar para a próxima conta.
+    await limparCacheLocalUsuario();
     await supabase.auth.signOut();
   };
 

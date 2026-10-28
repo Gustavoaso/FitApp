@@ -7,7 +7,8 @@
 // ============================================================
 
 import { supabase } from '@/compartilhado/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Chaves separadas por usuário (mesma interface do AsyncStorage).
+import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
 import { RegistroRefeicaoDiaria } from './historico-servico';
 import { DiaTreinoCustomizado } from './plano-gestao-servico';
 import { EntradaPeso } from './progresso-servico';
@@ -76,6 +77,39 @@ export interface PlanoIAAtivo {
 const CHAVE_FAVORITOS_LOCAL = '@fitapp_alimentos_favoritos_v1';
 const CHAVE_RECEITAS_LOCAL = '@fitapp_receitas_usuario_v1';
 const CHAVE_PLANO_EDITAVEL_LOCAL = '@fitapp_plano_dieta_editavel_v1';
+
+/** Dados do questionário já traduzidos para os valores aceitos pela tabela perfis. */
+export interface AtualizacaoPerfil {
+  idade?: number;
+  sexo?: 'masculino' | 'feminino';
+  pesoKg?: number;
+  alturaCm?: number;
+  nivelExperiencia?: string;
+  nivelAtividade?: string;
+  objetivo?: string;
+  frequenciaSemanal?: number;
+}
+
+/** Colunas do update de perfis: só as preenchidas (nunca null, NaN nem padrão inventado). */
+export function montarAtualizacaoPerfil(dados: AtualizacaoPerfil): Record<string, string | number> {
+  const campos: Record<string, string | number | undefined> = {
+    idade: dados.idade,
+    sexo: dados.sexo,
+    peso_kg: dados.pesoKg,
+    altura_cm: dados.alturaCm,
+    nivel_experiencia: dados.nivelExperiencia,
+    nivel_atividade: dados.nivelAtividade,
+    objetivo: dados.objetivo,
+    frequencia_semanal: dados.frequenciaSemanal,
+  };
+  const preenchidos: Record<string, string | number> = {};
+  for (const [coluna, valor] of Object.entries(campos)) {
+    if (valor === undefined || valor === '') continue;
+    if (typeof valor === 'number' && !Number.isFinite(valor)) continue;
+    preenchidos[coluna] = valor;
+  }
+  return preenchidos;
+}
 
 function tabelaNaoExiste(erro: any): boolean {
   const mensagem = String(erro?.message || erro || '');
@@ -840,7 +874,11 @@ export const repositorioPlano = {
    * Salva o plano aceito pelo usuário como PLANO ATIVO no Supabase e no AsyncStorage.
    * Atualiza perfis, planos_dieta, planos_treino e reflete imediatamente no app.
    */
-  async salvarPlanoComoAtivo(plano: any, respostas: any): Promise<void> {
+  async salvarPlanoComoAtivo(
+    plano: any,
+    respostas: any,
+    perfil?: AtualizacaoPerfil,
+  ): Promise<void> {
     try {
       const userRes = await supabase.auth.getUser();
       const userId = userRes.data.user?.id;
@@ -865,24 +903,13 @@ export const repositorioPlano = {
 
         // Salva/atualiza perfil — não bloqueia se falhar
         // NOTA: preferencias_json foi removido — dados já vão para tabela 'questionarios'
-        const { error: erroPerfil } = await supabase.from('perfis').upsert(
-          [
-            {
-              usuario_id: userId,
-              nome: respostas.nome,
-              idade: respostas.idade,
-              sexo: respostas.sexo || 'masculino',
-              peso_kg: respostas.pesoKg || 70,
-              altura_cm: respostas.alturaCm || 175,
-              nivel_experiencia: respostas.nivelExperiencia,
-              nivel_atividade: respostas.nivelAtividade,
-              objetivo: respostas.objetivo || 'hipertrofia',
-              frequencia_semanal: respostas.frequenciaSemanal || 4,
-              sistema_unidades: 'metrico',
-            },
-          ],
-          { onConflict: 'usuario_id' },
-        );
+        // Update parcial: o questionário não tem nome; mandar null quebrava o NOT NULL e
+        // nada era gravado. O perfil já existe (criado no cadastro).
+        const camposPerfil = montarAtualizacaoPerfil(perfil ?? {});
+        const { error: erroPerfil } =
+          Object.keys(camposPerfil).length > 0
+            ? await supabase.from('perfis').update(camposPerfil).eq('usuario_id', userId)
+            : { error: null };
         if (erroPerfil) {
           // Não bloqueia o salvamento do plano — log claro para debug
           console.error(

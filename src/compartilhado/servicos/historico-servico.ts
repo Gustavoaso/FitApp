@@ -5,7 +5,8 @@
 // de refeições e sessões de treino concluídas.
 // ============================================================
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Chaves separadas por usuário (mesma interface do AsyncStorage).
+import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
 
 export interface RegistroRefeicaoDiaria {
   idRefeicao: string;

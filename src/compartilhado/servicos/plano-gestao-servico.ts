@@ -6,7 +6,8 @@
 // e pré-seleção automática baseada no dia da semana atual do sistema.
 // ============================================================
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Chaves separadas por usuário (mesma interface do AsyncStorage).
+import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
 import { obterEvolucaoCargas } from './progresso-servico';
 
 export interface ExercicioCustomizado {

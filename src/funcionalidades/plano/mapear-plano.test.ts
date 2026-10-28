@@ -3,6 +3,7 @@ import {
   mapearAlimento,
   mapearExercicio,
   mapearRespostas,
+  perfilDoQuestionario,
   respeitaRestricoesFisicas,
   type LinhaAlimento,
 } from './mapear-plano';
@@ -41,6 +42,22 @@ describe('mapearRespostas', () => {
     },
     dieta: { restricao_alimentar: ['Lactose', 'Glúten', 'Outra'], refeicoes_por_dia: 4 },
   };
+
+  it('perfilDoQuestionario usa os valores aceitos pela tabela perfis, sem nome', () => {
+    expect(perfilDoQuestionario(base)).toEqual({
+      idade: 28,
+      sexo: 'feminino',
+      pesoKg: 60,
+      alturaCm: 165,
+      nivelExperiencia: 'avancado',
+      nivelAtividade: 'sedentario',
+      objetivo: 'forca',
+      frequenciaSemanal: 3,
+    });
+    expect(perfilDoQuestionario({ perfil: base.perfil } as unknown as DadosQuestionario)).toEqual(
+      {},
+    );
+  });
 
   it('traduz os textos da tela e não leva o nome', () => {
     const entrada = mapearRespostas(base);

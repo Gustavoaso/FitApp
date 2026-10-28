@@ -18,6 +18,7 @@ import type {
   SexoBiologico,
 } from '@/compartilhado/tipos';
 import type { ResultadoCalculo } from '@/compartilhado/utilidades';
+import type { AtualizacaoPerfil } from '@/compartilhado/servicos/repositorio';
 import type { PlanoMontado } from './motor/validador';
 import type {
   AlimentoCandidato,
@@ -43,6 +44,23 @@ export interface EntradaMotor {
 
 function semAcento(texto: string): string {
   return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
+/** Campos da tabela perfis a partir do questionário (mesma tradução do motor). */
+export function perfilDoQuestionario(dados: DadosQuestionario): AtualizacaoPerfil {
+  // Respostas incompletas (parâmetro antigo/corrompido): não mexe no perfil.
+  if (!dados?.perfil || !dados.objetivo || !dados.treino || !dados.dieta) return {};
+  const entrada = mapearRespostas(dados);
+  return {
+    idade: entrada.idade,
+    sexo: entrada.sexo,
+    pesoKg: entrada.pesoKg,
+    alturaCm: entrada.alturaCm,
+    nivelExperiencia: entrada.nivel,
+    nivelAtividade: entrada.nivelAtividade,
+    objetivo: entrada.objetivo,
+    frequenciaSemanal: entrada.diasPorSemana,
+  };
 }
 
 /** Traduz os textos das opções da tela. Sem nome: o prompt nunca o recebe (RN12). */

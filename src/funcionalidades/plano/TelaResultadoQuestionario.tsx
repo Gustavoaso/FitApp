@@ -31,6 +31,7 @@ import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { gerarPlano } from './gerar-plano-servico';
 import { descreverBalanco, segmentosAnel } from './resumo-resultado';
+import { perfilDoQuestionario } from './mapear-plano';
 
 // PREMISSA (textos): aviso e rótulos da tela.
 export const AVISO_PROFISSIONAL = 'Estimativa geral, não substitui nutricionista ou médico.';
@@ -183,7 +184,11 @@ export default function TelaResultadoQuestionario() {
     setErroSalvar(null);
     setSalvando(true);
     try {
-      await repositorioPlano.salvarPlanoComoAtivo(dadosPlano, dadosRespostas);
+      await repositorioPlano.salvarPlanoComoAtivo(
+        dadosPlano,
+        dadosRespostas,
+        dadosRespostas ? perfilDoQuestionario(dadosRespostas) : undefined,
+      );
       setConquista(true);
     } catch (erro) {
       setErroSalvar(

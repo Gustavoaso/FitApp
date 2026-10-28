@@ -5,7 +5,8 @@
 // e a METROLOGIA REAL de metas x progresso semanal (Treinos, Exercícios e Refeições).
 // ============================================================
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// Chaves separadas por usuário (mesma interface do AsyncStorage).
+import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
 import { obterPlanoTreinoCustomizado } from './plano-gestao-servico';
 
 export interface EntradaPeso {
