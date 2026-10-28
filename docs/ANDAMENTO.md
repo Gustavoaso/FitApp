@@ -48,7 +48,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 |---|---|---|---|
 | testador (completo) | APROVADO | 2 | rodada 1 reprovou (format:check, expo-doctor); correções 8b21358, b160b5c |
 | seguranca | REPROVADO só com DECIDIR | 2 | rodada 2 (e75e0c5): CORRIGIR nenhum; DECIDIR 1 (revogar sbp_/RapidAPI/Groq, repo privado), 4 (política de senha no painel remoto); Baixas: limite só no RPC, npm audit em tooling, console.warn com objetos, CORS *, pg_trgm em public |
-| testador-usuario | REPROVADO (rodada 2 com Maestro) | 2 | CORRIGIR 1–10 (progresso global no AsyncStorage entre contas; aceite não grava perfil; mapa semanal local; metas /0g; reps/kg vazios; sair do treino sem confirmar; erro em inglês; inspetor JSON visível; Resultado sob a status bar; FAB cobre Log) |
+| testador-usuario | INCOMPLETO (rodada 3, final) | 3 | itens 1–10 da rodada anterior confirmados; CORRIGIR 1 objetivo errado no Perfil, 2 teclado numérico sem fechar no treino ao vivo, 3 cortes com texto XXL no Início; FALTOU: momento de conquista visto, erro de rede, excluir conta e cadastro no local |
 
 ## Ações do dono
 
