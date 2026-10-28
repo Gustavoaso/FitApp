@@ -30,6 +30,7 @@ import {
   validarAltura,
   validarFrequenciaSemanal,
 } from '@/compartilhado/utilidades';
+import { camposPendentes } from './campos-pendentes';
 
 export default function TelaQuestionario() {
   const { cores } = useTema();
@@ -43,27 +44,29 @@ export default function TelaQuestionario() {
   const [etapa, setEtapa] = useState(1);
   const [nomeUsuario, setNomeUsuario] = useState('Atleta');
 
+  // Tudo começa vazio: um valor pré-preenchido virava resposta sem a pessoa ver
+  // (exemplos ficam só no placeholder).
   // ETAPA 1
-  const [sexoBiologico, setSexoBiologico] = useState('Masculino');
-  const [idade, setIdade] = useState('25');
-  const [pesoAtual, setPesoAtual] = useState('75');
-  const [altura, setAltura] = useState('175');
+  const [sexoBiologico, setSexoBiologico] = useState('');
+  const [idade, setIdade] = useState('');
+  const [pesoAtual, setPesoAtual] = useState('');
+  const [altura, setAltura] = useState('');
 
   // ETAPA 2
-  const [objetivoPrincipal, setObjetivoPrincipal] = useState('Hipertrofia');
-  const [atividadeForaTreino, setAtividadeForaTreino] = useState('Moderado');
-  const [nivelExperiencia, setNivelExperiencia] = useState('Intermediário');
+  const [objetivoPrincipal, setObjetivoPrincipal] = useState('');
+  const [atividadeForaTreino, setAtividadeForaTreino] = useState('');
+  const [nivelExperiencia, setNivelExperiencia] = useState('');
 
   // ETAPA 3
-  const [diasDisponiveis, setDiasDisponiveis] = useState('4');
-  const [localTreino, setLocalTreino] = useState('Academia');
-  const [tempoSessao, setTempoSessao] = useState('45 min');
+  const [diasDisponiveis, setDiasDisponiveis] = useState('');
+  const [localTreino, setLocalTreino] = useState('');
+  const [tempoSessao, setTempoSessao] = useState('');
   const [divisaoPreferida, setDivisaoPreferida] = useState('Deixar a IA decidir');
 
   // ETAPA 4
-  const [restricaoFisica, setRestricaoFisica] = useState<string[]>(['Nenhuma']);
-  const [restricaoAlimentar, setRestricaoAlimentar] = useState<string[]>(['Nenhuma']);
-  const [refeicoesPorDia, setRefeicoesPorDia] = useState('4');
+  const [restricaoFisica, setRestricaoFisica] = useState<string[]>([]);
+  const [restricaoAlimentar, setRestricaoAlimentar] = useState<string[]>([]);
+  const [refeicoesPorDia, setRefeicoesPorDia] = useState('');
 
   // Sem o aceite dos dados de saúde o questionário não começa (PROJETO.md, seção 4).
   const [consentimentoConfirmado, setConsentimentoConfirmado] = useState(false);
@@ -166,6 +169,24 @@ export default function TelaQuestionario() {
   const safeParseNumber = (val: string) => Number(val.replace(',', '.'));
 
   const proximaEtapa = () => {
+    const pendentes = camposPendentes(etapa, {
+      sexo: sexoBiologico,
+      idade,
+      peso: pesoAtual,
+      altura,
+      objetivo: objetivoPrincipal,
+      atividade: atividadeForaTreino,
+      nivel: nivelExperiencia,
+      dias: diasDisponiveis,
+      local: localTreino,
+      tempo: tempoSessao,
+      restricaoFisica,
+      restricaoAlimentar,
+      refeicoes: refeicoesPorDia,
+    });
+    if (pendentes.length > 0) {
+      return Alert.alert('Falta responder', `Preencha: ${pendentes.join(', ')}.`);
+    }
     if (etapa === 1) {
       const v = validarIdade(safeParseNumber(idade));
       if (!v.valido) return Alert.alert('Aviso', v.mensagem);
@@ -270,6 +291,8 @@ export default function TelaQuestionario() {
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
+                placeholder="Ex.: 30"
+                placeholderTextColor={cores.textoSecundario}
                 value={idade}
                 onChangeText={setIdade}
               />
@@ -280,6 +303,8 @@ export default function TelaQuestionario() {
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
+                placeholder="Ex.: 70"
+                placeholderTextColor={cores.textoSecundario}
                 value={pesoAtual}
                 onChangeText={setPesoAtual}
               />
@@ -290,6 +315,8 @@ export default function TelaQuestionario() {
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
+                placeholder="Ex.: 170"
+                placeholderTextColor={cores.textoSecundario}
                 value={altura}
                 onChangeText={setAltura}
               />
@@ -372,6 +399,8 @@ export default function TelaQuestionario() {
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
+                placeholder="Ex.: 3"
+                placeholderTextColor={cores.textoSecundario}
                 value={diasDisponiveis}
                 onChangeText={setDiasDisponiveis}
               />
@@ -468,6 +497,8 @@ export default function TelaQuestionario() {
               <TextInput
                 style={estilos.input}
                 keyboardType="numeric"
+                placeholder="Ex.: 4"
+                placeholderTextColor={cores.textoSecundario}
                 value={refeicoesPorDia}
                 onChangeText={setRefeicoesPorDia}
               />

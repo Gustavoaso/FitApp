@@ -289,9 +289,10 @@ export default function TelaResultadoQuestionario() {
   const estiloBarra = [estilos.barra, { paddingBottom: Math.max(margens.bottom, Espacamento.lg) }];
 
   return (
-    <View style={estilos.container}>
+    // Área segura no container: o texto não rola por baixo do relógio (sem header nesta tela).
+    <View style={[estilos.container, { paddingTop: margens.top }]}>
       <ScrollView
-        contentContainerStyle={[estilos.rolagem, { paddingTop: margens.top + Espacamento.lg }]}
+        contentContainerStyle={[estilos.rolagem, { paddingTop: Espacamento.lg }]}
         contentInsetAdjustmentBehavior="never"
         showsVerticalScrollIndicator={false}
       >

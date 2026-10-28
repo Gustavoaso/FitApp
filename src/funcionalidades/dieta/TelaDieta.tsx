@@ -600,7 +600,8 @@ const criarEstilos = (cores: CoresTema) =>
     scrollContent: {
       paddingHorizontal: Espacamento.lg,
       paddingTop: Espacamento.sm, // o título grande fica no header nativo
-      paddingBottom: 120,
+      // FAB (bottom 90 + 60 de altura) + folga: o último "Log" rola para fora dele.
+      paddingBottom: 90 + 60 + Espacamento.xl,
     },
 
     // Seletor de Datas
@@ -637,7 +638,8 @@ const criarEstilos = (cores: CoresTema) =>
 
     // Card Calorias MFP
     cardCaloriasMFP: {
-      padding: 0,
+      // Com padding 0 o canto arredondado cortava o rótulo ("ALORIAS").
+      padding: Espacamento.lg,
       marginBottom: 0,
     },
     rowHeaderCalorias: {

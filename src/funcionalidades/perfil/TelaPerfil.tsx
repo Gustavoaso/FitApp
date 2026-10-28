@@ -308,28 +308,33 @@ export default function TelaPerfil() {
             <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
           </TouchableOpacity>
 
-          {/* Dev Tool: Inspetor JSON Interativo */}
-          <TouchableOpacity
-            style={estilos.itemOpcao}
-            onPress={lidarComAbrirInspectorJSON}
-            disabled={carregandoJSON}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[estilos.iconeOpcaoContainer, { backgroundColor: 'rgba(234, 179, 8, 0.15)' }]}
+          {/* Dev Tool: só em desenvolvimento, nunca para quem usa o app. */}
+          {__DEV__ ? (
+            <TouchableOpacity
+              style={estilos.itemOpcao}
+              onPress={lidarComAbrirInspectorJSON}
+              disabled={carregandoJSON}
+              activeOpacity={0.7}
             >
-              <SymbolView name="terminal.fill" size={18} tintColor={cores.destaque} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[estilos.tituloOpcao, { color: cores.destaque }]}>
-                {carregandoJSON ? 'Buscando JSON...' : 'Dev: Inspetor de JSON das APIs'}
-              </Text>
-              <Text style={estilos.subOpcao}>
-                Abre modal interativo para expandir/colapsar os objetos brutos
-              </Text>
-            </View>
-            <SymbolView name="chevron.right" size={14} tintColor={cores.destaque} />
-          </TouchableOpacity>
+              <View
+                style={[
+                  estilos.iconeOpcaoContainer,
+                  { backgroundColor: 'rgba(234, 179, 8, 0.15)' },
+                ]}
+              >
+                <SymbolView name="terminal.fill" size={18} tintColor={cores.destaque} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[estilos.tituloOpcao, { color: cores.destaque }]}>
+                  {carregandoJSON ? 'Buscando JSON...' : 'Dev: Inspetor de JSON das APIs'}
+                </Text>
+                <Text style={estilos.subOpcao}>
+                  Abre modal interativo para expandir/colapsar os objetos brutos
+                </Text>
+              </View>
+              <SymbolView name="chevron.right" size={14} tintColor={cores.destaque} />
+            </TouchableOpacity>
+          ) : null}
         </CardVidro>
 
         {/* ── Logout ────────────────────────────────────────── */}
