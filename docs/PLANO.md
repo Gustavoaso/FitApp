@@ -250,3 +250,19 @@
 ## Etapa 15: Testes finais: correções
 
 - Reservada. Só os CORRIGIR dos testes finais, sem dependência nova e sem premissa nova.
+
+## Etapa 16: atualizar para o Expo SDK 58 (pedido do dono em 2026-10-28)
+
+- **Por quê:** o Expo Go do iPhone do dono só abre projetos do SDK 58.
+- **Escopo:**
+  - `npx expo install expo@^58` e `npx expo install --fix`.
+  - Seguir os guias de atualização 55, 56, 57 e 58: React, React Native, expo-router e NativeTabs (a API pode ter saído de `unstable-`), reanimated/worklets, jest-expo e eslint-config-expo.
+  - Ajustar o código ao que quebrar, sem mudar comportamento.
+  - Atualizar o `AGENTS.md` com a versão nova.
+- **Pronto quando:**
+  - typecheck, lint, jest e format:check passam;
+  - `expo-doctor` passa;
+  - `npx expo export --platform ios` compila;
+  - o app abre no simulador pelo Expo Go do SDK 58.
+- **Dependências permitidas:** as versões do SDK 58 e o que o `expo install --fix` pedir.
+- **Premissas:** não se aplica.

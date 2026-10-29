@@ -2,7 +2,7 @@
 
 Fluxo: novo-projeto
 **Modo:** adotado
-**Fase:** concluído
+**Fase:** desenvolvimento
 **Branch:** agente/fitapp (base: gustavo-branch)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
@@ -38,6 +38,7 @@ Fluxo: novo-projeto
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
+| 16. Atualizar para o SDK 58 | Pendente | | |
 | 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
@@ -79,6 +80,8 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - 2026-10-27 (maestro, autonomia do dono): seg. item 4 — endurecer o Auth no `config.toml` local (senha mín. 8 com letras e dígitos, confirmação de e-mail); replicar no painel remoto é ação do dono.
 
 - 2026-10-27 (maestro): DECIDIR do testador-usuario — #8 inspetor JSON só em `__DEV__`; #12 questionário começa vazio (placeholders); #15 garantir que o momento de conquista apareça antes de ir às abas; #13 (superávit × fonte) fica para revisão do dono.
+
+- 2026-10-28: atualizar para o Expo SDK 58 para abrir no Expo Go do iPhone (etapa 16).
 
 ## Decisões do agente
 
