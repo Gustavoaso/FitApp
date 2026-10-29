@@ -22,8 +22,8 @@ const mockEsquema = useColorScheme as jest.Mock;
 describe.each(['dark', 'light'])('tema %s', (esquema) => {
   beforeEach(() => mockEsquema.mockReturnValue(esquema));
 
-  it('CardVidro mostra o conteúdo', () => {
-    render(
+  it('CardVidro mostra o conteúdo', async () => {
+    await render(
       <CardVidro rotuloAcessibilidade="Resumo do dia">
         <Text>Conteúdo</Text>
       </CardVidro>,
@@ -31,45 +31,45 @@ describe.each(['dark', 'light'])('tema %s', (esquema) => {
     expect(screen.getByLabelText('Resumo do dia')).toBeTruthy();
   });
 
-  it('BotaoPrimario é um botão e chama a ação', () => {
+  it('BotaoPrimario é um botão e chama a ação', async () => {
     const aoPresionar = jest.fn();
-    render(<BotaoPrimario texto="Salvar treino" aoPresionar={aoPresionar} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Salvar treino' }));
+    await render(<BotaoPrimario texto="Salvar treino" aoPresionar={aoPresionar} />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar treino' }));
     expect(aoPresionar).toHaveBeenCalledTimes(1);
   });
 
-  it('BotaoPrimario desabilitado não chama a ação', () => {
+  it('BotaoPrimario desabilitado não chama a ação', async () => {
     const aoPresionar = jest.fn();
-    render(<BotaoPrimario texto="Salvar" aoPresionar={aoPresionar} desabilitado />);
-    fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
+    await render(<BotaoPrimario texto="Salvar" aoPresionar={aoPresionar} desabilitado />);
+    await fireEvent.press(screen.getByRole('button', { name: 'Salvar' }));
     expect(aoPresionar).not.toHaveBeenCalled();
   });
 
-  it('AnelProgresso tem resumo para o VoiceOver', () => {
-    render(<AnelProgresso titulo="Proteína" atual={80} meta={120} unidade="g" />);
+  it('AnelProgresso tem resumo para o VoiceOver', async () => {
+    await render(<AnelProgresso titulo="Proteína" atual={80} meta={120} unidade="g" />);
     expect(screen.getByLabelText('Proteína: 80g de 120g')).toBeTruthy();
   });
 
-  it('Skeleton anuncia carregamento', () => {
-    render(<Skeleton />);
+  it('Skeleton anuncia carregamento', async () => {
+    await render(<Skeleton />);
     expect(screen.getByLabelText('Carregando')).toBeTruthy();
   });
 
-  it('EstadoVazio mostra a frase e a ação', () => {
+  it('EstadoVazio mostra a frase e a ação', async () => {
     const aoAgir = jest.fn();
-    render(
+    await render(
       <EstadoVazio titulo="Nenhuma refeição hoje" textoAcao="Adicionar refeição" aoAgir={aoAgir} />,
     );
     expect(screen.getByText('Nenhuma refeição hoje')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Adicionar refeição' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Adicionar refeição' }));
     expect(aoAgir).toHaveBeenCalledTimes(1);
   });
 
-  it('EstadoErro chama a ação ao tocar em "Tentar de novo"', () => {
+  it('EstadoErro chama a ação ao tocar em "Tentar de novo"', async () => {
     const aoTentarDeNovo = jest.fn();
-    render(<EstadoErro aoTentarDeNovo={aoTentarDeNovo} />);
+    await render(<EstadoErro aoTentarDeNovo={aoTentarDeNovo} />);
     expect(screen.getByText('Não foi possível carregar')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Tentar de novo' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(aoTentarDeNovo).toHaveBeenCalledTimes(1);
   });
 });

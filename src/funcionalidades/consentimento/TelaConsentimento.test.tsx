@@ -25,41 +25,41 @@ function botaoContinuar() {
   return screen.getByRole('button', { name: 'Continuar' });
 }
 
-it('mostra o aviso profissional', () => {
-  render(<TelaConsentimento />);
+it('mostra o aviso profissional', async () => {
+  await render(<TelaConsentimento />);
   expect(screen.getByText(AVISO_CONSENTIMENTO)).toBeTruthy();
 });
 
-it('sem o aceite, o Continuar fica desabilitado e não grava nada', () => {
-  render(<TelaConsentimento />);
+it('sem o aceite, o Continuar fica desabilitado e não grava nada', async () => {
+  await render(<TelaConsentimento />);
   expect(botaoContinuar()).toBeDisabled();
-  fireEvent.press(botaoContinuar());
+  await fireEvent.press(botaoContinuar());
   expect(mockRegistrar).not.toHaveBeenCalled();
   expect(mockReplace).not.toHaveBeenCalled();
 });
 
 it('com o aceite, grava e segue para o questionário', async () => {
   mockRegistrar.mockResolvedValue();
-  render(<TelaConsentimento />);
-  fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
+  await render(<TelaConsentimento />);
+  await fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
   expect(botaoContinuar()).toBeEnabled();
-  fireEvent.press(botaoContinuar());
+  await fireEvent.press(botaoContinuar());
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/questionario'));
   expect(mockRegistrar).toHaveBeenCalledTimes(1);
 });
 
-it('desmarcar o aceite desabilita de novo', () => {
-  render(<TelaConsentimento />);
-  fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
-  fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', false);
+it('desmarcar o aceite desabilita de novo', async () => {
+  await render(<TelaConsentimento />);
+  await fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
+  await fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', false);
   expect(botaoContinuar()).toBeDisabled();
 });
 
 it('se a gravação falha, avisa e não segue', async () => {
   mockRegistrar.mockRejectedValue(new Error('rede'));
-  render(<TelaConsentimento />);
-  fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
-  fireEvent.press(botaoContinuar());
+  await render(<TelaConsentimento />);
+  await fireEvent(screen.getByLabelText(TEXTO_ACEITE), 'valueChange', true);
+  await fireEvent.press(botaoContinuar());
   expect(await screen.findByText(/Não foi possível salvar seu aceite/)).toBeTruthy();
   expect(mockReplace).not.toHaveBeenCalled();
 });

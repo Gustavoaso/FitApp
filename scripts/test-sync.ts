@@ -8,8 +8,8 @@
 // npx tsx scripts/test-sync.ts
 // ============================================================
 
-import dotenv from 'dotenv';
-dotenv.config();
+// O dotenv deixou de vir junto com o Expo no SDK 58; o Node já lê o .env.
+process.loadEnvFile();
 
 async function testarTacoAPI() {
   console.log('\n========================================');

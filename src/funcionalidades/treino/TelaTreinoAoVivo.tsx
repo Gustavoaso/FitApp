@@ -140,20 +140,23 @@ export default function TelaTreinoAoVivo() {
 
   const exAtual = listaExercicios[indexExercicio] || EXERCICIOS_PADRAO[0];
 
+  // Um passo por segundo; o fim do descanso fica no callback (sem setState síncrono no efeito).
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-    if (emDescanso && tempoRestante > 0) {
-      interval = setInterval(() => {
-        setTempoRestante((t) => t - 1);
-      }, 1000);
-    } else if (tempoRestante === 0 && emDescanso) {
-      setEmDescanso(false);
-      // Confirmação discreta: o haptic e o rótulo do timer, que vira "Pronto".
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    if (!emDescanso) return;
+    const passo = setTimeout(
+      () => {
+        if (tempoRestante > 1) {
+          setTempoRestante(tempoRestante - 1);
+          return;
+        }
+        setTempoRestante(0);
+        setEmDescanso(false);
+        // Confirmação discreta: o haptic e o rótulo do timer, que vira "Pronto".
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      },
+      tempoRestante > 0 ? 1000 : 0,
+    );
+    return () => clearTimeout(passo);
   }, [emDescanso, tempoRestante]);
 
   // Rodada 3 — Ajuste 1: Conclui a série e registra automaticamente no progressoServico

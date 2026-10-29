@@ -24,10 +24,10 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
-it('comemora com mola e haptic Success, e segue sozinho', () => {
+it('comemora com mola e haptic Success, e segue sozinho', async () => {
   mockReduzir.mockReturnValue(false);
   const aoTerminar = jest.fn();
-  render(
+  await render(
     <MomentoConquista titulo="Treino concluído" subtitulo="Treino A" aoTerminar={aoTerminar} />,
   );
 
@@ -35,30 +35,30 @@ it('comemora com mola e haptic Success, e segue sozinho', () => {
   expect(Haptics.notificationAsync).toHaveBeenCalledWith('success');
   expect(mockMola).toHaveBeenCalledTimes(1);
   expect(aoTerminar).not.toHaveBeenCalled();
-  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
+  await act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
   expect(aoTerminar).toHaveBeenCalledTimes(1);
 });
 
-it('com Reduzir Movimento ligado, não anima (mantém o haptic)', () => {
+it('com Reduzir Movimento ligado, não anima (mantém o haptic)', async () => {
   mockReduzir.mockReturnValue(true);
   const aoTerminar = jest.fn();
-  render(<MomentoConquista titulo="Plano ativado" aoTerminar={aoTerminar} />);
+  await render(<MomentoConquista titulo="Plano ativado" aoTerminar={aoTerminar} />);
 
   expect(screen.getByText('Plano ativado')).toBeTruthy();
   expect(mockMola).not.toHaveBeenCalled();
   expect(Haptics.notificationAsync).toHaveBeenCalledWith('success');
-  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
+  await act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
   expect(aoTerminar).toHaveBeenCalledTimes(1);
 });
 
-it('um toque segue antes do tempo, e o tempo não chama de novo', () => {
+it('um toque segue antes do tempo, e o tempo não chama de novo', async () => {
   mockReduzir.mockReturnValue(false);
   const aoTerminar = jest.fn();
-  render(<MomentoConquista titulo="Plano ativado" aoTerminar={aoTerminar} />);
+  await render(<MomentoConquista titulo="Plano ativado" aoTerminar={aoTerminar} />);
 
-  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA - 100));
+  await act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA - 100));
   expect(aoTerminar).not.toHaveBeenCalled();
-  fireEvent.press(screen.getByLabelText('Plano ativado'));
-  act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
+  await fireEvent.press(screen.getByLabelText('Plano ativado'));
+  await act(() => jest.advanceTimersByTime(DURACAO_CONQUISTA));
   expect(aoTerminar).toHaveBeenCalledTimes(1);
 });

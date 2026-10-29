@@ -82,9 +82,14 @@ const INTERVALO_FASE_MS = 20_000;
 
 function useFaseGeracao(ativo: boolean) {
   const [fase, setFase] = useState(0);
+  // Volta à primeira fase quando a geração recomeça (ajuste no render, sem setState em efeito).
+  const [ativoAnterior, setAtivoAnterior] = useState(ativo);
+  if (ativo !== ativoAnterior) {
+    setAtivoAnterior(ativo);
+    if (ativo) setFase(0);
+  }
   useEffect(() => {
     if (!ativo) return;
-    setFase(0);
     const relogio = setInterval(
       () => setFase((f) => Math.min(f + 1, FASES_GERACAO.length - 1)),
       INTERVALO_FASE_MS,
@@ -115,23 +120,29 @@ export default function TelaResultadoQuestionario() {
   const [erroGeracao, setErroGeracao] = useState<string | null>(null);
   const fase = useFaseGeracao(gerando);
 
-  const gerar = useCallback(async () => {
+  // setState só nos callbacks da promessa, para poder rodar no efeito de abertura.
+  const executarGeracao = useCallback(() => {
+    if (!dadosRespostas) return;
+    gerarPlano(dadosRespostas)
+      .then((resultado) => setDadosPlano(resultado.plano))
+      .catch((erro) =>
+        setErroGeracao(erro instanceof Error ? erro.message : 'Não consegui gerar o plano.'),
+      )
+      .finally(() => setGerando(false));
+  }, [dadosRespostas]);
+
+  // "Tentar de novo": limpa o erro e mostra o carregando antes de gerar.
+  const gerar = () => {
     if (!dadosRespostas) return;
     setErroGeracao(null);
     setGerando(true);
-    try {
-      setDadosPlano((await gerarPlano(dadosRespostas)).plano);
-    } catch (erro) {
-      setErroGeracao(erro instanceof Error ? erro.message : 'Não consegui gerar o plano.');
-    } finally {
-      setGerando(false);
-    }
-  }, [dadosRespostas]);
+    executarGeracao();
+  };
 
-  // Gera uma vez ao abrir; "Tentar de novo" chama gerar de novo.
+  // Gera uma vez ao abrir; o estado inicial já está em "gerando".
   useEffect(() => {
-    if (gerarAoAbrir) gerar();
-  }, [gerarAoAbrir, gerar]);
+    if (gerarAoAbrir) executarGeracao();
+  }, [gerarAoAbrir, executarGeracao]);
 
   const ajustarRespostas = () => {
     router.push({

@@ -58,8 +58,8 @@ beforeEach(() => {
   };
 });
 
-it('mostra kcal, os 3 macros, a água, a fonte e o aviso', () => {
-  render(<TelaResultadoQuestionario />);
+it('mostra kcal, os 3 macros, a água, a fonte e o aviso', async () => {
+  await render(<TelaResultadoQuestionario />);
 
   expect(screen.getByText('Pessoa, seu plano está pronto')).toBeTruthy();
   expect(screen.getByText('2.480')).toBeTruthy();
@@ -73,9 +73,9 @@ it('mostra kcal, os 3 macros, a água, a fonte e o aviso', () => {
   expect(screen.getByText(AVISO_PROFISSIONAL)).toBeTruthy();
 });
 
-it('tocar na fonte abre o trecho no formSheet', () => {
-  render(<TelaResultadoQuestionario />);
-  fireEvent.press(screen.getByRole('link', { name: 'Fonte: Morton et al., 2018' }));
+it('tocar na fonte abre o trecho no formSheet', async () => {
+  await render(<TelaResultadoQuestionario />);
+  await fireEvent.press(screen.getByRole('link', { name: 'Fonte: Morton et al., 2018' }));
   expect(mockPush).toHaveBeenCalledWith({
     pathname: '/questionario/fonte',
     params: FUNDAMENTO,
@@ -84,8 +84,8 @@ it('tocar na fonte abre o trecho no formSheet', () => {
 
 it('aceitar salva e mostra o momento de conquista', async () => {
   (repositorioPlano.salvarPlanoComoAtivo as jest.Mock).mockResolvedValue(undefined);
-  render(<TelaResultadoQuestionario />);
-  fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
+  await render(<TelaResultadoQuestionario />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
   expect(
     await screen.findByLabelText('Plano ativado. Seu primeiro dia começa agora.'),
   ).toBeTruthy();
@@ -94,27 +94,27 @@ it('aceitar salva e mostra o momento de conquista', async () => {
 
 it('erro ao salvar aparece na barra e não comemora', async () => {
   (repositorioPlano.salvarPlanoComoAtivo as jest.Mock).mockRejectedValue(new Error('Sem conexão.'));
-  render(<TelaResultadoQuestionario />);
-  fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
+  await render(<TelaResultadoQuestionario />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
   await waitFor(() => expect(screen.getByText('Sem conexão.')).toBeTruthy());
   expect(screen.queryByText('Plano ativado')).toBeNull();
 });
 
-it('mostra o aviso de grupo que ficou fora do treino', () => {
+it('mostra o aviso de grupo que ficou fora do treino', async () => {
   const aviso = 'Não achei exercício de bíceps; o grupo ficou fora do treino.';
   mockParametros = { ...mockParametros, plano: JSON.stringify({ ...PLANO, avisos: [aviso] }) };
-  render(<TelaResultadoQuestionario />);
+  await render(<TelaResultadoQuestionario />);
   expect(screen.getByText(aviso)).toBeTruthy();
 });
 
-it('enquanto gera, o texto avança de "Montando seu treino" para "Escolhendo alimentos"', () => {
+it('enquanto gera, o texto avança de "Montando seu treino" para "Escolhendo alimentos"', async () => {
   jest.useFakeTimers();
   (gerarPlano as jest.Mock).mockReturnValue(new Promise(() => {}));
   mockParametros = { respostas: JSON.stringify({ perfil: { nome: 'Pessoa Teste' } }) };
-  render(<TelaResultadoQuestionario />);
+  await render(<TelaResultadoQuestionario />);
   expect(screen.getByText('Montando seu treino…')).toBeTruthy();
   expect(screen.getByText('Isso pode levar até 3 minutos.')).toBeTruthy();
-  act(() => jest.advanceTimersByTime(20_000));
+  await act(() => jest.advanceTimersByTime(20_000));
   expect(screen.getByText('Escolhendo alimentos…')).toBeTruthy();
   jest.useRealTimers();
 });

@@ -148,12 +148,6 @@ export default function TelaDieta() {
   const [planoEditavel, setPlanoEditavel] = useState<PlanoIAGerado | null>(null);
   const [salvandoPlano, setSalvandoPlano] = useState(false);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      carregarDados();
-    }, [dataSelecionada]),
-  );
-
   const carregarDados = async () => {
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
     if (metas) {
@@ -197,6 +191,12 @@ export default function TelaDieta() {
       setPlanoEditavel(ultimoPlano.plano_gerado);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      carregarDados();
+    }, [dataSelecionada]),
+  );
 
   // Navegação de datas (< Hoje >)
   const mudarData = (dias: number) => {

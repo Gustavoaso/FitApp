@@ -8,7 +8,7 @@ Aplicativo fitness mobile de alta performance para o público brasileiro, gerand
 
 | Camada | Tecnologia |
 |--------|-----------|
-| **Mobile** | React Native (0.81) + Expo SDK 54 (Expo Router v6) |
+| **Mobile** | React Native (0.88) + Expo SDK 58 (Expo Router 58) |
 | **Estilização** | Liquid Glass Design (Apple iOS HIG / SF Symbols / Expo Blur) |
 | **Backend & Banco** | Supabase (PostgreSQL + Auth + Edge Functions) |
 | **IA / LLM** | Ollama local (etapa 9; geração indisponível até lá) |

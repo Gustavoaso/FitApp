@@ -77,41 +77,49 @@ export function BuscaAlimentosModal({
   const [nomeReceita, setNomeReceita] = useState('');
   const [editandoReceita, setEditandoReceita] = useState(false);
 
-  useEffect(() => {
-    if (!visivel) return;
-    setTermo('');
-    setAbaAtiva('recentes');
-    setItensSelecionadosReceita([]);
-    setNomeReceita('');
-    setEditandoReceita(false);
-    carregarDados();
-  }, [visivel]);
+  // Ao abrir, volta ao estado inicial (ajuste no render, sem setState síncrono em efeito).
+  const [visivelAnterior, setVisivelAnterior] = useState(visivel);
+  if (visivel !== visivelAnterior) {
+    setVisivelAnterior(visivel);
+    if (visivel) {
+      setTermo('');
+      setAbaAtiva('recentes');
+      setItensSelecionadosReceita([]);
+      setNomeReceita('');
+      setEditandoReceita(false);
+    }
+  }
 
-  const carregarDados = async () => {
-    const [alimentos, favs, receitasUsuario] = await Promise.all([
+  // setState só nos callbacks da promessa: o lint do React Compiler aceita no efeito.
+  const carregarDados = () =>
+    Promise.all([
       repositorioDieta.buscarAlimentosRecentes(),
       repositorioDieta.buscarFavoritosUsuario(),
       repositorioDieta.buscarReceitasUsuario(),
-    ]);
-    const favsIds = new Set((favs || []).map((f: any) => String(f.id)));
-    setBaseAlimentos(
-      (alimentos || []).map((item: any, idx: number) => ({
-        ...item,
-        id: String(item.id || `base-${idx}`),
-        favorito: favsIds.has(String(item.id)),
-        verificado: Boolean(item.id_externo),
-      })),
-    );
-    setFavoritos(
-      (favs || []).map((item: any, idx: number) => ({
-        ...item,
-        id: String(item.id || `fav-${idx}`),
-        favorito: true,
-        verificado: Boolean(item.id_externo),
-      })),
-    );
-    setReceitas(receitasUsuario || []);
-  };
+    ]).then(([alimentos, favs, receitasUsuario]) => {
+      const favsIds = new Set((favs || []).map((f: any) => String(f.id)));
+      setBaseAlimentos(
+        (alimentos || []).map((item: any, idx: number) => ({
+          ...item,
+          id: String(item.id || `base-${idx}`),
+          favorito: favsIds.has(String(item.id)),
+          verificado: Boolean(item.id_externo),
+        })),
+      );
+      setFavoritos(
+        (favs || []).map((item: any, idx: number) => ({
+          ...item,
+          id: String(item.id || `fav-${idx}`),
+          favorito: true,
+          verificado: Boolean(item.id_externo),
+        })),
+      );
+      setReceitas(receitasUsuario || []);
+    });
+
+  useEffect(() => {
+    if (visivel) carregarDados();
+  }, [visivel]);
 
   useEffect(() => {
     const carregarPesquisa = async () => {

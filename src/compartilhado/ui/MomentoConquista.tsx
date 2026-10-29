@@ -35,8 +35,11 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
   const escala = useSharedValue(reduzirMovimento ? 1 : 0.6);
 
   // Ref: o efeito roda uma vez, mesmo que o pai recrie aoTerminar a cada render.
+  // Atualizada num efeito: ler ou escrever ref durante o render quebra a regra do React Compiler.
   const aoTerminarRef = useRef(aoTerminar);
-  aoTerminarRef.current = aoTerminar;
+  useEffect(() => {
+    aoTerminarRef.current = aoTerminar;
+  });
   // Toque e tempo podem chegar juntos: segue uma vez só.
   const terminou = useRef(false);
   const terminar = () => {
@@ -78,7 +81,7 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
 
 const estilos = StyleSheet.create({
   fundo: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'center',
     padding: Espacamento.xxl,

@@ -97,12 +97,6 @@ export default function TelaInicio() {
 
   const porcentagemCalorias = Math.round((caloriasConsumidas / (caloriasMeta || 1)) * 100);
 
-  useFocusEffect(
-    useCallback(() => {
-      carregarDadosProgresso();
-    }, []),
-  );
-
   const carregarDadosProgresso = async () => {
     const cargas = await obterEvolucaoCargas();
     const datasTreino = cargas.flatMap((c) => c.historicoCargas.map((h) => h.data));
@@ -196,6 +190,12 @@ export default function TelaInicio() {
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarDadosProgresso();
+    }, []),
+  );
 
   const lidarComSalvarPeso = async () => {
     const valor = parseFloat(novoPesoStr.replace(',', '.'));

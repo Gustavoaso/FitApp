@@ -13,8 +13,9 @@ it.each([
   ['dark', true, CoresEscuro],
   ['light', false, CoresClaro],
   [null, true, CoresEscuro],
-])('esquema %s → escuro=%s', (esquema, escuro, cores) => {
+])('esquema %s → escuro=%s', async (esquema, escuro, cores) => {
   mockEsquema.mockReturnValue(esquema);
-  const { result } = renderHook(() => useTema());
+  // No RNTL 14 o renderHook é assíncrono.
+  const { result } = await renderHook(() => useTema());
   expect(result.current).toEqual({ escuro, cores });
 });

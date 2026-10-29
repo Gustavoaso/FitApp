@@ -89,18 +89,18 @@ export default function TelaPerfil() {
   // Aparência
   const [temaSelecionado, setTemaSelecionado] = useState('OLED Preto Puro');
 
-  useFocusEffect(
-    useCallback(() => {
-      carregarPerfilReal();
-    }, []),
-  );
-
   const carregarPerfilReal = async () => {
     const perfilBanco = await repositorioPlano.obterPerfilUsuario();
     const ultimasRespostas = await repositorioPlano.obterUltimasRespostasQuestionario();
 
     setDadosFisicos(montarDadosFisicos(perfilBanco, ultimasRespostas, sistemaUnidades));
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarPerfilReal();
+    }, []),
+  );
 
   const lidarComSair = async () => {
     Alert.alert('Sair da conta', 'Tem certeza que deseja sair?', [

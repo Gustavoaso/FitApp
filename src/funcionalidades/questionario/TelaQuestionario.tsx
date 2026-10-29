@@ -85,7 +85,11 @@ export default function TelaQuestionario() {
     });
   }, []);
 
-  useEffect(() => {
+  // Respostas vindas de "Ajustar respostas": o estado se ajusta durante o render
+  // quando o parâmetro muda (o lint do SDK 58 veta setState síncrono em efeito).
+  const [dadosAplicados, setDadosAplicados] = useState<string | undefined>();
+  if (dadosFormulario !== dadosAplicados) {
+    setDadosAplicados(dadosFormulario);
     if (dadosFormulario) {
       try {
         const parsed = JSON.parse(dadosFormulario);
@@ -125,7 +129,7 @@ export default function TelaQuestionario() {
         console.error('Erro ao fazer parse dos dadosFormulario:', e);
       }
     }
-  }, [dadosFormulario]);
+  }
 
   const totalEtapas = 4;
 

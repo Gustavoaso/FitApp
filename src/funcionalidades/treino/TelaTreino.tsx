@@ -161,12 +161,6 @@ export default function TelaTreino() {
   const [novaCarga, setNovaCarga] = useState('60');
   const [novoDescanso, setNovoDescanso] = useState('60');
 
-  useFocusEffect(
-    useCallback(() => {
-      carregarPlanos();
-    }, [diaSelecionado]),
-  );
-
   const carregarPlanos = async () => {
     const dados = await obterPlanoTreinoCustomizado();
     setPlanos(dados);
@@ -191,6 +185,12 @@ export default function TelaTreino() {
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarPlanos();
+    }, [diaSelecionado]),
+  );
 
   const [diasExpandidos, setDiasExpandidos] = useState<Record<string, boolean>>({});
 
