@@ -2,7 +2,7 @@
 
 Fluxo: novo-projeto
 **Modo:** adotado
-**Fase:** desenvolvimento
+**Fase:** concluído
 **Branch:** agente/fitapp (base: gustavo-branch)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
@@ -38,7 +38,7 @@ Fluxo: novo-projeto
 | 13. Avaliação dos planos | Concluída (testador: APROVADO) | 1 | 96086df |
 | 13b. Qualidade da geração | Concluída (testador: APROVADO) | 1 | dcd98fe |
 | 14. Preparação para os testes finais | Concluída (testador: APROVADO) | 2 | d7a89f9, 4e07e63 |
-| 16. Atualizar para o SDK 58 | Implementada, aguardando o testador | 1 | |
+| 16. Atualizar para o SDK 58 | Concluída (testador: APROVADO) | 1 | b031459 |
 | 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
