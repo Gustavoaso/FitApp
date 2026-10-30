@@ -60,7 +60,7 @@ Regra padrão de RLS: cada usuário só os próprios registros. As tabelas `base
 - **RN11:** o plano é salvo de forma **transacional** pela RPC `salvar_plano_gerado(jsonb)`. Nunca fica plano pela metade.
 - **RN12:** o prompt **nunca** leva nome, e-mail nem ID do usuário.
 - **RN13:** limite de **5 gerações por usuário por dia** (fuso `America/Sao_Paulo`), contado em `planos_ia_gerados` e checado na RPC.
-- **RN14:** exercícios e alimentos vêm por filtro SQL (`is_curado`, grupo, equipamento, nível, restrições). Diretrizes vêm por busca vetorial em `base_conhecimento` (embeddings `mxbai-embed-large` gerados no Ollama).
+- **RN14 (revista em 2026-10-30):** exercícios e alimentos vêm por **RAG híbrido**: busca vetorial (`mxbai-embed-large`, embeddings já gravados em `base_exercicios` e `base_alimentos`) ordena os candidatos pelo objetivo e nível, e filtros SQL tiram o que não pode entrar (equipamento que a pessoa não tem, restrição alimentar, macros inválidos). `is_curado` continua obrigatório para exercícios e deixa de ser para alimentos. Diretrizes continuam por busca vetorial em `base_conhecimento`.
 - **RN15:** a `base_conhecimento` tem de 40 a 60 trechos curados (de 100 a 300 palavras cada), sempre com a fonte (ACSM, ISSN, Schoenfeld, Morton 2018, Helms). Eles aparecem na tela de resultado como justificativa.
 - **RN16 (segurança de saúde):** não gera plano para menores de 18 anos nem para IMC < 16 ou > 45. As calorias-alvo nunca ficam abaixo de **1.200 kcal (mulher) / 1.500 kcal (homem)**. Nesses casos, mostra uma mensagem recomendando um profissional. `PREMISSA` revisável.
 

@@ -266,3 +266,23 @@
   - o app abre no simulador pelo Expo Go do SDK 58.
 - **Dependências permitidas:** as versões do SDK 58 e o que o `expo install --fix` pedir.
 - **Premissas:** não se aplica.
+
+## Etapa 17: RAG híbrido para exercícios e alimentos (decisão do dono em 2026-10-30)
+
+- **Escopo:**
+  - RPCs `buscar_exercicios_rag` e `buscar_alimentos_rag` (migration nova), com:
+    - similaridade vetorial ordenando os candidatos;
+    - filtros duros: exercício `is_curado`, grupo e equipamento; alimento com macros válidos e kcal > 0, e restrições;
+    - limite por grupo ou slot;
+    - `security invoker`, `search_path` fixo e execute só para `authenticated`.
+  - O serviço de geração passa a buscar por essas RPCs, com o embedding da consulta (objetivo, nível, restrições) gerado no Ollama, um só por geração.
+  - Se a busca vetorial vier vazia, amplia como a etapa 13b.
+  - Remover a obrigatoriedade de `is_curado` para alimentos.
+  - Atualizar `scripts/ingestao-embeddings.py` se o formato do texto mudar (sem obrigação).
+- **Pronto quando:**
+  - teste SQL das RPCs (ordem por similaridade, filtros de equipamento e restrição, `anon` sem acesso);
+  - testes do serviço com as RPCs simuladas;
+  - avaliação com o script `avaliar-planos.ts` no banco local com pelo menos 6 de 8 perfis aprovados;
+  - typecheck, lint, jest e format:check passam.
+- **Dependências permitidas:** nenhuma nova.
+- **Premissas:** pode, exceto RN16.
