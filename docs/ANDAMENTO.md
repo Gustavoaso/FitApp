@@ -142,7 +142,9 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 - 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.
 - Não verificado: excluir conta e cadastro novo ponta a ponta (Edge Functions e e-mail não rodam no local); momento de conquista visto no simulador; teclado da carga e texto XXL depois de ab8de6d; erro de rede; VoiceOver real.
-- Migrations novas (baseline + 2026-10-26/27) ainda não aplicadas no remoto: fazer `supabase migration repair` das 001–028 antes do `db push`.
+- 2026-10-29: produção recriada a partir das migrations (tabelas de usuário estavam vazias), preservando 23.413 alimentos e 873 exercícios; 47 trechos de conhecimento carregados; `vector` movida para `extensions`; histórico de migrations reparado (7 locais = remoto). Backup e scripts em `~/Documents/Projetos/FitApp-backups/2026-10-29/`. Schema `legado_20261029` ainda em produção, para apagar após o dono confirmar.
+- `alimentos_favoritos.alimento_id` é `uuid` nas migrations, mas `base_alimentos.id` é `bigint`: corrigir numa migration nova.
+- Tofu e proteína de soja estão só no seed local, não na base de produção.
 - Revisar: plano gerado já fica ativo sem o aceite; superávit indicado × fonte (#13); 47 referências escritas de memória.
 
 - `excluir-conta` não foi chamada de verdade (edge-runtime desligado): conferir no teste de ponta a ponta.
