@@ -24,9 +24,9 @@ type Schema = Record<string, unknown>;
 // Caracteres de cada diretriz no prompt; o texto inteiro continua nos fundamentos.
 const LIMITE_DIRETRIZ = 300;
 
-function enumIds(ids: string[]): Schema {
+function enumIds(ids: string[], nome: string): Schema {
   // `enum` vazio é inválido em JSON Schema: falta de candidato é erro do chamador.
-  if (ids.length === 0) throw new Error('Sem candidatos para um grupo ou slot.');
+  if (ids.length === 0) throw new Error(`Sem candidatos para um grupo ou slot (${nome}).`);
   return { type: 'string', enum: ids };
 }
 
@@ -44,7 +44,7 @@ export function montarSchemaEscolha(
       const n = Math.min(quantidade, ids.length);
       propriedades[grupo] = {
         type: 'array',
-        items: enumIds(ids),
+        items: enumIds(ids, grupo),
         minItems: n,
         maxItems: n,
         uniqueItems: true,
@@ -67,7 +67,10 @@ export function montarSchemaEscolha(
 
   const slotsSchema: Record<string, Schema> = {};
   for (const slot of SLOTS) {
-    slotsSchema[slot] = enumIds(alimentos.filter((a) => a.slot === slot).map((a) => a.id));
+    slotsSchema[slot] = enumIds(
+      alimentos.filter((a) => a.slot === slot).map((a) => a.id),
+      slot,
+    );
   }
   const refeicao = {
     type: 'object',
