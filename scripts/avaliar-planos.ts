@@ -241,7 +241,8 @@ async function conferirBases() {
   for (const tabela of ['base_exercicios', 'base_alimentos', 'base_conhecimento'] as const) {
     const consulta = supabase.from(tabela).select('id', { count: 'exact', head: true });
     const { count, error } =
-      tabela === 'base_conhecimento' ? await consulta : await consulta.eq('is_curado', true);
+      // Só exercício exige curadoria (RN14 revista na etapa 17).
+      tabela === 'base_exercicios' ? await consulta.eq('is_curado', true) : await consulta;
     if (error)
       falhar(`Supabase local não respondeu (${error.message}). Rode \`npx supabase start\`.`);
     if (!count)
@@ -357,7 +358,8 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
       rotulo,
       segundos,
       situacao: 'falhou',
-      detalhes: [erro instanceof Error ? erro.message : String(erro), ...avisos],
+      // Erro do supabase-js não é Error: mostra o JSON (código e mensagem).
+      detalhes: [erro instanceof Error ? erro.message : JSON.stringify(erro), ...avisos],
     };
   } finally {
     console.warn = warnOriginal;

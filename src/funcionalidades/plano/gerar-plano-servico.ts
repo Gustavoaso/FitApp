@@ -2,7 +2,8 @@
 // SERVIÇO: geração ponta a ponta (RN06, RN10, RN11, RN13, RN14)
 // ============================================================
 // 1. Travas de saúde e metas (código).
-// 2. Candidatos por SQL e diretrizes por vetor (RAG).
+// 2. RAG híbrido (RN14): um embedding da consulta ordena exercícios,
+//    alimentos e diretrizes; filtros SQL tiram o que não pode entrar.
 // 3. LLM escolhe IDs; validação; 1 retry com os erros.
 // 4. RPC salvar_plano_gerado grava tudo numa transação e
 //    recusa a 6ª geração do dia. Falha antes daqui não grava nada.
@@ -12,8 +13,11 @@ import { supabase } from '@/compartilhado/supabase';
 import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { calcularTudo } from '@/compartilhado/utilidades';
 import {
+  equipamentosDaBase,
   mapearAlimento,
   mapearRespostas,
+  PROTEINA_VEGETAL,
+  termosExcluidos,
   paraPlanoGerado,
   type EntradaMotor,
   type LinhaAlimento,
@@ -54,26 +58,40 @@ function limitarPor<T, K>(itens: T[], chave: (item: T) => K, maximo: number): T[
   });
 }
 
-async function buscarExercicios(): Promise<LinhaExercicio[]> {
-  // Todos os níveis: a seleção amplia o nível quando um grupo fica vazio.
-  const { data, error } = await supabase
-    .from('base_exercicios')
-    .select('id, nome, grupo_primario, grupo_secundario, equipamento, tipo_movimento, nivel')
-    .eq('is_curado', true)
-    .limit(2000);
+// PREMISSA: margem de candidatos vindos do banco por grupo/slot, para a
+// seleção ainda ampliar nível e grupo secundário e filtrar restrição física.
+const POR_GRUPO_BANCO = 30;
+const POR_SLOT_BANCO = POR_SLOT * 4;
+
+async function buscarExercicios(
+  entrada: EntradaMotor,
+  embedding: string,
+): Promise<LinhaExercicio[]> {
+  // Todos os níveis e já ordenados pelo vetor: a seleção amplia o nível quando um grupo fica vazio.
+  const { data, error } = await supabase.rpc('buscar_exercicios_rag', {
+    query_embedding: embedding,
+    filtro_equipamento: equipamentosDaBase(entrada.equipamentos),
+    limite_por_grupo: POR_GRUPO_BANCO,
+  });
   if (error) throw error;
   return (data ?? []) as LinhaExercicio[];
 }
 
-async function buscarAlimentos(entrada: EntradaMotor): Promise<AlimentoCandidato[]> {
-  const { data, error } = await supabase
-    .from('base_alimentos')
-    .select('id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g')
-    .eq('is_curado', true)
-    .limit(1000);
+async function buscarAlimentos(
+  entrada: EntradaMotor,
+  embedding: string,
+): Promise<AlimentoCandidato[]> {
+  const vegano = entrada.restricoes.includes('vegano');
+  const { data, error } = await supabase.rpc('buscar_alimentos_rag', {
+    query_embedding: embedding,
+    termos_excluidos: termosExcluidos(entrada.restricoes),
+    termos_proteina: vegano ? PROTEINA_VEGETAL : null,
+    limite_por_slot: POR_SLOT_BANCO,
+  });
   if (error) throw error;
+  // O código confere de novo (slot e restrições): o banco só pré-filtra.
   const candidatos = ((data ?? []) as LinhaAlimento[])
-    .map((linha) => mapearAlimento(linha, entrada.restricoes.includes('vegano')))
+    .map((linha) => mapearAlimento(linha, vegano))
     .filter(
       (a): a is AlimentoCandidato =>
         a !== null && entrada.restricoes.every((r) => a.restricoesAtendidas.includes(r)),
@@ -87,12 +105,18 @@ interface Trecho {
   conteudo: string;
 }
 
-async function buscarDiretrizes(entrada: EntradaMotor): Promise<Trecho[]> {
-  const embedding = await gerarEmbedding(
-    `${PREFIXO_CONSULTA}treino e dieta para ${entrada.objetivo}, nível ${entrada.nivel}`,
+/** Um só embedding por geração (o Ollama roda num Mac de 8 GB). */
+async function embeddingDaConsulta(entrada: EntradaMotor): Promise<string> {
+  const restricoes = entrada.restricoes.length > 0 ? `, ${entrada.restricoes.join(', ')}` : '';
+  const vetor = await gerarEmbedding(
+    `${PREFIXO_CONSULTA}treino e dieta para ${entrada.objetivo}, nível ${entrada.nivel}${restricoes}`,
   );
+  return JSON.stringify(vetor);
+}
+
+async function buscarDiretrizes(entrada: EntradaMotor, embedding: string): Promise<Trecho[]> {
   const { data, error } = await supabase.rpc('buscar_conhecimento_rag', {
-    query_embedding: JSON.stringify(embedding),
+    query_embedding: embedding,
     filtro_objetivo: entrada.objetivo,
     filtro_nivel: entrada.nivel,
     limite: 3,
@@ -111,9 +135,13 @@ async function escolherComRetry(
   entrada: EntradaMotor,
   meta: ReturnType<typeof metaDe>,
   diretrizes: string[],
+  embedding: string,
 ) {
   const divisao = montarDivisaoSemanal(entrada.diasPorSemana);
-  const [linhas, alimentos] = await Promise.all([buscarExercicios(), buscarAlimentos(entrada)]);
+  const [linhas, alimentos] = await Promise.all([
+    buscarExercicios(entrada, embedding),
+    buscarAlimentos(entrada, embedding),
+  ]);
   const selecao = selecionarExercicios(
     linhas,
     entrada,
@@ -201,11 +229,13 @@ export async function montarPlanoGerado(dados: DadosQuestionario): Promise<Plano
   const travas = verificarTravasSaude({ ...entrada, caloriasAlvo: calculo.caloriasAlvo });
   if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
 
-  const trechos = await buscarDiretrizes(entrada);
+  const embedding = await embeddingDaConsulta(entrada);
+  const trechos = await buscarDiretrizes(entrada, embedding);
   const { plano, divisao, avisos } = await escolherComRetry(
     entrada,
     metaDe(calculo),
     trechos.map((t) => t.conteudo),
+    embedding,
   );
   const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
   return {

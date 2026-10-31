@@ -154,6 +154,14 @@ const EQUIPAMENTO_CASA = [
 ];
 const EQUIPAMENTO_CORPO = ['peso_corporal', 'peso-do-corpo', 'nenhum', 'não especificado'];
 
+/** Equipamentos da base que a pessoa tem (filtro da RPC); null na academia, que tem tudo. */
+export function equipamentosDaBase(equipamentos: EquipamentosDisponiveis): string[] | null {
+  if (equipamentos === 'academia_completa') return null;
+  const lista =
+    equipamentos === 'home_gym' ? [...EQUIPAMENTO_CASA, ...EQUIPAMENTO_CORPO] : EQUIPAMENTO_CORPO;
+  return lista.map(semAcento);
+}
+
 export interface LinhaExercicio {
   id: string;
   nome: string;
@@ -251,6 +259,18 @@ const PROIBIDOS: Record<Exclude<RestricaoAlimentar, 'nenhuma'>, string[]> = {
   ],
 };
 
+/** Termos que a RPC exclui do nome/categoria; vegano leva os do vegetariano junto. */
+export function termosExcluidos(restricoes: RestricaoAlimentar[]): string[] {
+  const termos = restricoes.flatMap((r) =>
+    r === 'nenhuma'
+      ? []
+      : r === 'vegano'
+        ? [...PROIBIDOS.vegano, ...PROIBIDOS.vegetariano]
+        : PROIBIDOS[r],
+  );
+  return [...new Set(termos)];
+}
+
 // PREMISSA: palavras que marcam exercício de risco para cada restrição física.
 // Na dúvida, exclui: joelho = impacto, salto e flexão profunda; ombro = carga
 // acima da cabeça e arremessos; coluna = carga axial e flexão de tronco com peso.
@@ -331,7 +351,7 @@ export function respeitaRestricoesFisicas(nome: string, restricoes: RestricaoFis
 }
 
 // PREMISSA: proteína vegetal que o vegano usa no slot de proteína, mesmo sem 40% das kcal.
-const PROTEINA_VEGETAL = [
+export const PROTEINA_VEGETAL = [
   'leguminosas',
   'feijao',
   'grao-de-bico',
@@ -341,6 +361,11 @@ const PROTEINA_VEGETAL = [
   'soja',
   'tempeh',
 ];
+
+// PREMISSA: fonte de carboidrato da refeição tem ao menos 12 g/100 g. Leite,
+// iogurte, verduras e frutas aguadas não fecham a meta dentro do limite de gramas
+// e, com a ordem por vetor (etapa 17), chegavam ao topo do slot. Igual na RPC.
+export const CARBOIDRATO_MIN_100G = 12;
 
 /**
  * Classifica pelo macro dominante em kcal; alimento sem slot claro fica de fora.
@@ -361,7 +386,8 @@ export function mapearAlimento(
   if ((proteina * 4) / kcal >= 0.4) slot = 'proteina';
   else if (proteinaVegetal && PROTEINA_VEGETAL.some((p) => texto.includes(p))) slot = 'proteina';
   else if ((gordura * 9) / kcal >= 0.6) slot = 'complemento';
-  else if ((carboidrato * 4) / kcal >= 0.5) slot = 'carboidrato';
+  else if ((carboidrato * 4) / kcal >= 0.5 && carboidrato >= CARBOIDRATO_MIN_100G)
+    slot = 'carboidrato';
   if (!slot) return null;
 
   const atende = (r: Exclude<RestricaoAlimentar, 'nenhuma'>) =>

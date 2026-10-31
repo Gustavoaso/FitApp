@@ -1,10 +1,12 @@
 import type { DadosQuestionario } from '@/compartilhado/tipos';
 import {
+  equipamentosDaBase,
   mapearAlimento,
   mapearExercicio,
   mapearRespostas,
   perfilDoQuestionario,
   respeitaRestricoesFisicas,
+  termosExcluidos,
   type LinhaAlimento,
 } from './mapear-plano';
 
@@ -304,5 +306,37 @@ describe('proteína vegetal (vegano)', () => {
     });
     expect(mapearAlimento(tofu, true)?.slot).toBe('proteina');
     expect(mapearAlimento(arroz, true)?.slot).toBe('carboidrato');
+  });
+});
+
+describe('filtros das RPCs do RAG híbrido', () => {
+  it('equipamento: academia sem filtro; casa inclui o corpo; corpo só o corpo, sem acento', () => {
+    expect(equipamentosDaBase('academia_completa')).toBeNull();
+    const casa = equipamentosDaBase('home_gym');
+    expect(casa).toEqual(expect.arrayContaining(['halteres', 'kettlebell', 'peso-do-corpo']));
+    expect(casa).not.toContain('barra');
+    const corpo = equipamentosDaBase('peso_corporal');
+    expect(corpo).toContain('nao especificado');
+    expect(corpo).not.toContain('halteres');
+  });
+
+  it('termos: nenhuma ou lista vazia não exclui nada; vegano soma os do vegetariano sem repetir', () => {
+    expect(termosExcluidos([])).toEqual([]);
+    expect(termosExcluidos(['nenhuma'])).toEqual([]);
+    const vegano = termosExcluidos(['vegano']);
+    expect(vegano).toEqual(expect.arrayContaining(['ovo', 'leite', 'frango', 'carne']));
+    const juntos = termosExcluidos(['vegano', 'sem_lactose']);
+    expect(juntos.filter((t) => t === 'leite')).toHaveLength(1);
+    expect(termosExcluidos(['sem_gluten'])).toContain('pao');
+    expect(termosExcluidos(['sem_gluten'])).not.toContain('leite');
+  });
+});
+
+describe('fonte de carboidrato', () => {
+  it('abaixo de 12 g/100 g não vira carboidrato; no limite, vira', () => {
+    const leite = linhaAlimento({ calorias_100g: 35, proteinas_100g: 3.4, carboidratos_100g: 5 });
+    const limite = linhaAlimento({ calorias_100g: 56, proteinas_100g: 1, carboidratos_100g: 12 });
+    expect(mapearAlimento(leite)).toBeNull();
+    expect(mapearAlimento(limite)?.slot).toBe('carboidrato');
   });
 });

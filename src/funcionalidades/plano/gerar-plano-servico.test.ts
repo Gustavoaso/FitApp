@@ -4,9 +4,8 @@ import { ErroGeracao, gerarPlano, MENSAGEM_FALHA, MENSAGEM_LIMITE } from './gera
 import { MENSAGEM_PROFISSIONAL } from './motor/travas-saude';
 import { MENSAGEM_OLLAMA_FORA } from './ollama-cliente';
 
-jest.mock('@/compartilhado/supabase', () => ({ supabase: { from: jest.fn(), rpc: jest.fn() } }));
+jest.mock('@/compartilhado/supabase', () => ({ supabase: { rpc: jest.fn() } }));
 
-const from = supabase.from as jest.Mock;
 const rpc = supabase.rpc as jest.Mock;
 
 // Dados fictícios. Nomes de grupo como estão na base (traduzidos do free-exercise-db).
@@ -120,17 +119,18 @@ function escolherDoSchema(schema: Schema): unknown {
 const VALIDA = 'VALIDA';
 const ESCOLHA_INVALIDA = { dias: [], refeicoes: {} };
 
-function consulta(data: unknown[]) {
-  const q = {
-    select: jest.fn(),
-    eq: jest.fn(),
-    in: jest.fn(),
-    limit: jest.fn().mockResolvedValue({ data, error: null }),
-  };
-  q.select.mockReturnValue(q);
-  q.eq.mockReturnValue(q);
-  q.in.mockReturnValue(q);
-  return q;
+/** Simula as RPCs: as de busca devolvem as linhas dadas; salvar_plano_gerado, o resultado dado. */
+function simularBanco({
+  exercicios = EXERCICIOS as unknown[],
+  alimentos = ALIMENTOS as unknown[],
+  salvar = { data: 'plano-ia-1', error: null } as { data: unknown; error: unknown },
+} = {}) {
+  rpc.mockReset().mockImplementation(async (nome: string) => {
+    if (nome === 'buscar_conhecimento_rag') return { data: [TRECHO], error: null };
+    if (nome === 'buscar_exercicios_rag') return { data: exercicios, error: null };
+    if (nome === 'buscar_alimentos_rag') return { data: alimentos, error: null };
+    return salvar;
+  });
 }
 
 /** Simula o Ollama: cada chamada a /api/generate devolve a próxima resposta da fila. */
@@ -161,18 +161,7 @@ const salvou = () => rpc.mock.calls.some(([nome]) => nome === 'salvar_plano_gera
 
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
-  from
-    .mockReset()
-    .mockImplementation((tabela: string) =>
-      consulta(tabela === 'base_exercicios' ? EXERCICIOS : ALIMENTOS),
-    );
-  rpc
-    .mockReset()
-    .mockImplementation(async (nome: string) =>
-      nome === 'buscar_conhecimento_rag'
-        ? { data: [TRECHO], error: null }
-        : { data: 'plano-ia-1', error: null },
-    );
+  simularBanco();
 });
 
 afterEach(() => jest.restoreAllMocks());
@@ -193,6 +182,66 @@ describe('gerarPlano com o Ollama simulado', () => {
     const salvar = rpc.mock.calls.find(([nome]) => nome === 'salvar_plano_gerado');
     expect(salvar?.[1].p_dados.plano).toEqual(plano);
     expect(salvar?.[1].p_dados.respostas.perfil.nome).toBeUndefined();
+  });
+
+  it('RAG híbrido: um só embedding e as RPCs com os filtros da pessoa', async () => {
+    const fetchMock = simularOllama([VALIDA]);
+    const vegano = {
+      ...RESPOSTAS,
+      treino: { ...RESPOSTAS.treino, local_treino: 'Em casa' },
+      dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] },
+    };
+    simularBanco({ alimentos: [ALIMENTOS[1], ALIMENTOS[2]] });
+    await gerarPlano(vegano).catch(() => undefined);
+
+    const embeds = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/embed'));
+    expect(embeds).toHaveLength(1);
+    expect(JSON.parse(embeds[0][1].body).input).toContain('vegano');
+    const argumentos = (nome: string) => rpc.mock.calls.find(([n]) => n === nome)?.[1];
+    const vetor = JSON.stringify([0.1, 0.2, 0.3]);
+    expect(argumentos('buscar_conhecimento_rag').query_embedding).toBe(vetor);
+    const ex = argumentos('buscar_exercicios_rag');
+    expect(ex.query_embedding).toBe(vetor);
+    expect(ex.filtro_equipamento).toEqual(expect.arrayContaining(['halteres', 'peso-do-corpo']));
+    expect(ex.filtro_equipamento).not.toContain('barra');
+    const al = argumentos('buscar_alimentos_rag');
+    expect(al.query_embedding).toBe(vetor);
+    // Vegano exclui também o que o vegetariano exclui.
+    expect(al.termos_excluidos).toEqual(expect.arrayContaining(['ovo', 'leite', 'frango']));
+    expect(al.termos_proteina).toEqual(expect.arrayContaining(['feijao', 'tofu']));
+  });
+
+  it('academia sem restrição: sem filtro de equipamento nem de termos', async () => {
+    simularOllama([VALIDA]);
+    await gerarPlano(RESPOSTAS);
+    const argumentos = (nome: string) => rpc.mock.calls.find(([n]) => n === nome)?.[1];
+    expect(argumentos('buscar_exercicios_rag').filtro_equipamento).toBeNull();
+    expect(argumentos('buscar_alimentos_rag').termos_excluidos).toEqual([]);
+    expect(argumentos('buscar_alimentos_rag').termos_proteina).toBeNull();
+  });
+
+  it('o banco só pré-filtra: alimento que quebra a restrição é barrado pelo código', async () => {
+    simularOllama([VALIDA]);
+    const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
+    const soja = { ...ALIMENTOS[0], id: 8, nome: 'Tofu firme', categoria: 'leguminosas' };
+    simularBanco({ alimentos: [ALIMENTOS[0], soja, ALIMENTOS[1], ALIMENTOS[2]] });
+    const { plano } = await gerarPlano(vegano);
+    const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
+    expect(nomes).not.toContain('Frango grelhado');
+    expect(nomes).toContain('Tofu firme');
+  });
+
+  it('erro numa RPC de busca: mensagem genérica e nada gravado', async () => {
+    simularOllama([VALIDA]);
+    simularBanco();
+    const padrao = rpc.getMockImplementation();
+    rpc.mockImplementation(async (nome: string, args: unknown) =>
+      nome === 'buscar_exercicios_rag'
+        ? { data: null, error: { message: 'falhou' } }
+        : padrao?.(nome, args),
+    );
+    await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_FALHA);
+    expect(salvou()).toBe(false);
   });
 
   it('retry: a 1ª resposta é recusada e a 2ª, com os erros no prompt, é salva', async () => {
@@ -226,11 +275,7 @@ describe('gerarPlano com o Ollama simulado', () => {
 
   it('6ª geração do dia: a recusa da RPC vira a mensagem do limite', async () => {
     simularOllama([VALIDA]);
-    rpc.mockImplementation(async (nome: string) =>
-      nome === 'buscar_conhecimento_rag'
-        ? { data: [TRECHO], error: null }
-        : { data: null, error: { message: 'limite_diario' } },
-    );
+    simularBanco({ salvar: { data: null, error: { message: 'limite_diario' } } });
     await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_LIMITE);
   });
 
@@ -243,7 +288,7 @@ describe('gerarPlano com o Ollama simulado', () => {
 
   it('base sem candidatos: erro genérico, sem gravar', async () => {
     simularOllama([VALIDA]);
-    from.mockImplementation(() => consulta([]));
+    simularBanco({ exercicios: [], alimentos: [] });
     const erro = await gerarPlano(RESPOSTAS).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(ErroGeracao);
     expect((erro as Error).message).toBe(MENSAGEM_FALHA);
@@ -261,9 +306,7 @@ describe('gerarPlano com o Ollama simulado', () => {
       gorduras_100g: 1,
     };
     const veganos = [tempeh, ALIMENTOS[1], ALIMENTOS[2]];
-    from.mockImplementation((tabela: string) =>
-      consulta(tabela === 'base_exercicios' ? EXERCICIOS : [ALIMENTOS[0], ...veganos]),
-    );
+    simularBanco({ alimentos: [ALIMENTOS[0], ...veganos] });
     simularOllama([VALIDA]);
     const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
     const { plano } = await gerarPlano(vegano);
@@ -281,9 +324,7 @@ describe('gerarPlano com o Ollama simulado', () => {
         ? { ...e, equipamento: 'peso-do-corpo' }
         : e,
     );
-    from.mockImplementation((tabela: string) =>
-      consulta(tabela === 'base_exercicios' ? comCorpo : ALIMENTOS),
-    );
+    simularBanco({ exercicios: comCorpo });
     const fetchMock = simularOllama([VALIDA]);
     const corpo = { ...RESPOSTAS, treino: { ...RESPOSTAS.treino, local_treino: 'Peso do corpo' } };
     const { plano } = await gerarPlano(corpo);

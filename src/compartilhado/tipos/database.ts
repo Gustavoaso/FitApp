@@ -843,7 +843,12 @@ export type Database = {
     };
     Functions: {
       buscar_alimentos_rag: {
-        Args: { categorias_excluidas: string[]; limite?: number; query_embedding: string };
+        Args: {
+          limite_por_slot?: number;
+          query_embedding: string;
+          termos_excluidos?: string[];
+          termos_proteina?: string[];
+        };
         Returns: {
           calorias_100g: number;
           carboidratos_100g: number;
@@ -851,10 +856,9 @@ export type Database = {
           gorduras_100g: number;
           id: number;
           nome: string;
-          porcao_descricao: string;
-          porcao_gramas: number;
           proteinas_100g: number;
           similaridade: number;
+          slot: string;
         }[];
       };
       buscar_conhecimento_rag: {
@@ -875,12 +879,7 @@ export type Database = {
         }[];
       };
       buscar_exercicios_rag: {
-        Args: {
-          filtro_equipamento: string[];
-          filtro_nivel: string[];
-          limite?: number;
-          query_embedding: string;
-        };
+        Args: { filtro_equipamento?: string[]; limite_por_grupo?: number; query_embedding: string };
         Returns: {
           equipamento: string;
           grupo_primario: string;
@@ -888,7 +887,6 @@ export type Database = {
           id: string;
           nivel: string;
           nome: string;
-          padrao_series: Json;
           similaridade: number;
           tipo_movimento: string;
         }[];
@@ -898,6 +896,7 @@ export type Database = {
       salvar_plano_gerado: { Args: { p_dados: Json }; Returns: string };
       show_limit: { Args: Record<PropertyKey, never>; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };
+      texto_sem_acento: { Args: { texto: string }; Returns: string };
       validar_compatibilidade_planejamento: { Args: Record<PropertyKey, never>; Returns: Json };
     };
     Enums: {
