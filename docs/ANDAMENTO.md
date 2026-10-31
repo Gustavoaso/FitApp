@@ -176,3 +176,5 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 6: `alimentos_favoritos.alimento_id` é uuid, mas `base_alimentos.id` virou bigint (antiga 021): favoritos não conseguem referenciar alimentos; corrigir numa etapa futura.
 - Etapa 6: o seed (`supabase/seed/*.sql`) não é carregado pelo `db reset` (o config procura `supabase/seed.sql`); o banco local sobe sem bases. Ligar em `config.toml` na etapa 14.
 - A chave RapidAPI `b7ad…` e a do Groq estiveram no histórico do git: revogar/trocar no painel da RapidAPI e do Groq (dono).
+
+- 2026-10-31 (testes finais): testador reprovou só pelo expo-doctor (`react-native` 0.88.0, SDK espera 0.88.1); a troca reescreve o lockfile e exige `--legacy-peer-deps` (conflito `react-dom` 19.3.1 × `react` 19.3.0): decidir com o dono. Segurança sem falha alta; `validar_compatibilidade_planejamento` revogada do `anon` (migration 20261031000100). Ficam: deep link `plano` sem validação, CORS `*` em `excluir-conta`, `npm audit` e Edge Functions rodando não verificados.
