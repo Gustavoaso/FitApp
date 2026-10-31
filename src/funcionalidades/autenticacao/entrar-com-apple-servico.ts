@@ -21,10 +21,15 @@ export async function entrarComApple(): Promise<ResultadoApple> {
       provider: 'apple',
       token: credencial.identityToken,
     });
-    return error ? { status: 'erro', mensagem: MENSAGEM_ERRO } : { status: 'ok' };
+    if (error) {
+      console.warn('Login com Apple recusado pelo Supabase:', error.message);
+      return { status: 'erro', mensagem: MENSAGEM_ERRO };
+    }
+    return { status: 'ok' };
   } catch (e) {
     // Fechar a folha da Apple não é erro: a pessoa só desistiu.
     if ((e as { code?: string })?.code === 'ERR_REQUEST_CANCELED') return { status: 'cancelado' };
+    console.warn('Login com Apple falhou:', (e as { code?: string })?.code, (e as Error)?.message);
     return { status: 'erro', mensagem: MENSAGEM_ERRO };
   }
 }
