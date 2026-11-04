@@ -5,29 +5,37 @@ export type Database = {
     Tables: {
       alimentos_favoritos: {
         Row: {
-          alimento_id: string;
+          alimento_id: number;
           criado_em: string;
           id: string;
           usuario_id: string;
         };
         ComputedFields: never;
         Insert: {
-          alimento_id: string;
+          alimento_id: number;
           criado_em?: string;
           id?: string;
           usuario_id: string;
         };
         Update: {
-          alimento_id?: string;
+          alimento_id?: number;
           criado_em?: string;
           id?: string;
           usuario_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'alimentos_favoritos_alimento_fk';
+            columns: ['alimento_id'];
+            isOneToOne: false;
+            referencedRelation: 'base_alimentos';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       alimentos_refeicao: {
         Row: {
-          alimento_id: number;
+          alimento_id: number | null;
           calorias: number;
           carboidratos: number;
           gorduras: number;
@@ -39,7 +47,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
-          alimento_id: number;
+          alimento_id?: number | null;
           calorias: number;
           carboidratos: number;
           gorduras: number;
@@ -50,7 +58,7 @@ export type Database = {
           refeicao_plano_id: string;
         };
         Update: {
-          alimento_id?: number;
+          alimento_id?: number | null;
           calorias?: number;
           carboidratos?: number;
           gorduras?: number;
@@ -83,10 +91,14 @@ export type Database = {
           carboidratos_100g: number;
           categoria: string;
           codigo_barras: string | null;
+          criado_por: string | null;
+          e_basico: boolean;
           embedding: string | null;
           fibras_100g: number | null;
+          fonte: string;
           gorduras_100g: number;
           id: number;
+          id_taco: number | null;
           is_curado: boolean;
           marca: string | null;
           nome: string;
@@ -100,10 +112,14 @@ export type Database = {
           carboidratos_100g: number;
           categoria: string;
           codigo_barras?: string | null;
+          criado_por?: string | null;
+          e_basico?: boolean;
           embedding?: string | null;
           fibras_100g?: number | null;
+          fonte?: string;
           gorduras_100g: number;
           id?: number;
+          id_taco?: number | null;
           is_curado?: boolean;
           marca?: string | null;
           nome: string;
@@ -116,10 +132,14 @@ export type Database = {
           carboidratos_100g?: number;
           categoria?: string;
           codigo_barras?: string | null;
+          criado_por?: string | null;
+          e_basico?: boolean;
           embedding?: string | null;
           fibras_100g?: number | null;
+          fonte?: string;
           gorduras_100g?: number;
           id?: number;
+          id_taco?: number | null;
           is_curado?: boolean;
           marca?: string | null;
           nome?: string;

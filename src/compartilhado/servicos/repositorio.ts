@@ -206,6 +206,34 @@ export const repositorioDieta = {
     return data || [];
   },
 
+  /** Alimento cadastrado pela pessoa: só ela vê (RLS) e nunca entra no plano (RN17). */
+  async cadastrarAlimento(alimento: {
+    nome: string;
+    calorias_100g: number;
+    proteinas_100g: number;
+    carboidratos_100g: number;
+    gorduras_100g: number;
+    porcao_gramas: number;
+    porcao_descricao: string;
+  }) {
+    const { data: sessao } = await supabase.auth.getUser();
+    const usuarioId = sessao.user?.id;
+    if (!usuarioId) throw new Error('Entre na sua conta para cadastrar alimentos.');
+    const { data, error } = await supabase
+      .from('base_alimentos')
+      .insert({
+        ...alimento,
+        categoria: 'Meus alimentos',
+        fonte: 'usuario',
+        criado_por: usuarioId,
+      })
+      .select('*')
+      .single();
+    if (error)
+      throw new Error('Não consegui salvar o alimento. Confira os valores e tente de novo.');
+    return data;
+  },
+
   async buscarAlimentosRecentes(): Promise<any[]> {
     try {
       const { data, error } = await supabase

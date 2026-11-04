@@ -86,6 +86,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 
 - 2026-10-30: RAG híbrido (vetor + filtros SQL) para exercícios e alimentos; `is_curado` deixa de ser obrigatório para alimentos (RN14 revista, etapa 17).
 - 2026-11-03: a geração usa só alimentos e exercícios básicos (RN17). Diagnóstico do remoto: os 23.413 alimentos eram todos do Open Food Facts (19.810 com marca, ~920 suplementos, ~940 diet/light/zero), nenhum da TACO; `is_curado` marcava até whey e macarrão instantâneo. Entram 590 alimentos da TACO (77 básicos) e 92 exercícios básicos.
+- 2026-11-03: Open Food Facts apagado do remoto (backup em `FitApp-backups/2026-11-03/`); `alimentos_refeicao.alimento_id` virou `on delete set null` (as 84 linhas do plano ficaram, sem vínculo); `alimentos_favoritos.alimento_id` virou bigint. Usuário cadastra alimento próprio (`fonte = 'usuario'`, RLS, fora do plano). TBCA adiada: sem download em massa e licença CC BY-NC-ND, depende de autorização do FoRC/USP.
 
 ## Decisões do agente
 

@@ -23,6 +23,7 @@ import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/
 import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
 import { repositorioDieta, type ReceitaUsuario } from '@/compartilhado/servicos/repositorio';
+import { CadastroAlimentoModal } from './CadastroAlimentoModal';
 
 export interface AlimentoBusca {
   id: string;
@@ -76,6 +77,7 @@ export function BuscaAlimentosModal({
   const [itensSelecionadosReceita, setItensSelecionadosReceita] = useState<AlimentoBusca[]>([]);
   const [nomeReceita, setNomeReceita] = useState('');
   const [editandoReceita, setEditandoReceita] = useState(false);
+  const [cadastrando, setCadastrando] = useState(false);
 
   // Ao abrir, volta ao estado inicial (ajuste no render, sem setState síncrono em efeito).
   const [visivelAnterior, setVisivelAnterior] = useState(visivel);
@@ -246,12 +248,13 @@ export function BuscaAlimentosModal({
                 { icon: 'barcode.viewfinder', label: 'Scanner', disabled: true },
                 { icon: 'mic.fill', label: 'Voz', disabled: true },
                 { icon: 'camera.viewfinder', label: 'Foto/Scan', disabled: true },
-                { icon: 'plus.circle.fill', label: 'Rápido', disabled: false },
+                { icon: 'plus.circle.fill', label: 'Cadastrar', disabled: false },
               ].map((acao) => (
                 <TouchableOpacity
                   key={acao.label}
                   style={[estilos.quickItem, acao.disabled && estilos.quickItemDisabled]}
                   disabled={acao.disabled}
+                  onPress={acao.label === 'Cadastrar' ? () => setCadastrando(true) : undefined}
                 >
                   <SymbolView name={acao.icon as any} size={18} tintColor={cores.destaque} />
                   <Text style={estilos.quickTexto}>{acao.label}</Text>
@@ -423,6 +426,17 @@ export function BuscaAlimentosModal({
           </SafeAreaView>
         </View>
       </View>
+      <CadastroAlimentoModal
+        visivel={cadastrando}
+        onFechar={() => setCadastrando(false)}
+        onCadastrado={async (criado) => {
+          setCadastrando(false);
+          // Já aparece em "Meus Alimentos" e pode ser adicionado à refeição.
+          onFavoritarAlimento({ ...(criado as AlimentoBusca), id: String(criado.id) }, true);
+          setAbaAtiva('favoritos');
+          await carregarDados();
+        }}
+      />
     </Modal>
   );
 }
