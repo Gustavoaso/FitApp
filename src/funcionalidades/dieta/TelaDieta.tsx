@@ -2,7 +2,7 @@
 // TELA: Dieta / Diário Alimentar (app/(tabs)/dieta.tsx)
 // ============================================================
 // Design reestruturado totalmente inspirado no MyFitnessPal
-// mantendo a estética Liquid Glass Dark UI do FitApp.
+// mantendo a estética Liquid Glass Dark UI do TreinaAI.
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react';

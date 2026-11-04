@@ -1,10 +1,10 @@
-# FitApp 💪
+# TreinaAI
 
 Aplicativo fitness mobile de alta performance para o público brasileiro, gerando planejamento inteligente de treino e dieta com IA e cálculos determinísticos.
 
 ---
 
-## 🛠️ Stack Tecnológica
+## Stack Tecnológica
 
 | Camada | Tecnologia |
 |--------|-----------|
@@ -16,33 +16,33 @@ Aplicativo fitness mobile de alta performance para o público brasileiro, gerand
 
 ---
 
-## 📁 Estrutura do Projeto (Mobile-Only Flat)
+## Estrutura do Projeto (Mobile-Only Flat)
 
 A estrutura é 100% direta, intuitiva e sem níveis desnecessários de monorepo:
 
 ```
 FitApp/
-├── app/                  # 📍 TODAS AS PÁGINAS / TELAS DO APP (Expo Router)
-│   ├── (auth)/           # 🔐 Telas de Login e Cadastro
+├── app/                  # TODAS AS PÁGINAS / TELAS DO APP (Expo Router)
+│   ├── (auth)/           # Telas de Login e Cadastro
 │   │   ├── login.tsx
 │   │   └── cadastro.tsx
-│   ├── (tabs)/           # 📱 Telas Principais da Barra Inferior
-│   │   ├── inicio.tsx    # 🏠 Home / Dashboard de Métricas
-│   │   ├── treino.tsx    # 🏋️ Treino do Dia, Rotinas e Exercícios
-│   │   ├── dieta.tsx     # 🥗 Metas, Refeições e Registro de Alimentos
-│   │   └── perfil.tsx    # 👤 Perfil Físico, Ajustes e Preferências
-│   ├── questionario/     # 📋 Questionário de Onboarding e IA
+│   ├── (tabs)/           # Telas Principais da Barra Inferior
+│   │   ├── inicio.tsx    # Home / Dashboard de Métricas
+│   │   ├── treino.tsx    # Treino do Dia, Rotinas e Exercícios
+│   │   ├── dieta.tsx     # Metas, Refeições e Registro de Alimentos
+│   │   └── perfil.tsx    # Perfil Físico, Ajustes e Preferências
+│   ├── questionario/     # Questionário de Onboarding e IA
 │   │   ├── index.tsx     # Formulário de Perguntas
 │   │   └── resultado.tsx # Síntese e Aceite do Planejamento
-│   ├── treino-ao-vivo/   # ⏱️ Execução de Treino em Tempo Real
+│   ├── treino-ao-vivo/   # ⏱Execução de Treino em Tempo Real
 │   │   └── index.tsx
-│   ├── _layout.tsx       # ⚙️ Navegação Raiz, Fontes e Provedores
-│   └── index.tsx         # 🚪 Entry Gate (Redirecionamento Inteligente)
+│   ├── _layout.tsx       # Navegação Raiz, Fontes e Provedores
+│   └── index.tsx         # Entry Gate (Redirecionamento Inteligente)
 │
-├── componentes/          # 🧩 COMPONENTES VISUAIS REUTILIZÁVEIS
+├── componentes/          # COMPONENTES VISUAIS REUTILIZÁVEIS
 │   └── ui/               # CardVidro, BotaoPrimario, AnelProgresso, Modais, Gráficos
 │
-├── servicos/             # ⚡ INTEGRAÇÕES, BANCO E IA
+├── servicos/             # INTEGRAÇÕES, BANCO E IA
 │   ├── supabase.ts       # Cliente oficial Supabase
 │   ├── iaLocalServico.ts # Geração de Planos com IA
 │   ├── repositorio.ts    # Persistência e repositório de dados
@@ -51,21 +51,21 @@ FitApp/
 │   ├── historicoServico.ts   # Registro histórico de refeições e treinos
 │   └── validadorPlanoIA.ts   # Sanitização e validação de planos
 │
-├── contextos/            # 🌐 ESTADOS GLOBAIS (AuthContexto.tsx)
-├── tipos/                # 📝 DEFINIÇÕES TYPESCRIPT (treino, dieta, usuario, questionario)
-├── utilidades/           # 🧮 CÁLCULOS E FORMATADORES (Mifflin-St Jeor, macros, datas)
-├── constantes/           # 🎨 CORES E TOKENS (Cores.ts, objetivos.ts, grupos-musculares.ts)
-├── assets/               # 🖼️ FONTES NATIVAS (SF Compact Rounded) E IMAGENS
-├── supabase/             # 🗄️ MIGRATIONS SQL E EDGE FUNCTIONS
-├── package.json          # 📦 Gerenciamento de Dependências
-├── app.json              # 📱 Configuração Expo Mobile
-├── tsconfig.json         # 🛠️ TypeScript com path alias @/*
-└── .env                  # 🔑 Variáveis de Ambiente
+├── contextos/            # ESTADOS GLOBAIS (AuthContexto.tsx)
+├── tipos/                # DEFINIÇÕES TYPESCRIPT (treino, dieta, usuario, questionario)
+├── utilidades/           # CÁLCULOS E FORMATADORES (Mifflin-St Jeor, macros, datas)
+├── constantes/           # CORES E TOKENS (Cores.ts, objetivos.ts, grupos-musculares.ts)
+├── assets/               # FONTES NATIVAS (SF Compact Rounded) E IMAGENS
+├── supabase/             # MIGRATIONS SQL E EDGE FUNCTIONS
+├── package.json          # Gerenciamento de Dependências
+├── app.json              # Configuração Expo Mobile
+├── tsconfig.json         # TypeScript com path alias @/*
+└── .env                  # Variáveis de Ambiente
 ```
 
 ---
 
-## 🚀 Como Executar
+## Como Executar
 
 ```bash
 # 1. Instalar dependências

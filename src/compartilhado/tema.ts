@@ -1,14 +1,8 @@
 // ============================================================
-// CONSTANTES VISUAIS — DESIGN SYSTEM DO FITAPP
+// CONSTANTES VISUAIS — DESIGN SYSTEM DO TREINAAI (docs/VISUAL.md)
 // ============================================================
-// Clean Dark UI — referência Oura, WHOOP, Fitbod, Linear, Apple HIG.
-//
-// Princípios:
-// - Tipografia: SF Compact Rounded (fonte nativa arredondada da Apple)
-// - Base monocromática: preto/grafite/cinza-chumbo
-// - UMA única cor de destaque (accent): branco #FFFFFF
-// - Sem gradientes decorativos, sem emojis, sem glow colorido
-// - Border radius uniforme: 16px para todos os cards
+// Neutros + lima elétrico (#D6FF00) + neons com papel fixo.
+// Fonte Sora. Zero emoji. Brilho só no CTA principal.
 // ============================================================
 
 import { Platform } from 'react-native';
@@ -88,15 +82,13 @@ export const Fonte = {
   display: 28,
 } as const;
 
-/**
- * Família de fonte oficial Apple: SF Compact Rounded
- */
+/** Família de fonte do app: Sora (assets/fonts). */
 export const FamiliaFonte = {
-  regular: 'SF-Compact-Rounded-Regular',
-  medio: 'SF-Compact-Rounded-Medium',
-  semibold: 'SF-Compact-Rounded-Semibold',
-  bold: 'SF-Compact-Rounded-Bold',
-  extrabold: 'SF-Compact-Rounded-Bold',
+  regular: 'Sora-Regular',
+  medio: 'Sora-Medium',
+  semibold: 'Sora-Semibold',
+  bold: 'Sora-Bold',
+  extrabold: 'Sora-Bold',
 } as const;
 
 export const PesoFonte = {
@@ -135,15 +127,18 @@ export const Tipografia = {
 } as const;
 
 /** Raio dos cartões (VISUAL.md). Botões usam cápsula (Raio.full). */
-export const RAIO_CARTAO = 20;
+export const RAIO_CARTAO = 24;
 
-/** Cores fixas por macro: o mesmo significado em gráficos, listas e anéis. */
+/** Cores fixas por macro (valor escuro; no claro use `cores.macros`). */
 export const CoresMacros = {
-  proteina: '#F05A28',
-  carboidrato: '#EAB308',
-  gordura: '#A1A1AA',
-  agua: '#38BDF8',
+  proteina: '#FF8A1F',
+  carboidrato: '#FFD60A',
+  gordura: '#B57BFF',
+  agua: '#3DA5FF',
 } as const;
+
+/** Lima elétrico da marca: fundo de CTA e anéis. Nunca texto no tema claro. */
+export const LIMA = '#D6FF00';
 
 export interface CoresTema {
   fundo: string;
@@ -152,47 +147,52 @@ export interface CoresTema {
   texto: string;
   textoSecundario: string;
   separador: string;
-  /** Cor do botão principal (CTA) e do progresso. */
+  /** Fundo do botão principal (CTA) e do progresso: lima nos dois temas. */
   destaque: string;
   /** Texto sobre a cor de destaque. */
   textoSobreDestaque: string;
+  /** Lima legível como texto/ícone: lima no escuro, oliva escuro no claro. */
+  destaqueTexto: string;
   /** Fundo do botão secundário e trilha dos anéis. */
   destaqueSuave: string;
   esqueleto: string;
   erro: string;
   sucesso: string;
+  macros: { proteina: string; carboidrato: string; gordura: string; agua: string };
 }
 
 export const CoresEscuro: CoresTema = {
-  fundo: '#000000',
-  superficie: '#121418',
-  elevada: '#1A1D24',
+  fundo: '#0B0B0D',
+  superficie: '#151518',
+  elevada: '#1E1E22',
   texto: '#FFFFFF',
-  textoSecundario: '#A1A1AA',
-  separador: 'rgba(255, 255, 255, 0.12)',
-  destaque: '#FFFFFF',
-  textoSobreDestaque: '#080A0E',
-  destaqueSuave: 'rgba(255, 255, 255, 0.12)',
-  esqueleto: '#1A1D24',
-  erro: '#EF4444',
-  sucesso: '#10B981',
+  textoSecundario: '#A8A8B0',
+  separador: '#2A2A2E',
+  destaque: LIMA,
+  textoSobreDestaque: '#0B0B0D',
+  destaqueTexto: LIMA,
+  destaqueSuave: '#2A2A2E',
+  esqueleto: '#1E1E22',
+  erro: '#FF453A',
+  sucesso: '#30D158',
+  macros: CoresMacros,
 };
 
-// PREMISSA: separador, esqueleto e tons de erro/sucesso do claro não estão no
-// VISUAL.md; escolhidos para manter contraste no fundo claro.
 export const CoresClaro: CoresTema = {
-  fundo: '#F2F2F7',
+  fundo: '#F2F2F4',
   superficie: '#FFFFFF',
   elevada: '#FFFFFF',
-  texto: '#0A0A0A',
-  textoSecundario: '#52525B',
-  separador: 'rgba(0, 0, 0, 0.10)',
-  destaque: '#0A0A0A',
-  textoSobreDestaque: '#FFFFFF',
-  destaqueSuave: 'rgba(0, 0, 0, 0.08)',
-  esqueleto: '#E4E4E7',
-  erro: '#DC2626',
-  sucesso: '#059669',
+  texto: '#0B0B0D',
+  textoSecundario: '#55555C',
+  separador: '#E3E3E7',
+  destaque: LIMA,
+  textoSobreDestaque: '#0B0B0D',
+  destaqueTexto: '#5C6600',
+  destaqueSuave: '#E3E3E7',
+  esqueleto: '#E3E3E7',
+  erro: '#C9261B',
+  sucesso: '#1B7F37',
+  macros: { proteina: '#B84A00', carboidrato: '#7A5C00', gordura: '#7A3FD0', agua: '#0A66C2' },
 };
 
 /** Razão de contraste WCAG entre duas cores hex de 6 dígitos (#RRGGBB). */

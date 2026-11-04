@@ -30,6 +30,17 @@ describe.each([
   });
 });
 
+describe.each([
+  ['escuro', CoresEscuro],
+  ['claro', CoresClaro],
+])('neons do tema %s', (_nome, cores) => {
+  it('lima de texto, macros, sucesso e erro passam em AA sobre o card', () => {
+    for (const cor of [cores.destaqueTexto, cores.sucesso, cores.erro, ...Object.values(cores.macros)]) {
+      expect(razaoContraste(cor, cores.superficie)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
 it('a escala tipográfica não tem nada abaixo de 13 pt', () => {
   expect(Math.min(...Object.values(Tipografia))).toBeGreaterThanOrEqual(13);
 });

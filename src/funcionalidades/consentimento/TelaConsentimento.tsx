@@ -81,7 +81,7 @@ export default function TelaConsentimento() {
           Seus dados de saúde
         </Text>
         <Text style={estilos.subtitulo}>
-          Para montar o plano, o FitApp usa estas informações. Elas ficam na sua conta e não são
+          Para montar o plano, o TreinaAI usa estas informações. Elas ficam na sua conta e não são
           vendidas.
         </Text>
 

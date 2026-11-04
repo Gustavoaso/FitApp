@@ -334,7 +334,7 @@ export default function TelaTreino() {
             onPress={() => setAbaModo('registrado')}
           >
             <Text style={[estilos.segmentTxt, abaModo === 'registrado' && estilos.segmentTxtAtivo]}>
-              📋 Registrado
+              Registrado
             </Text>
           </TouchableOpacity>
 
@@ -343,7 +343,7 @@ export default function TelaTreino() {
             onPress={() => setAbaModo('planejado')}
           >
             <Text style={[estilos.segmentTxt, abaModo === 'planejado' && estilos.segmentTxtAtivo]}>
-              📅 Planejado
+              Planejado
             </Text>
           </TouchableOpacity>
         </View>

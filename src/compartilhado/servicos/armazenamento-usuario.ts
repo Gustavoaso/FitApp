@@ -33,7 +33,7 @@ export const armazenamentoUsuario = {
 };
 
 /**
- * Apaga do aparelho os dados de usuário do FitApp (de qualquer conta e as
+ * Apaga do aparelho os dados de usuário do TreinaAI (de qualquer conta e as
  * chaves globais antigas, de antes da separação). A sessão do Supabase não usa
  * o prefixo e é tratada pelo signOut.
  */

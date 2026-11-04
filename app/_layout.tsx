@@ -20,10 +20,10 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const { cores } = useTema();
   const [fontsLoaded] = useFonts({
-    'SF-Compact-Rounded-Regular': require('../assets/fonts/SF-Compact-Rounded-Regular.otf'),
-    'SF-Compact-Rounded-Medium': require('../assets/fonts/SF-Compact-Rounded-Medium.otf'),
-    'SF-Compact-Rounded-Semibold': require('../assets/fonts/SF-Compact-Rounded-Semibold.otf'),
-    'SF-Compact-Rounded-Bold': require('../assets/fonts/SF-Compact-Rounded-Bold.otf'),
+    'Sora-Regular': require('../assets/fonts/Sora_400Regular.ttf'),
+    'Sora-Medium': require('../assets/fonts/Sora_500Medium.ttf'),
+    'Sora-Semibold': require('../assets/fonts/Sora_600SemiBold.ttf'),
+    'Sora-Bold': require('../assets/fonts/Sora_700Bold.ttf'),
   });
 
   useEffect(() => {

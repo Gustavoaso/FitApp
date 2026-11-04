@@ -1,7 +1,7 @@
 // ============================================================
 // TELA: Cadastro ((auth)/cadastro.tsx)
 // ============================================================
-// Permite que novos usuários crie uma conta no FitApp.
+// Permite que novos usuários crie uma conta no TreinaAI.
 // Após o cadastro, direciona para o questionário inicial.
 // ============================================================
 

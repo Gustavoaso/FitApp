@@ -1,7 +1,7 @@
 // ============================================================
 // TELA: Login ((auth)/login.tsx)
 // ============================================================
-// Tela de login do FitApp com design "liquid glass".
+// Tela de login do TreinaAI com design "liquid glass".
 // Permite entrar com e-mail/senha ou navegar para o cadastro.
 // ============================================================
 
@@ -88,7 +88,7 @@ export default function TelaLogin() {
         {/* Cabeçalho / Branding */}
         <View style={estilos.cabecalho}>
           <SymbolView name="bolt.fill" size={36} tintColor={cores.destaque} weight="bold" />
-          <Text style={estilos.titulo}>FitApp</Text>
+          <Text style={estilos.titulo}>TreinaAI</Text>
           <Text style={estilos.subtitulo}>Seu treino e dieta sob medida</Text>
         </View>
 

@@ -997,7 +997,7 @@ export const repositorioPlano = {
         if (erroPerfil) {
           // Não bloqueia o salvamento do plano — log claro para debug
           console.error(
-            '⚠️ Erro ao atualizar perfil (não fatal):',
+            'Erro ao atualizar perfil (não fatal):',
             erroPerfil.message,
             erroPerfil.code,
           );

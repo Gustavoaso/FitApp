@@ -349,7 +349,7 @@ export default function TelaPerfil() {
           </TouchableOpacity>
         </CardVidro>
 
-        <Text style={estilos.versao}>FitApp v1.0.0</Text>
+        <Text style={estilos.versao}>TreinaAI v1.0.0</Text>
       </ScrollView>
 
       {/* ── Modal Notificações ──────────────────────────────── */}
