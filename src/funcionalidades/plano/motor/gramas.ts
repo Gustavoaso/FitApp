@@ -9,7 +9,7 @@
 // Converge porque o problema é convexo e a caixa é separável.
 // ============================================================
 
-import type { AlimentoCandidato, MetaDia, NomeRefeicao } from './tipos';
+import type { AlimentoCandidato, MetaDia, NomeRefeicao, SlotAlimento } from './tipos';
 
 // PREMISSA: fração das calorias do dia em cada refeição.
 export const FRACAO_REFEICAO: Record<NomeRefeicao, number> = {
@@ -19,8 +19,15 @@ export const FRACAO_REFEICAO: Record<NomeRefeicao, number> = {
   jantar: 0.25,
 };
 
-// PREMISSA: porção mínima e máxima de um alimento numa refeição.
-// 500 g cabe o almoço de quem precisa de ~3.700 kcal só com arroz cozido.
+// PREMISSA: porção mínima e máxima de um alimento numa refeição, por slot
+// (RN09): complemento é gordura concentrada (azeite, castanhas), então 40 g já
+// é muito; 500 g cabe o almoço de quem precisa de ~3.700 kcal só com arroz cozido ou de
+// quem come proteína vegetal diluída (soja cozida, 16 g/100 g).
+export const LIMITES_GRAMAS: Record<SlotAlimento, readonly [number, number]> = {
+  proteina: [50, 500],
+  carboidrato: [30, 500],
+  complemento: [5, 40],
+};
 export const GRAMAS_MIN = 5;
 export const GRAMAS_MAX = 500;
 export const TOLERANCIA = 0.05;
@@ -54,7 +61,8 @@ export function calcularGramas(alimentos: AlimentoCandidato[], meta: MetaDia): n
         den += pesos[k] * colunas[i][k] * colunas[i][k];
       }
       const otimo = den > 0 ? num / den : GRAMAS_MIN;
-      gramas[i] = Math.min(GRAMAS_MAX, Math.max(GRAMAS_MIN, otimo));
+      const [min, max] = LIMITES_GRAMAS[alimentos[i].slot];
+      gramas[i] = Math.min(max, Math.max(min, otimo));
     }
   }
   return gramas.map((g) => Math.round(g));

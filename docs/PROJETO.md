@@ -60,9 +60,13 @@ Regra padrão de RLS: cada usuário só os próprios registros. As tabelas `base
 - **RN11:** o plano é salvo de forma **transacional** pela RPC `salvar_plano_gerado(jsonb)`. Nunca fica plano pela metade.
 - **RN12:** o prompt **nunca** leva nome, e-mail nem ID do usuário.
 - **RN13:** limite de **5 gerações por usuário por dia** (fuso `America/Sao_Paulo`), contado em `planos_ia_gerados` e checado na RPC.
-- **RN14 (revista em 2026-10-30):** exercícios e alimentos vêm por **RAG híbrido**: busca vetorial (`mxbai-embed-large`, embeddings já gravados em `base_exercicios` e `base_alimentos`) ordena os candidatos pelo objetivo e nível, e filtros SQL tiram o que não pode entrar (equipamento que a pessoa não tem, restrição alimentar, macros inválidos). `is_curado` continua obrigatório para exercícios e deixa de ser para alimentos. Diretrizes continuam por busca vetorial em `base_conhecimento`.
+- **RN14 (revista em 2026-10-30):** exercícios e alimentos vêm por **RAG híbrido**: busca vetorial (`mxbai-embed-large`, embeddings já gravados em `base_exercicios` e `base_alimentos`) ordena os candidatos pelo objetivo e nível, e filtros SQL tiram o que não pode entrar (equipamento que a pessoa não tem, restrição alimentar, macros inválidos). `is_curado` continua obrigatório para exercícios e deixa de ser para alimentos (substituído por `e_basico`, RN17). Diretrizes continuam por busca vetorial em `base_conhecimento`.
 - **RN15:** a `base_conhecimento` tem de 40 a 60 trechos curados (de 100 a 300 palavras cada), sempre com a fonte (ACSM, ISSN, Schoenfeld, Morton 2018, Helms). Eles aparecem na tela de resultado como justificativa.
 - **RN16 (segurança de saúde):** não gera plano para menores de 18 anos nem para IMC < 16 ou > 45. As calorias-alvo nunca ficam abaixo de **1.200 kcal (mulher) / 1.500 kcal (homem)**. Nesses casos, mostra uma mensagem recomendando um profissional. `PREMISSA` revisável.
+- **RN17 (só o básico, 2026-11-03):** o plano usa apenas **alimentos básicos** e **exercícios básicos**.
+  - *Alimentos:* só entram na geração as linhas com `e_basico = true`, todas da **TACO 4ª ed. (NEPA/Unicamp, 2011)**: alimentos in natura ou de preparo simples (cozido, grelhado, assado; fruta crua), sem industrializado, marca, suplemento, diet/light, frito, embutido nem vísceras. Os 23.413 itens do Open Food Facts continuam na base só para busca e registro manual (`e_basico = false`) e **nunca** vão para o plano. Cada básico tem porção típica (`porcao_descricao`, `porcao_gramas`). Os gramas do plano ficam dentro de limites por slot: proteína 50–500 g, carboidrato 30–500 g, complemento (gordura concentrada) 5–40 g por refeição. `PREMISSA` revisável.
+  - *Exercícios:* `is_curado` vale só para exercícios que existem na maioria das academias (barra, halteres, polia, máquinas guiadas, Smith e peso do corpo), sem equipamento de nicho (kettlebell, bola, faixa, landmine, correntes, strongman).
+  - *Fonte de dados:* a TACO é a fonte principal; Open Food Facts só para produto de marca, nunca para o plano. A TacoAPI (RapidAPI) não é usada: o dado vem dos CSVs em `scripts/dados/taco/`, conferidos contra o `.xls` original da Unicamp, e entram por migration (`scripts/gerar-migration-basicos.js`).
 
 Datas: fuso `America/Sao_Paulo`.
 
@@ -92,7 +96,7 @@ Visual: skill `visual-design` + `docs/VISUAL.md`.
 - **Guardados:** perfil (idade, sexo, peso, altura, objetivo, frequência, restrições), planos, sessões de treino, registros de dieta e água.
 - **Pessoais/saúde:** peso, medidas e restrições de saúde são **dado sensível (LGPD)**. Exigem o consentimento explícito (seção 4) e a exclusão completa.
 - **Arquivos e fotos:** nenhum nesta versão.
-- **Dados iniciais:** `base_exercicios` (ExerciseDB, já importada) e `base_alimentos` (TACO + OpenFoodFacts curado), ambas já no banco. A `base_conhecimento` é curada pelo Claude com fontes. Só dados fictícios no repositório e no seed.
+- **Dados iniciais:** `base_exercicios` (ExerciseDB, já importada) e `base_alimentos` (TACO 4ª ed. para o plano e OpenFoodFacts para busca, RN17), ambas já no banco. A `base_conhecimento` é curada pelo Claude com fontes. Só dados fictícios no repositório e no seed.
 
 ## 10. Integrações
 

@@ -85,6 +85,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - 2026-10-28: atualizar para o Expo SDK 58 para abrir no Expo Go do iPhone (etapa 16).
 
 - 2026-10-30: RAG híbrido (vetor + filtros SQL) para exercícios e alimentos; `is_curado` deixa de ser obrigatório para alimentos (RN14 revista, etapa 17).
+- 2026-11-03: a geração usa só alimentos e exercícios básicos (RN17). Diagnóstico do remoto: os 23.413 alimentos eram todos do Open Food Facts (19.810 com marca, ~920 suplementos, ~940 diet/light/zero), nenhum da TACO; `is_curado` marcava até whey e macarrão instantâneo. Entram 590 alimentos da TACO (77 básicos) e 92 exercícios básicos.
 
 ## Decisões do agente
 

@@ -3,7 +3,7 @@
 -- Rodar com: npx supabase test db (só no banco local).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(12);
+select plan(13);
 
 -- Vetor com `peso` na posição p (a consulta é o eixo 1).
 create function pg_temp.eixo(p int, peso real default 1) returns extensions.vector
@@ -25,15 +25,16 @@ insert into public.base_exercicios (id, nome, grupo_primario, equipamento, nivel
   ('00000000-0000-0000-0000-0000000000e5', 'Remada', 'dorsais', 'barra', 'iniciante', true,
    pg_temp.eixo(2));
 
-insert into public.base_alimentos (id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g, is_curado, embedding) values
-  (9001, 'Frango fictício', 'carnes', 160, 32, 0, 3, false, pg_temp.eixo(1)),
-  (9002, 'Ovo fictício', 'ovos', 150, 13, 1, 10, true, pg_temp.eixo(3)),
-  (9003, 'Arroz fictício', 'cereais', 130, 2.5, 28, 0.2, true, pg_temp.eixo(1)),
-  (9004, 'Feijão fictício', 'leguminosas', 76, 4.8, 13.6, 0.5, true, pg_temp.eixo(2)),
-  (9005, 'Água fictícia', 'bebidas', 0, 0, 0, 0, true, pg_temp.eixo(1)),
-  (9006, 'Pão fictício', 'Pães', 270, 8, 50, 3, true, pg_temp.eixo(1)),
-  (9007, 'Leite fictício', 'laticinios', 35, 3.4, 5, 0.2, true, pg_temp.eixo(1)),
-  (9008, 'Batata fictícia', 'tuberculos', 80, 1, 18, 0.1, true, pg_temp.eixo(2));
+insert into public.base_alimentos (id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g, is_curado, e_basico, embedding) values
+  (9001, 'Frango fictício', 'carnes', 160, 32, 0, 3, false, true, pg_temp.eixo(1)),
+  (9002, 'Ovo fictício', 'ovos', 150, 13, 1, 10, true, true, pg_temp.eixo(3)),
+  (9003, 'Arroz fictício', 'cereais', 130, 2.5, 28, 0.2, true, true, pg_temp.eixo(1)),
+  (9004, 'Feijão fictício', 'leguminosas', 76, 4.8, 13.6, 0.5, true, true, pg_temp.eixo(2)),
+  (9005, 'Água fictícia', 'bebidas', 0, 0, 0, 0, true, true, pg_temp.eixo(1)),
+  (9006, 'Pão fictício', 'Pães', 270, 8, 50, 3, true, true, pg_temp.eixo(1)),
+  (9007, 'Leite fictício', 'laticinios', 35, 3.4, 5, 0.2, true, true, pg_temp.eixo(1)),
+  (9008, 'Batata fictícia', 'tuberculos', 80, 1, 18, 0.1, true, true, pg_temp.eixo(2)),
+  (9009, 'Barra proteica fictícia', 'suplementos', 380, 35, 30, 12, true, false, pg_temp.eixo(1));
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000a","role":"authenticated"}', true);
@@ -70,6 +71,11 @@ select set_eq(
   $$select nome from public.buscar_alimentos_rag(pg_temp.eixo(1), null, null, 10)$$,
   array['Frango fictício', 'Ovo fictício', 'Arroz fictício', 'Feijão fictício', 'Pão fictício', 'Batata fictícia'],
   'kcal zero e carboidrato abaixo de 12 g/100 g (leite) ficam de fora'
+);
+
+select is(
+  (select count(*)::int from public.buscar_alimentos_rag(pg_temp.eixo(1), null, null, 10) where nome like 'Barra proteica%'),
+  0, 'alimento que não é básico (e_basico = false) nunca entra'
 );
 
 select results_eq(
