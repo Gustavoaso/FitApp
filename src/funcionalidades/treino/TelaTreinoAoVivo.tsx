@@ -24,7 +24,15 @@ import { useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import { CardVidro, BotaoPrimario, AnelProgresso, MomentoConquista } from '@/compartilhado/ui';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
 import { registrarExecucaoSerie } from '@/compartilhado/servicos/progresso-servico';
@@ -359,7 +367,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtSairAmarelo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       fontWeight: PesoFonte.bold,
       color: cores.textoSobreDestaque,
     },

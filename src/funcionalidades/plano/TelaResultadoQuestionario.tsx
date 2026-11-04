@@ -23,6 +23,7 @@ import {
   FamiliaFonte,
   PesoFonte,
   RAIO_CARTAO,
+  Raio,
   Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
@@ -570,7 +571,7 @@ const criarEstilos = (cores: CoresTema) =>
       fontSize: Tipografia.rodape,
       color: cores.texto,
       backgroundColor: cores.destaqueSuave,
-      borderRadius: 12,
+      borderRadius: Raio.md,
       overflow: 'hidden',
       paddingHorizontal: 10,
       paddingVertical: 4,

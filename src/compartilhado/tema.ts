@@ -69,12 +69,12 @@ export const Raio = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 20,
+  xl: 24,
   full: 9999,
 } as const;
 
 export const Fonte = {
-  micro: 12,
+  micro: 13,
   label: 14,
   corpo: 16,
   subtitulo: 18,

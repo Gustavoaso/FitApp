@@ -25,7 +25,15 @@ import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro } from '@/compartilhado/ui';
 import { VisualizadorJSONModal } from './VisualizadorJSONModal';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
@@ -540,7 +548,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     avatarTexto: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 22,
+      fontSize: Tipografia.titulo2,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
       letterSpacing: 1,
@@ -701,7 +709,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtSwitchSub: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -724,7 +732,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtSelectSub: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },

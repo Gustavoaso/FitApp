@@ -13,13 +13,14 @@ import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
 import { CardRefeicao } from './CardRefeicao';
 import { BuscaAlimentosModal } from './BuscaAlimentosModal';
 import {
-  CoresTema,
   CoresMacros,
+  CoresTema,
   Espacamento,
   FamiliaFonte,
   Fonte,
   PesoFonte,
   Raio,
+  Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
@@ -632,7 +633,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtDataCentral: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.texto,
     },
 
@@ -650,19 +651,19 @@ const criarEstilos = (cores: CoresTema) =>
     },
     labelKcalMFP: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     valKcalMFP: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 22,
+      fontSize: Tipografia.titulo2,
       color: cores.texto,
       marginTop: 2,
     },
     subValKcal: {
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.textoSecundario,
       fontFamily: FamiliaFonte.regular,
     },
@@ -671,13 +672,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     valRestantes: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 22,
+      fontSize: Tipografia.titulo2,
       color: cores.destaque,
       letterSpacing: -0.5,
     },
     labelRestantes: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
     trilhoProgressoKcal: {
@@ -705,7 +706,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     tituloMacrosMFP: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.textoSecundario,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
@@ -721,7 +722,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtToggleUnidade: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
     gridBarrasMacros: {
@@ -736,12 +737,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     nomeMacroLinha: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
     valMacroLinha: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
     trilhoMacro: {
@@ -770,19 +771,19 @@ const criarEstilos = (cores: CoresTema) =>
     iconBannerWrapper: {
       width: 36,
       height: 36,
-      borderRadius: 18,
+      borderRadius: Raio.lg,
       backgroundColor: 'rgba(234, 179, 8, 0.2)',
       alignItems: 'center',
       justifyContent: 'center',
     },
     txtBannerTitulo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.texto,
     },
     txtBannerSub: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 1,
     },
@@ -807,7 +808,7 @@ const criarEstilos = (cores: CoresTema) =>
     abaTexto: {
       fontFamily: FamiliaFonte.medio,
       color: cores.textoSecundario,
-      fontSize: 12,
+      fontSize: Fonte.micro,
     },
     abaTextoAtiva: {
       color: cores.destaque,
@@ -822,12 +823,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     tituloListaRefeicoes: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
       color: cores.texto,
     },
     subListaRefeicoes: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
 
@@ -844,12 +845,12 @@ const criarEstilos = (cores: CoresTema) =>
     planejadoTitulo: {
       fontFamily: FamiliaFonte.bold,
       color: cores.texto,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
     },
     planejadoSub: {
       fontFamily: FamiliaFonte.regular,
       color: cores.textoSecundario,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       marginTop: 6,
       marginBottom: 16,
     },
@@ -858,14 +859,14 @@ const criarEstilos = (cores: CoresTema) =>
     },
     diaPlanejadoCard: {
       backgroundColor: cores.elevada,
-      borderRadius: 14,
+      borderRadius: Raio.md,
       padding: 12,
       marginBottom: 8,
     },
     diaPlanejadoTitulo: {
       fontFamily: FamiliaFonte.bold,
       color: cores.destaque,
-      fontSize: 14,
+      fontSize: Fonte.label,
       marginBottom: 8,
     },
     timelineCard: {
@@ -889,18 +890,18 @@ const criarEstilos = (cores: CoresTema) =>
     timelineTitulo: {
       fontFamily: FamiliaFonte.bold,
       color: cores.texto,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
     },
     timelineSub: {
       fontFamily: FamiliaFonte.regular,
       color: cores.textoSecundario,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       marginTop: 2,
     },
     alimentoPlanejado: {
       fontFamily: FamiliaFonte.regular,
       color: cores.texto,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       marginTop: 5,
     },
 

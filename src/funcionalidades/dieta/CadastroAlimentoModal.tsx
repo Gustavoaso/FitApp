@@ -14,7 +14,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { repositorioDieta } from '@/compartilhado/servicos/repositorio';
 import { validarAlimento, type CampoAlimento } from './cadastro-alimento';
@@ -142,14 +149,14 @@ const criarEstilos = (cores: CoresTema) =>
     titulo: { fontFamily: FamiliaFonte.bold, fontSize: Fonte.subtitulo, color: cores.texto },
     ajuda: { color: cores.textoSecundario, marginTop: 4, marginBottom: Espacamento.md },
     campo: { marginBottom: Espacamento.md },
-    rotulo: { color: cores.textoSecundario, fontSize: 13, marginBottom: 4 },
+    rotulo: { color: cores.textoSecundario, fontSize: Tipografia.rodape, marginBottom: 4 },
     input: {
       backgroundColor: cores.separador,
       borderRadius: Raio.md,
       color: cores.texto,
       paddingHorizontal: 14,
       paddingVertical: 12,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
     },
     erro: { color: cores.destaque, marginBottom: Espacamento.md },
     acoes: { flexDirection: 'row', gap: 12, marginTop: Espacamento.md },

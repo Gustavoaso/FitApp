@@ -19,7 +19,15 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { supabase } from '@/compartilhado/supabase';
 import { possuiConsentimentoSaude } from '@/compartilhado/servicos/consentimento-servico';
@@ -549,7 +557,11 @@ const criarEstilos = (cores: CoresTema) =>
       borderWidth: 1,
       borderColor: cores.separador,
     },
-    txtSairQuestionario: { fontFamily: FamiliaFonte.bold, fontSize: 13, color: cores.texto },
+    txtSairQuestionario: {
+      fontFamily: FamiliaFonte.bold,
+      fontSize: Tipografia.rodape,
+      color: cores.texto,
+    },
     barraProgressoContainer: { height: 4, backgroundColor: cores.destaqueSuave, width: '100%' },
     barraProgresso: { height: '100%', backgroundColor: cores.destaque },
     scrollContent: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 60 },

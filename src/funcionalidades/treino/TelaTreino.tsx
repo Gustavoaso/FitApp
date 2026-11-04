@@ -26,13 +26,14 @@ import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
 import {
+  CoresMacros,
   CoresTema,
   Espacamento,
   FamiliaFonte,
   Fonte,
   PesoFonte,
   Raio,
-  CoresMacros,
+  Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { supabase } from '@/compartilhado/supabase';
@@ -321,7 +322,12 @@ export default function TelaTreino() {
 
           <View style={estilos.topBarDireita}>
             <View style={estilos.streakBadge}>
-              <SymbolView name="bolt.fill" size={14} tintColor={cores.destaqueTexto} weight="bold" />
+              <SymbolView
+                name="bolt.fill"
+                size={14}
+                tintColor={cores.destaqueTexto}
+                weight="bold"
+              />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
           </View>
@@ -729,7 +735,7 @@ export default function TelaTreino() {
                       {
                         paddingHorizontal: 12,
                         paddingVertical: 6,
-                        borderRadius: 14,
+                        borderRadius: Raio.md,
                         backgroundColor: cores.destaqueSuave,
                       },
                       grupoMuscularFiltro === grupo && { backgroundColor: cores.destaque },
@@ -738,7 +744,7 @@ export default function TelaTreino() {
                     <Text
                       style={[
                         {
-                          fontSize: 12,
+                          fontSize: Fonte.micro,
                           color: cores.textoSecundario,
                           fontFamily: FamiliaFonte.bold,
                         },
@@ -805,14 +811,18 @@ export default function TelaTreino() {
                     )}
                     <View style={{ flex: 1 }}>
                       <Text
-                        style={{ fontFamily: FamiliaFonte.bold, fontSize: 13, color: cores.texto }}
+                        style={{
+                          fontFamily: FamiliaFonte.bold,
+                          fontSize: Tipografia.rodape,
+                          color: cores.texto,
+                        }}
                       >
                         {ex.nome}
                       </Text>
                       <Text
                         style={{
                           fontFamily: FamiliaFonte.regular,
-                          fontSize: 11,
+                          fontSize: Fonte.micro,
                           color: cores.textoSecundario,
                         }}
                       >
@@ -830,7 +840,7 @@ export default function TelaTreino() {
                 <Text
                   style={{
                     fontFamily: FamiliaFonte.regular,
-                    fontSize: 11,
+                    fontSize: Fonte.micro,
                     color: cores.textoSecundario,
                     marginBottom: 4,
                   }}
@@ -851,7 +861,7 @@ export default function TelaTreino() {
                 <Text
                   style={{
                     fontFamily: FamiliaFonte.regular,
-                    fontSize: 11,
+                    fontSize: Fonte.micro,
                     color: cores.textoSecundario,
                     marginBottom: 4,
                   }}
@@ -872,7 +882,7 @@ export default function TelaTreino() {
                 <Text
                   style={{
                     fontFamily: FamiliaFonte.regular,
-                    fontSize: 11,
+                    fontSize: Fonte.micro,
                     color: cores.textoSecundario,
                     marginBottom: 4,
                   }}
@@ -893,7 +903,7 @@ export default function TelaTreino() {
                 <Text
                   style={{
                     fontFamily: FamiliaFonte.regular,
-                    fontSize: 11,
+                    fontSize: Fonte.micro,
                     color: cores.textoSecundario,
                     marginBottom: 4,
                   }}
@@ -1113,7 +1123,7 @@ export default function TelaTreino() {
             <Text
               style={{
                 fontFamily: FamiliaFonte.bold,
-                fontSize: 12,
+                fontSize: Fonte.micro,
                 color: cores.destaque,
                 marginTop: 12,
                 marginBottom: 6,
@@ -1304,7 +1314,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     streakTexto: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
@@ -1322,7 +1332,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     diaAbrev: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.textoSecundario,
       marginBottom: 6,
     },
@@ -1361,13 +1371,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     diaFoco: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
     diaDetalhes: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1382,7 +1392,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtTrocarTreino: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
 
@@ -1414,7 +1424,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     ordemTexto: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       fontWeight: PesoFonte.bold,
       color: cores.destaque,
     },
@@ -1423,13 +1433,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     exNome: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 15,
+      fontSize: Tipografia.subtitulo,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
     exSub: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1441,7 +1451,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     textoBadgeGrupo: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
 
@@ -1459,7 +1469,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtNumeroSerie: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
     linhaDivisoraPontilhada: {
@@ -1472,7 +1482,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtValoresSerie: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.texto,
     },
 
@@ -1503,7 +1513,7 @@ const criarEstilos = (cores: CoresTema) =>
       right: 20,
       width: 56,
       height: 56,
-      borderRadius: 18,
+      borderRadius: Raio.lg,
       overflow: 'hidden',
       shadowColor: CoresMacros.carboidrato,
       shadowOpacity: 0.4,
@@ -1552,7 +1562,7 @@ const criarEstilos = (cores: CoresTema) =>
     iconeMenuOpcao: {
       width: 42,
       height: 42,
-      borderRadius: 12,
+      borderRadius: Raio.md,
       backgroundColor: cores.elevada,
       alignItems: 'center',
       justifyContent: 'center',
@@ -1564,7 +1574,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     subtituloMenuOpcao: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1591,7 +1601,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     labelForm: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginBottom: 6,
       marginTop: 6,
@@ -1608,7 +1618,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtAddExTemp: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.textoSobreDestaque,
     },
     boxAlimentosTemp: {
@@ -1619,7 +1629,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtItensAdicionadosHeader: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.destaque,
       marginBottom: 6,
     },
@@ -1631,7 +1641,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     itemTempNome: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
 
@@ -1659,7 +1669,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtSelectSemanaVal: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.destaque,
     },
 
@@ -1682,7 +1692,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     subTrocaTreino: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1742,12 +1752,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtBannerTitulo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.texto,
     },
     txtBannerSub: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1762,7 +1772,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtReformularSemana: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.textoSobreDestaque,
     },
     cardItemCronograma: {
@@ -1771,18 +1781,18 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtDiaSemanaNome: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.destaque,
     },
     txtFocoAlocado: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 15,
+      fontSize: Tipografia.subtitulo,
       color: cores.texto,
       marginTop: 2,
     },
     txtQtdExAlocado: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
@@ -1796,7 +1806,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtAlterarDiaPlanejado: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
     badgeDivergenciaContainer: {
@@ -1812,7 +1822,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtDivergencia: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
     containerExerciciosExpandidos: {
@@ -1832,17 +1842,17 @@ const criarEstilos = (cores: CoresTema) =>
     },
     numExExpandido: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
     nomeExExpandido: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.texto,
     },
     subExExpandido: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 1,
     },
@@ -1857,7 +1867,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     labelInput: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginBottom: 4,
     },

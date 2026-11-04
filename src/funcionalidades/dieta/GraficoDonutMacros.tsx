@@ -8,7 +8,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { CoresTema, CoresMacros, FamiliaFonte, Fonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresMacros, CoresTema, FamiliaFonte, Fonte, PesoFonte } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 
 interface PropsGraficoDonutMacros {
@@ -135,7 +135,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     caloriasValor: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
       letterSpacing: -0.5,

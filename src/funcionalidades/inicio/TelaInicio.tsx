@@ -24,7 +24,15 @@ import { BlurView } from 'expo-blur';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '@/compartilhado/ui';
 import { CardAderencia } from './CardAderencia';
 import { GraficoEvolucao, PontoGrafico } from './GraficoEvolucao';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import {
   obterHistoricoPeso,
@@ -256,7 +264,12 @@ export default function TelaInicio() {
               accessible
               accessibilityLabel={`Sequência: ${sequenciaDias} ${sequenciaDias === 1 ? 'dia' : 'dias'}`}
             >
-              <SymbolView name="bolt.fill" size={14} tintColor={cores.destaqueTexto} weight="bold" />
+              <SymbolView
+                name="bolt.fill"
+                size={14}
+                tintColor={cores.destaqueTexto}
+                weight="bold"
+              />
               <Text style={estilos.streakTexto}>{sequenciaDias}</Text>
             </View>
           </View>
@@ -578,7 +591,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     streakTexto: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
@@ -714,7 +727,7 @@ const criarEstilos = (cores: CoresTema) =>
     tituloEvolucao: {
       flexShrink: 1,
       fontFamily: FamiliaFonte.bold,
-      fontSize: 15,
+      fontSize: Tipografia.subtitulo,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
@@ -729,7 +742,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtNovoPeso: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
 
@@ -777,13 +790,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     subtituloAguaAcao: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginBottom: 6,
     },
     subtituloAguaAcaoRemover: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 10,
       marginBottom: 6,
@@ -803,7 +816,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtIncrementoAgua: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
     btnRemoverAgua: {
@@ -817,7 +830,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtRemoverAgua: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.erro,
     },
     btnEditarMetaAgua: {
@@ -829,7 +842,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtEditarMetaAgua: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
 
@@ -867,7 +880,7 @@ const criarEstilos = (cores: CoresTema) =>
     iconeTreinoContainer: {
       width: 36,
       height: 36,
-      borderRadius: 18,
+      borderRadius: Raio.lg,
       backgroundColor: cores.destaqueSuave,
       alignItems: 'center',
       justifyContent: 'center',

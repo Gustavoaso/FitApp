@@ -8,7 +8,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Path, Circle, Line, Text as SvgText } from 'react-native-svg';
-import { CoresTema, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresTema, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 
 export interface PontoGrafico {
@@ -156,7 +156,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     titulo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.texto,
       fontWeight: PesoFonte.bold,
       marginBottom: 8,
@@ -169,11 +169,11 @@ const criarEstilos = (cores: CoresTema) =>
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: cores.superficie,
-      borderRadius: 12,
+      borderRadius: Raio.md,
     },
     textoVazio: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
   });

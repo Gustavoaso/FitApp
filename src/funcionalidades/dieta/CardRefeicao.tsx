@@ -11,13 +11,14 @@ import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
 import { GraficoDonutMacros } from './GraficoDonutMacros';
 import {
-  CoresTema,
   CoresMacros,
+  CoresTema,
+  Espacamento,
   FamiliaFonte,
   Fonte,
   PesoFonte,
   Raio,
-  Espacamento,
+  Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarCalorias } from '@/compartilhado/utilidades';
@@ -223,19 +224,19 @@ const criarEstilos = (cores: CoresTema) =>
     },
     nome: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
       color: cores.texto,
       fontWeight: PesoFonte.bold,
     },
     subtituloColapsado: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
     kcalExpandidaHeader: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 15,
+      fontSize: Tipografia.subtitulo,
       color: cores.texto,
       marginRight: 6,
     },
@@ -262,7 +263,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtLogPilula: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.destaque,
     },
 
@@ -298,13 +299,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtLegendaPct: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
       width: 32,
     },
     txtLegendaGramas: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
 
@@ -325,7 +326,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtAcaoQuadrado: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
 
@@ -344,18 +345,18 @@ const criarEstilos = (cores: CoresTema) =>
     },
     itemNomeBold: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.texto,
     },
     itemSubCinza: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
       marginTop: 2,
     },
     itemKcalDireita: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 14,
+      fontSize: Fonte.label,
       color: cores.texto,
     },
 
@@ -372,7 +373,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtLogMais: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.destaque,
     },
   });

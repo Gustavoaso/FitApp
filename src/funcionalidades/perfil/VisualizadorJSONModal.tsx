@@ -10,7 +10,15 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { SymbolView } from 'expo-symbols';
-import { CoresTema, Espacamento, FamiliaFonte, Fonte, PesoFonte, Raio } from '@/compartilhado/tema';
+import {
+  CoresTema,
+  Espacamento,
+  FamiliaFonte,
+  Fonte,
+  PesoFonte,
+  Raio,
+  Tipografia,
+} from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { EstadoErro, Skeleton } from '@/compartilhado/ui';
 
@@ -328,12 +336,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtChaveNo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       color: cores.destaque,
     },
     txtTipoNo: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
     blocoFilhos: {
@@ -352,12 +360,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     txtChave: {
       fontFamily: FamiliaFonte.semibold,
-      fontSize: 12,
+      fontSize: Fonte.micro,
       color: cores.texto,
     },
     txtValor: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 12,
+      fontSize: Fonte.micro,
     },
 
     boxVazio: {

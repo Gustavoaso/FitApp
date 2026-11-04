@@ -6,7 +6,7 @@ import { useTema } from '@/compartilhado/useTema';
 export default function LayoutTabs() {
   const { cores } = useTema();
   return (
-    <NativeTabs tintColor={cores.destaque} minimizeBehavior="onScrollDown">
+    <NativeTabs tintColor={cores.destaqueTexto} minimizeBehavior="onScrollDown">
       <NativeTabs.Trigger name="inicio">
         <NativeTabs.Trigger.Label>Início</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'house', selected: 'house.fill' }} />

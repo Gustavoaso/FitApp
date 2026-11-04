@@ -8,7 +8,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SymbolView } from 'expo-symbols';
 import { CardVidro } from '@/compartilhado/ui/CardVidro';
-import { CoresTema, FamiliaFonte, PesoFonte } from '@/compartilhado/tema';
+import { CoresTema, FamiliaFonte, Fonte, PesoFonte, Raio, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { EstatisticasAderencia } from '@/compartilhado/servicos/progresso-servico';
 
@@ -116,13 +116,13 @@ const criarEstilos = (cores: CoresTema) =>
     },
     titulo: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 15,
+      fontSize: Tipografia.subtitulo,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },
     porcentagemBadge: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 16,
+      fontSize: Fonte.corpo,
       fontWeight: PesoFonte.bold,
       color: cores.destaque,
     },
@@ -133,7 +133,7 @@ const criarEstilos = (cores: CoresTema) =>
     itemMetric: {
       flex: 1,
       backgroundColor: cores.elevada,
-      borderRadius: 12,
+      borderRadius: Raio.md,
       padding: 10,
     },
     rowMetricHeader: {
@@ -144,12 +144,12 @@ const criarEstilos = (cores: CoresTema) =>
     },
     labelMetric: {
       fontFamily: FamiliaFonte.regular,
-      fontSize: 11,
+      fontSize: Fonte.micro,
       color: cores.textoSecundario,
     },
     valorMetric: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: 13,
+      fontSize: Tipografia.rodape,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
       marginBottom: 6,
