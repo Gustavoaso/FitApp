@@ -354,7 +354,7 @@ export function BuscaAlimentosModal({
                                 <SymbolView
                                   name="checkmark.seal.fill"
                                   size={14}
-                                  tintColor="#22C55E"
+                                  tintColor={cores.sucesso}
                                 />
                               ) : null}
                               {favorito ? (

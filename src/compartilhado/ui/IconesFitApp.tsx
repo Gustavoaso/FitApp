@@ -407,7 +407,7 @@ export function IconeMais({
 }
 
 /** Check — conclusão */
-export function IconeCheck({ tamanho = 16, cor = '#080A0E', strokeWidth = 2.5 }: PropsIcone) {
+export function IconeCheck({ tamanho = 16, cor = '#0B0B0D', strokeWidth = 2.5 }: PropsIcone) {
   return (
     <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill="none">
       <Path

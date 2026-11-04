@@ -29,10 +29,10 @@ function ItemNode({ label, valor, nivel = 0 }: ItemTreeProps) {
   const eArray = Array.isArray(valor);
 
   if (!eObjeto) {
-    let corValor = '#A7F3D0'; // string verde claro
-    if (typeof valor === 'number') corValor = '#FDE047'; // numero amarelo
-    if (typeof valor === 'boolean') corValor = '#F472B6'; // boolean rosa
-    if (valor === null || valor === undefined) corValor = '#9CA3AF'; // null cinza
+    let corValor = cores.sucesso; // string
+    if (typeof valor === 'number') corValor = cores.macros.carboidrato; // número
+    if (typeof valor === 'boolean') corValor = cores.macros.gordura; // boolean
+    if (valor === null || valor === undefined) corValor = cores.textoSecundario; // null
 
     return (
       <View style={[estilos.linhaProp, { paddingLeft: nivel * 14 }]}>

@@ -321,7 +321,7 @@ export default function TelaTreino() {
 
           <View style={estilos.topBarDireita}>
             <View style={estilos.streakBadge}>
-              <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
+              <SymbolView name="bolt.fill" size={14} tintColor={cores.destaqueTexto} weight="bold" />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
           </View>
@@ -655,7 +655,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="dumbbell.fill" size={22} tintColor="#EAB308" />
+              <SymbolView name="dumbbell.fill" size={22} tintColor={cores.destaqueTexto} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Meus treinos</Text>
@@ -672,7 +672,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="calendar" size={22} tintColor="#3B82F6" />
+              <SymbolView name="calendar" size={22} tintColor={cores.destaqueTexto} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Definir treino da semana</Text>

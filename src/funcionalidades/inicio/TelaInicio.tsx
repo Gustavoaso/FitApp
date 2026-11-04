@@ -256,7 +256,7 @@ export default function TelaInicio() {
               accessible
               accessibilityLabel={`Sequência: ${sequenciaDias} ${sequenciaDias === 1 ? 'dia' : 'dias'}`}
             >
-              <SymbolView name="bolt.fill" size={14} tintColor="#EAB308" weight="bold" />
+              <SymbolView name="bolt.fill" size={14} tintColor={cores.destaqueTexto} weight="bold" />
               <Text style={estilos.streakTexto}>{sequenciaDias}</Text>
             </View>
           </View>

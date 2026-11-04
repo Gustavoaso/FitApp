@@ -30,7 +30,7 @@ export function BotaoPrimario({
   estiloTexto,
   variante = 'primario',
 }: BotaoPrimarioProps) {
-  const { cores } = useTema();
+  const { cores, escuro } = useTema();
   const estaDesabilitado = desabilitado || carregando;
   const primario = variante === 'primario';
   const corTexto = primario ? cores.textoSobreDestaque : cores.texto;
@@ -51,6 +51,8 @@ export function BotaoPrimario({
       style={({ pressed }) => [
         estilos.container,
         primario && { backgroundColor: cores.destaque },
+        primario && !estaDesabilitado && escuro && estilos.brilho,
+        primario && !estaDesabilitado && escuro && { shadowColor: cores.destaque },
         variante === 'ghost' && { backgroundColor: cores.destaqueSuave },
         variante === 'outline' && { borderWidth: 1, borderColor: cores.separador },
         pressed && !estaDesabilitado && estilos.pressionado,
@@ -81,6 +83,12 @@ const estilos = StyleSheet.create({
     fontFamily: FamiliaFonte.semibold,
     fontSize: Tipografia.destaque,
     fontWeight: PesoFonte.semibold,
+  },
+  // Brilho lima só no CTA principal (VISUAL.md).
+  brilho: {
+    shadowOpacity: 0.35,
+    shadowRadius: Espacamento.lg,
+    shadowOffset: { width: 0, height: Espacamento.xs },
   },
   pressionado: {
     transform: [{ scale: 0.97 }],
