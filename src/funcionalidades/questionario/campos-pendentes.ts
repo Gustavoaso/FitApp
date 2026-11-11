@@ -1,56 +1,78 @@
 // ============================================================
-// REGRA: campos obrigatórios de cada etapa do questionário
+// REGRA: passos do questionário e campos obrigatórios de cada um
 // ============================================================
-// O questionário começa vazio (exemplos só como placeholder) e não
-// avança enquanto houver pergunta sem resposta.
+// Uma pergunta (ou par de perguntas) por tela. O questionário começa vazio
+// e não avança enquanto houver pergunta sem resposta.
 // ============================================================
 
 export interface RespostasEmEdicao {
+  objetivo: string;
   sexo: string;
   idade: string;
-  peso: string;
   altura: string;
-  objetivo: string;
-  atividade: string;
-  nivel: string;
+  peso: string;
+  /** Faixa de tempo de treino; o nível é derivado dela (RN18). */
+  experiencia: string;
   dias: string;
   local: string;
-  tempo: string;
   restricaoFisica: string[];
   restricaoAlimentar: string[];
+  atividade: string;
   refeicoes: string;
 }
 
-const CAMPOS_POR_ETAPA: Record<number, [keyof RespostasEmEdicao, string][]> = {
-  1: [
-    ['sexo', 'sexo biológico'],
-    ['idade', 'idade'],
-    ['peso', 'peso'],
-    ['altura', 'altura'],
-  ],
-  2: [
-    ['objetivo', 'objetivo'],
-    ['atividade', 'atividade fora do treino'],
-    ['nivel', 'experiência'],
-  ],
-  3: [
-    ['dias', 'dias por semana'],
-    ['local', 'local de treino'],
-    ['tempo', 'tempo por sessão'],
-  ],
-  4: [
-    ['restricaoFisica', 'restrição física'],
-    ['restricaoAlimentar', 'restrição alimentar'],
-    ['refeicoes', 'refeições por dia'],
-  ],
-};
+interface Passo {
+  campos: [keyof RespostasEmEdicao, string][];
+  /** Valor mostrado (e confirmado ao Continuar) quando a pessoa não mexeu na roda, régua ou stepper. */
+  padroes?: Partial<RespostasEmEdicao>;
+}
 
-/** Nomes das perguntas sem resposta na etapa (vazio = pode avançar). */
-export function camposPendentes(etapa: number, respostas: RespostasEmEdicao): string[] {
-  return (CAMPOS_POR_ETAPA[etapa] ?? [])
-    .filter(([campo]) => {
-      const valor = respostas[campo];
-      return Array.isArray(valor) ? valor.length === 0 : !String(valor ?? '').trim();
-    })
+// PREMISSA: padrões de idade, altura, peso e refeições (valores médios, visíveis na tela).
+export const PASSOS: Passo[] = [
+  { campos: [['objetivo', 'objetivo']] },
+  {
+    campos: [
+      ['sexo', 'sexo biológico'],
+      ['idade', 'idade'],
+    ],
+    padroes: { idade: '30' },
+  },
+  {
+    campos: [
+      ['altura', 'altura'],
+      ['peso', 'peso'],
+    ],
+    padroes: { altura: '170', peso: '70' },
+  },
+  { campos: [['experiencia', 'tempo de treino']] },
+  { campos: [['dias', 'dias por semana']] },
+  { campos: [['local', 'local de treino']] },
+  { campos: [['restricaoFisica', 'dores ou lesões']] },
+  { campos: [['restricaoAlimentar', 'restrição alimentar']] },
+  { campos: [['atividade', 'rotina fora do treino']] },
+  { campos: [['refeicoes', 'refeições por dia']], padroes: { refeicoes: '4' } },
+];
+
+export const TOTAL_PASSOS = PASSOS.length;
+
+function vazio(valor: string | string[] | undefined): boolean {
+  return Array.isArray(valor) ? valor.length === 0 : !String(valor ?? '').trim();
+}
+
+/** Nomes das perguntas sem resposta no passo (1 a 10; vazio = pode avançar). */
+export function camposPendentes(passo: number, respostas: RespostasEmEdicao): string[] {
+  return (PASSOS[passo - 1]?.campos ?? [])
+    .filter(([campo]) => vazio(respostas[campo]))
     .map(([, rotulo]) => rotulo);
+}
+
+/** Preenche com o padrão do passo o que ainda está vazio (o que a pessoa vê na tela). */
+export function aplicarPadroes(passo: number, respostas: RespostasEmEdicao): RespostasEmEdicao {
+  const resultado = { ...respostas };
+  for (const [campo, valor] of Object.entries(PASSOS[passo - 1]?.padroes ?? {})) {
+    if (vazio(resultado[campo as keyof RespostasEmEdicao])) {
+      Object.assign(resultado, { [campo]: valor });
+    }
+  }
+  return resultado;
 }

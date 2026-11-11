@@ -299,3 +299,16 @@
 - **Pronto quando:** typecheck, lint, jest e format:check passam; o teste cobre fases (check nas concluídas) e Reduzir Movimento; `npx expo export --platform ios` compila; o orbe aparece no simulador pelo Expo Go do SDK 58.
 - **Dependências permitidas:** `@shopify/react-native-skia` (versão do `expo install`).
 - **Premissas:** o questionário V1 (10 telas) fica para a etapa 19; esta etapa só troca a tela de geração.
+
+## Etapa 19: questionário V1, uma pergunta por tela (decisão do dono em 2026-11-10)
+
+- **Escopo:**
+  - Reescrever `src/funcionalidades/questionario/TelaQuestionario.tsx` conforme `docs/mockups/questionario-v1-2026-11-10.html` e as notas de build em `docs/mockups/indice-questionario-2026-11-10.md`: 10 perguntas, uma por tela, em lista de passos (config), com barra de progresso "N de 10", Voltar, Sair e "Rascunho salvo".
+  - Escolha única avança ao tocar; dias (2 a 7) e refeições (3 a 6) com Continuar; números por roda, régua e stepper; tela de resumo; erro de validação; "refazer" pré-preenchido.
+  - As mesmas respostas de hoje (`RespostasEmEdicao`), sem pergunta nova (a "Parte B" fica fora). `campos-pendentes.ts` passa a validar por passo.
+  - Componentes novos em `src/compartilhado/ui/` (CartaoOpcao, ChipOpcao, Regua, Roda, Stepper), com tokens do `docs/VISUAL.md`, claro e escuro, alvos >= 44 pt, haptics na régua.
+  - Rascunho: persistir as respostas a cada passo (reusar o que já existe).
+  - Ao confirmar o resumo, segue para a geração (etapa 18).
+- **Pronto quando:** typecheck, lint, jest e format:check passam; testes por passo (validação, avançar/voltar, rascunho, resumo); `npx expo export --platform ios` compila.
+- **Dependências permitidas:** nenhuma nova (`expo-haptics` já vem no SDK).
+- **Premissas:** layout e textos seguem o mockup V1; onde o mockup divergir das regras do `PROJETO.md`, vale o `PROJETO.md` e o desvio vai para o `ANDAMENTO.md`.

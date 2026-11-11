@@ -16,3 +16,8 @@ export { EstadoErro } from './EstadoErro';
 export { MomentoConquista } from './MomentoConquista';
 export { OrbeGeracao } from './OrbeGeracao';
 export { BarraProgresso } from './BarraProgresso';
+export { CartaoOpcao } from './CartaoOpcao';
+export { ChipOpcao } from './ChipOpcao';
+export { Stepper } from './Stepper';
+export { Roda } from './Roda';
+export { Regua } from './Regua';

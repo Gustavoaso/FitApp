@@ -41,6 +41,7 @@ Fluxo: novo-projeto
 | 17. RAG híbrido para exercícios e alimentos | Concluída (maestro: verificações e avaliação 7/8) | 2 | ver git log |
 | 16. Atualizar para o SDK 58 | Concluída (testador: APROVADO) | 1 | b031459 |
 | 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
+| 19. Questionário V1 (10 passos) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -144,6 +145,12 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 14: Expo web não sobe (exigiria `react-native-web`, fora do plano); o script abre o Expo Go no simulador; `COM_EDGE=1` sobe o edge-runtime; tofu pela TACO e PTS pelo USDA FDC 174275; senha fictícia `senha-teste-123` só no banco local. Tentativa 2: `rls.test.sql` independente do seed; `.env.example` com `EXPO_PUBLIC_SUPABASE_URL`.
 
 - Etapa 17: RPCs `buscar_exercicios_rag` e `buscar_alimentos_rag` (vetor + filtros), um embedding por geração; PREMISSA carboidrato ≥ 12 g/100 g; agentes indisponíveis, verificação feita pelo maestro (265 testes, typecheck, lint, format, 52 testes SQL; avaliação 7/8, vegano falha).
+- Etapa 19: desvios do mockup V1 pelo `PROJETO.md` (nova RN18): sem as alergias (amendoim, frutos do mar) nem "Outra"/"Punho", porque o motor não tem regra para elas e a tela prometeria o que o plano não cumpre; dias 2 a 7 (RN08), então `validarFrequenciaSemanal` passou de máx. 6 para 7; idade 14 a 100 como no validador (menores de 18 continuam barrados na geração, RN16).
+- Etapa 19: nível derivado das 4 faixas (`Nunca treinei` e `Menos de 6 meses` = iniciante; 6 meses a 2 anos = intermediário; mais de 2 anos = avançado), PREMISSA em RN18. Ao refazer, o nível salvo vira a faixa mais próxima (iniciante = "Menos de 6 meses").
+- Etapa 19: tempo por sessão não é mais perguntado (Parte B): fica `1h` fixo (PREMISSA em `respostas.ts`). Divisão segue "Deixar a IA decidir". Valores guardados (`Casa`, `Peso do corpo`, `Ganho de força`, `Coluna-lombar`...) são os que `mapear-plano.ts` já entende; o rótulo da tela é separado.
+- Etapa 19: padrões visíveis de roda, régua e stepper (idade 30, altura 170, peso 70, refeições 4; PREMISSA em `campos-pendentes.ts`) viram resposta ao Continuar. Réguas vão de 80 a 270 cm e 10 a 320 kg (mais largas que os limites) para o aviso de erro do mockup ser alcançável.
+- Etapa 19: rascunho novo (`rascunho.ts`, AsyncStorage por usuário, chave `@fitapp_rascunho_questionario`), pois não existia. Refazer (parâmetro `dadosFormulario`) vence o rascunho; o rascunho é apagado ao gerar. "Editar" no resumo percorre só os passos do bloco (Perfil 2 e 3; Treino 5 a 7; Alimentação 8 e 10) e volta ao resumo.
+- Etapa 19: `Roda` é um `ScrollView` com snap (não `@expo/ui` Picker), sem dependência nova. Haptic de seleção na régua, na roda, no stepper, nos cartões e chips.
 
 ## Pendências
 
@@ -178,3 +185,5 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - A chave RapidAPI `b7ad…` e a do Groq estiveram no histórico do git: revogar/trocar no painel da RapidAPI e do Groq (dono).
 
 - 2026-10-31 (testes finais): testador reprovou só pelo expo-doctor (`react-native` 0.88.0, SDK espera 0.88.1); a troca reescreve o lockfile e exige `--legacy-peer-deps` (conflito `react-dom` 19.3.1 × `react` 19.3.0): decidir com o dono. Segurança sem falha alta; `validar_compatibilidade_planejamento` revogada do `anon` (migration 20261031000100). Ficam: deep link `plano` sem validação, CORS `*` em `excluir-conta`, `npm audit` e Edge Functions rodando não verificados.
+- Etapa 19: régua, roda e stepper só testados em jest (eventos de rolagem simulados); falta ver no simulador (snap, haptic, texto XXL, claro e escuro) e conferir o ícone de cada cartão (`figure.walk`, `desktopcomputer` etc.).
+- Etapa 19: alergias alimentares e "Outra" só voltam se o motor ganhar regra para elas; "Parte B" (meta de peso, tempo por sessão, equipamentos, "não como") segue fora.

@@ -78,7 +78,7 @@ export function validarGorduraCorporal(percentual: number): ResultadoValidacao {
 /**
  * Valida a frequência semanal de treino.
  * Mínimo: 2 dias (abaixo disso o progresso é muito lento)
- * Máximo: 6 dias (1 dia de descanso obrigatório)
+ * Máximo: 7 dias (RN08: a divisão semanal cobre de 2 a 7 dias)
  */
 export function validarFrequenciaSemanal(dias: number): ResultadoValidacao {
   if (!Number.isInteger(dias)) {
@@ -87,8 +87,8 @@ export function validarFrequenciaSemanal(dias: number): ResultadoValidacao {
   if (dias < 2) {
     return { valido: false, mensagem: 'Mínimo de 2 dias por semana.' };
   }
-  if (dias > 6) {
-    return { valido: false, mensagem: 'Máximo de 6 dias por semana. Seu corpo precisa descansar!' };
+  if (dias > 7) {
+    return { valido: false, mensagem: 'Máximo de 7 dias por semana.' };
   }
   return { valido: true };
 }

@@ -1,48 +1,38 @@
-import { camposPendentes, type RespostasEmEdicao } from './campos-pendentes';
+import {
+  PASSOS,
+  TOTAL_PASSOS,
+  aplicarPadroes,
+  camposPendentes,
+  type RespostasEmEdicao,
+} from './campos-pendentes';
+import { RESPOSTAS_VAZIAS } from './respostas';
 
-const VAZIO: RespostasEmEdicao = {
-  sexo: '',
-  idade: '',
-  peso: '',
-  altura: '',
-  objetivo: '',
-  atividade: '',
-  nivel: '',
-  dias: '',
-  local: '',
-  tempo: '',
-  restricaoFisica: [],
-  restricaoAlimentar: [],
-  refeicoes: '',
-};
+const VAZIO: RespostasEmEdicao = RESPOSTAS_VAZIAS;
 
-it('começando vazio, nenhuma etapa deixa avançar', () => {
-  expect(camposPendentes(1, VAZIO)).toEqual(['sexo biológico', 'idade', 'peso', 'altura']);
-  expect(camposPendentes(2, VAZIO)).toHaveLength(3);
-  expect(camposPendentes(3, VAZIO)).toHaveLength(3);
-  expect(camposPendentes(4, VAZIO)).toEqual([
-    'restrição física',
-    'restrição alimentar',
-    'refeições por dia',
-  ]);
+it('são 10 passos e cada um começa pendente', () => {
+  expect(TOTAL_PASSOS).toBe(10);
+  for (let p = 1; p <= TOTAL_PASSOS; p++) {
+    expect(camposPendentes(p, VAZIO).length).toBeGreaterThan(0);
+  }
+  expect(camposPendentes(2, VAZIO)).toEqual(['sexo biológico', 'idade']);
 });
 
-it('etapa preenchida não tem pendência; espaço em branco não conta como resposta', () => {
-  const etapa1 = { ...VAZIO, sexo: 'Feminino', idade: '30', peso: '75', altura: '168' };
-  expect(camposPendentes(1, etapa1)).toEqual([]);
-  expect(camposPendentes(1, { ...etapa1, peso: '  ' })).toEqual(['peso']);
+it('passo respondido não tem pendência; espaço em branco não conta', () => {
+  expect(camposPendentes(1, { ...VAZIO, objetivo: 'Hipertrofia' })).toEqual([]);
+  expect(camposPendentes(1, { ...VAZIO, objetivo: '  ' })).toEqual(['objetivo']);
+  expect(camposPendentes(7, { ...VAZIO, restricaoFisica: ['Nenhuma'] })).toEqual([]);
+  expect(camposPendentes(7, { ...VAZIO, restricaoFisica: [] })).toEqual(['dores ou lesões']);
 });
 
-it('restrições aceitam "Nenhuma" como resposta', () => {
-  const etapa4 = {
-    ...VAZIO,
-    restricaoFisica: ['Nenhuma'],
-    restricaoAlimentar: ['Lactose'],
-    refeicoes: '4',
-  };
-  expect(camposPendentes(4, etapa4)).toEqual([]);
+it('passo desconhecido não bloqueia', () => {
+  expect(camposPendentes(0, VAZIO)).toEqual([]);
+  expect(camposPendentes(11, VAZIO)).toEqual([]);
 });
 
-it('etapa desconhecida não bloqueia', () => {
-  expect(camposPendentes(9, VAZIO)).toEqual([]);
+it('padrões só preenchem o que está vazio', () => {
+  expect(aplicarPadroes(2, VAZIO).idade).toBe('30');
+  expect(aplicarPadroes(2, { ...VAZIO, idade: '41' }).idade).toBe('41');
+  expect(aplicarPadroes(3, VAZIO)).toMatchObject({ altura: '170', peso: '70' });
+  expect(aplicarPadroes(1, VAZIO)).toEqual(VAZIO);
+  expect(PASSOS).toHaveLength(10);
 });
