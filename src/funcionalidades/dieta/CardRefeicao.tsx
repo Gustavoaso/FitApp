@@ -35,7 +35,6 @@ export interface ItemRefeicaoResumo {
 
 interface PropsCardRefeicao {
   nome: string;
-  icone: string;
   horario: string;
   alimentos: ItemRefeicaoResumo[];
   expandido?: boolean;
@@ -47,7 +46,6 @@ interface PropsCardRefeicao {
 
 export function CardRefeicao({
   nome,
-  icone,
   horario,
   alimentos,
   expandido = false,
@@ -73,21 +71,15 @@ export function CardRefeicao({
   const pctF = Math.round((totais.gorduras / totalGramas) * 100);
   const pctP = Math.round((totais.proteinas / totalGramas) * 100);
 
-  const primeiroAlimento = alimentos[0]?.nome || '';
-  const restoContagem = alimentos.length > 1 ? ` e mais ${alimentos.length - 1}` : '';
   const textoSubtituloColapsado =
     alimentos.length > 0
-      ? `${primeiroAlimento}${restoContagem} • ${totais.calorias} cal`
+      ? `${Math.round(totais.calorias)} kcal`
       : `Nenhum alimento registrado • ${horario}`;
 
   return (
     <CardVidro semBorda estilo={estilos.card}>
       {/* ── Top Bar do Card da Refeição ────────────────────────── */}
       <TouchableOpacity style={estilos.topoClick} onPress={onAlternarExpandir} activeOpacity={0.7}>
-        <View style={estilos.iconeBloco}>
-          <SymbolView name={icone as any} size={18} tintColor={cores.destaque} weight="bold" />
-        </View>
-
         <View style={estilos.colunaTitulo}>
           <Text style={estilos.nome}>{nome}</Text>
           <Text style={estilos.subtituloColapsado}>
@@ -99,7 +91,7 @@ export function CardRefeicao({
 
         {/* Calorias totais da refeição à direita no modo expandido */}
         {expandido && alimentos.length > 0 ? (
-          <Text style={estilos.kcalExpandidaHeader}>{totais.calorias} cal</Text>
+          <Text style={estilos.kcalExpandidaHeader}>{Math.round(totais.calorias)} kcal</Text>
         ) : null}
 
         {/* Ações do modo colapsado */}
@@ -121,6 +113,21 @@ export function CardRefeicao({
           </View>
         ) : null}
       </TouchableOpacity>
+
+      {/* ── Alimentos: nome, gramas e kcal por item (sempre visíveis) ── */}
+      {alimentos.length > 0 ? (
+        <View style={estilos.listaAlimentos}>
+          {alimentos.map((item) => (
+            <View key={item.id} style={estilos.itemLinha}>
+              <View style={estilos.colInfoItem}>
+                <Text style={estilos.itemNomeBold}>{item.nome}</Text>
+                <Text style={estilos.itemSubCinza}>{item.porcao}</Text>
+              </View>
+              <Text style={estilos.itemKcalDireita}>{Math.round(item.calorias)} kcal</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
 
       {/* ── Conteúdo Expandido (MyFitnessPal Screen 2) ────────────────── */}
       {expandido ? (
@@ -160,7 +167,7 @@ export function CardRefeicao({
           <View style={estilos.rowAcoesRapidas}>
             {onCopiarDe ? (
               <TouchableOpacity style={estilos.btnAcaoQuadrado} onPress={onCopiarDe}>
-                <SymbolView name="doc.on.doc" size={14} tintColor={cores.destaque} />
+                <SymbolView name="doc.on.doc" size={14} tintColor={cores.destaqueTexto} />
                 <Text style={estilos.txtAcaoQuadrado}>Copiar de...</Text>
               </TouchableOpacity>
             ) : null}
@@ -172,24 +179,9 @@ export function CardRefeicao({
             ) : null}
           </View>
 
-          {/* Lista Estilizada de Alimentos Registrados */}
-          {alimentos.length > 0 ? (
-            <View style={estilos.listaAlimentos}>
-              {alimentos.map((item) => (
-                <View key={item.id} style={estilos.itemLinha}>
-                  <View style={estilos.colInfoItem}>
-                    <Text style={estilos.itemNomeBold}>{item.nome}</Text>
-                    <Text style={estilos.itemSubCinza}>{item.porcao}</Text>
-                  </View>
-                  <Text style={estilos.itemKcalDireita}>{item.calorias}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-
           {/* Botão Inferior "Log mais" / Adicionar */}
           <TouchableOpacity style={estilos.btnLogMais} onPress={onAdicionar} activeOpacity={0.8}>
-            <SymbolView name="plus" size={14} tintColor={cores.destaque} weight="bold" />
+            <SymbolView name="plus" size={14} tintColor={cores.destaqueTexto} weight="bold" />
             <Text style={estilos.txtLogMais}>
               {alimentos.length > 0 ? 'Log mais alimentos' : 'Adicionar alimento'}
             </Text>
@@ -204,20 +196,13 @@ const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
     card: {
       marginBottom: 0,
-      padding: 0,
+      paddingVertical: Espacamento.md,
+      paddingHorizontal: Espacamento.lg,
     },
     topoClick: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-    },
-    iconeBloco: {
-      width: 38,
-      height: 38,
-      borderRadius: Raio.md,
-      backgroundColor: cores.destaqueSuave,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     colunaTitulo: {
       flex: 1,
@@ -246,25 +231,24 @@ const criarEstilos = (cores: CoresTema) =>
       gap: 8,
     },
     btnMaisOpcoes: {
-      width: 32,
-      height: 32,
+      width: 44,
+      height: 44,
       borderRadius: Raio.full,
       backgroundColor: cores.elevada,
       alignItems: 'center',
       justifyContent: 'center',
     },
     btnLogPilula: {
-      backgroundColor: 'rgba(234, 179, 8, 0.15)',
-      borderWidth: 1,
-      borderColor: 'rgba(234, 179, 8, 0.3)',
+      backgroundColor: cores.destaque,
       borderRadius: Raio.full,
-      paddingHorizontal: 16,
-      paddingVertical: 6,
+      minHeight: 44,
+      justifyContent: 'center',
+      paddingHorizontal: 20,
     },
     txtLogPilula: {
       fontFamily: FamiliaFonte.bold,
-      fontSize: Fonte.micro,
-      color: cores.destaque,
+      fontSize: Fonte.label,
+      color: cores.textoSobreDestaque,
     },
 
     // Expandido
@@ -321,7 +305,7 @@ const criarEstilos = (cores: CoresTema) =>
       justifyContent: 'center',
       gap: 6,
       backgroundColor: cores.elevada,
-      paddingVertical: 8,
+      minHeight: 44,
       borderRadius: Raio.sm,
     },
     txtAcaoQuadrado: {
@@ -331,20 +315,22 @@ const criarEstilos = (cores: CoresTema) =>
     },
 
     listaAlimentos: {
-      gap: 12,
-      marginBottom: 14,
+      marginTop: 10,
     },
     itemLinha: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      paddingVertical: 8,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderColor: cores.separador,
     },
     colInfoItem: {
       flex: 1,
       paddingRight: 12,
     },
     itemNomeBold: {
-      fontFamily: FamiliaFonte.bold,
+      fontFamily: FamiliaFonte.medio,
       fontSize: Fonte.label,
       color: cores.texto,
     },
@@ -355,9 +341,10 @@ const criarEstilos = (cores: CoresTema) =>
       marginTop: 2,
     },
     itemKcalDireita: {
-      fontFamily: FamiliaFonte.bold,
+      fontFamily: FamiliaFonte.regular,
       fontSize: Fonte.label,
-      color: cores.texto,
+      color: cores.textoSecundario,
+      fontVariant: ['tabular-nums'],
     },
 
     btnLogMais: {
@@ -368,12 +355,12 @@ const criarEstilos = (cores: CoresTema) =>
       backgroundColor: cores.destaqueSuave,
       borderWidth: 1,
       borderColor: cores.separador,
-      paddingVertical: 10,
+      minHeight: 44,
       borderRadius: Raio.md,
     },
     txtLogMais: {
       fontFamily: FamiliaFonte.bold,
       fontSize: Tipografia.rodape,
-      color: cores.destaque,
+      color: cores.destaqueTexto,
     },
   });

@@ -92,7 +92,7 @@ export function AnelProgresso({
 
         {/* Valor Central */}
         {mostrarValor && (
-          <View style={estilos.valorCentralContainer}>
+          <View style={[estilos.valorCentralContainer, { width: tamanho - 2 * espessura - 4 }]}>
             <Text
               style={[
                 estilos.valorTexto,
@@ -102,6 +102,7 @@ export function AnelProgresso({
                 },
               ]}
               numberOfLines={1}
+              adjustsFontSizeToFit
             >
               {atual}
             </Text>

@@ -24,7 +24,12 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario, TiraSemana } from '@/compartilhado/ui';
+import type { MarcaDia } from '@/compartilhado/ui';
+import { obterHistoricoTreinoCompleto } from '@/compartilhado/servicos/historico-servico';
+import { gerarSemana } from '@/compartilhado/utilidades/semana';
+import { CardResumoPlano } from './CardResumoPlano';
+import { GradeTreinos } from './GradeTreinos';
 import {
   CoresMacros,
   CoresTema,
@@ -58,22 +63,6 @@ import {
   calcularAderenciaSemanal,
 } from '@/compartilhado/servicos/progresso-servico';
 
-function gerarDiasSemanaCarrossel() {
-  const hoje = new Date();
-  const diaSemanaIndex = hoje.getDay();
-  const inicioSemana = new Date(hoje);
-  inicioSemana.setDate(hoje.getDate() - diaSemanaIndex);
-
-  const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-  return abrevs.map((abrev, idx) => {
-    const d = new Date(inicioSemana);
-    d.setDate(inicioSemana.getDate() + idx);
-    const dataIso = d.toISOString().split('T')[0];
-    const diaNum = String(d.getDate()).padStart(2, '0');
-    return { abrev, diaNum, data: dataIso };
-  });
-}
-
 export default function TelaTreino() {
   const { cores, escuro } = useTema();
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
@@ -82,11 +71,13 @@ export default function TelaTreino() {
   const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia | null>(null);
   const [modalReformularSemanaVisivel, setModalReformularSemanaVisivel] = useState(false);
 
-  const DIAS_SEMANA_CARROSSEL = React.useMemo(() => gerarDiasSemanaCarrossel(), []);
   const [diaSelecionado, setDiaSelecionado] = useState(
     () => new Date().toISOString().split('T')[0],
   );
   const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
+  const [historicoTreinos, setHistoricoTreinos] = useState<Record<string, { concluido: boolean }>>(
+    {},
+  );
   const [mapeamentoSemanal, setMapeamentoSemanal] = useState<Record<string, string>>({});
   const [idTreinoEspecial, setIdTreinoEspecial] = useState<string | null>(null);
 
@@ -185,6 +176,8 @@ export default function TelaTreino() {
 
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
+
+    setHistoricoTreinos(await obterHistoricoTreinoCompleto());
   };
 
   useFocusEffect(
@@ -199,8 +192,24 @@ export default function TelaTreino() {
     setDiasExpandidos((prev) => ({ ...prev, [abrev]: !prev[abrev] }));
   };
 
-  const itemCarrossel = DIAS_SEMANA_CARROSSEL.find((d) => d.data === diaSelecionado);
-  const abrevDia = itemCarrossel ? itemCarrossel.abrev : 'seg';
+  const semanaAtual = useMemo(() => gerarSemana(diaSelecionado), [diaSelecionado]);
+  const abrevDia = semanaAtual.find((d) => d.data === diaSelecionado)?.abrev ?? 'seg';
+
+  // Ponto por dia: verde = treino concluído; lima = hoje ou futuro com treino no cronograma.
+  const marcasSemana = useMemo(() => {
+    const hojeIso = new Date().toISOString().split('T')[0];
+    const marcas: Record<string, MarcaDia | undefined> = {};
+    for (const dia of semanaAtual) {
+      const idTr = mapeamentoSemanal[dia.abrev];
+      const planejado = !!idTr && idTr !== 'descanso' && dia.data >= hojeIso;
+      marcas[dia.data] = historicoTreinos[dia.data]?.concluido
+        ? 'feito'
+        : planejado
+          ? 'planejado'
+          : undefined;
+    }
+    return marcas;
+  }, [semanaAtual, mapeamentoSemanal, historicoTreinos]);
 
   const idTreinoPredefinido = mapeamentoSemanal[abrevDia];
   const treinoDefaultSemanal =
@@ -477,27 +486,23 @@ export default function TelaTreino() {
               </View>
             )}
 
-            {/* ── Carrossel Semanal de Dias ─────────────────────── */}
-            <View style={estilos.carrosselContainer}>
-              {DIAS_SEMANA_CARROSSEL.map((dia) => {
-                const sel = dia.data === diaSelecionado;
-                return (
-                  <TouchableOpacity
-                    key={dia.data}
-                    onPress={() => setDiaSelecionado(dia.data)}
-                    activeOpacity={0.7}
-                    style={estilos.itemDia}
-                  >
-                    <Text style={[estilos.diaAbrev, sel && estilos.diaAbrevSelecionado]}>
-                      {dia.abrev}
-                    </Text>
-                    <Text style={[estilos.diaNum, sel && estilos.diaNumSelecionado]}>
-                      {dia.diaNum}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            {/* ── Tira da semana, resumo do plano e grade de treinos (mockup v1) ── */}
+            <TiraSemana
+              dataSelecionada={diaSelecionado}
+              aoSelecionar={setDiaSelecionado}
+              marcas={marcasSemana}
+            />
+            <CardResumoPlano
+              feitos={estatisticas?.diasTreinados ?? 0}
+              meta={estatisticas?.metaDiasTreino ?? 0}
+            />
+            <GradeTreinos
+              treinos={planos.map((p) => ({
+                id: p.id,
+                foco: p.foco,
+                totalExercicios: p.exercicios.length,
+              }))}
+            />
 
             {/* ── Card do Foco do Dia ── */}
             <CardVidro semBorda estilo={estilos.cardDiaHeader}>
@@ -1315,39 +1320,6 @@ const criarEstilos = (cores: CoresTema) =>
     streakTexto: {
       fontFamily: FamiliaFonte.bold,
       fontSize: Tipografia.rodape,
-      fontWeight: PesoFonte.bold,
-      color: cores.texto,
-    },
-
-    carrosselContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 24,
-      paddingHorizontal: 4,
-    },
-    itemDia: {
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    diaAbrev: {
-      fontFamily: FamiliaFonte.regular,
-      fontSize: Tipografia.rodape,
-      color: cores.textoSecundario,
-      marginBottom: 6,
-    },
-    diaAbrevSelecionado: {
-      fontFamily: FamiliaFonte.semibold,
-      color: cores.texto,
-    },
-    diaNum: {
-      fontFamily: FamiliaFonte.regular,
-      fontSize: 17,
-      color: cores.textoSecundario,
-    },
-    diaNumSelecionado: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: 20,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },

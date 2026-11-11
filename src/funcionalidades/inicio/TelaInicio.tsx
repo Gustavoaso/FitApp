@@ -22,6 +22,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, AnelProgresso, BotaoPrimario } from '@/compartilhado/ui';
+import { IconeCookie } from '@/compartilhado/ui/IconesFitApp';
 import { CardAderencia } from './CardAderencia';
 import { GraficoEvolucao, PontoGrafico } from './GraficoEvolucao';
 import {
@@ -316,7 +317,7 @@ export default function TelaInicio() {
                 meta: proteinaMeta,
               },
               {
-                icone: <SymbolView name="leaf" size={16} tintColor={cores.textoSecundario} />,
+                icone: <IconeCookie tamanho={16} cor={cores.textoSecundario} />,
                 nome: 'Carbos',
                 atual: carboidrato,
                 meta: carboidratoMeta,

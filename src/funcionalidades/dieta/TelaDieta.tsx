@@ -9,11 +9,11 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
-import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario, AnelProgresso, TiraSemana } from '@/compartilhado/ui';
+import type { MarcaDia } from '@/compartilhado/ui';
 import { CardRefeicao } from './CardRefeicao';
 import { BuscaAlimentosModal } from './BuscaAlimentosModal';
 import {
-  CoresMacros,
   CoresTema,
   Espacamento,
   FamiliaFonte,
@@ -23,9 +23,10 @@ import {
   Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
-import { formatarCalorias } from '@/compartilhado/utilidades';
+import { gerarSemana } from '@/compartilhado/utilidades/semana';
 import {
   obterHistoricoDieta,
+  obterHistoricoDietaCompleto,
   salvarHistoricoDieta,
   RegistroRefeicaoDiaria,
 } from '@/compartilhado/servicos/historico-servico';
@@ -148,6 +149,7 @@ export default function TelaDieta() {
   const [planoBase, setPlanoBase] = useState<PlanoIAGerado | null>(null);
   const [planoEditavel, setPlanoEditavel] = useState<PlanoIAGerado | null>(null);
   const [salvandoPlano, setSalvandoPlano] = useState(false);
+  const [marcasSemana, setMarcasSemana] = useState<Record<string, MarcaDia | undefined>>({});
 
   const carregarDados = async () => {
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
@@ -178,6 +180,21 @@ export default function TelaDieta() {
 
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
+
+    // Ponto por dia: verde = tem alimento registrado; lima = hoje ou futuro com plano.
+    const historico = await obterHistoricoDietaCompleto();
+    const hojeIso = new Date().toISOString().split('T')[0];
+    const temPlano = !!(await repositorioDieta.buscarPlanoDietaEditavelAtivo())?.plano_json;
+    const marcas: Record<string, MarcaDia | undefined> = {};
+    for (const dia of gerarSemana(dataSelecionada)) {
+      const registrado = (historico[dia.data] ?? []).some((r) => r.alimentos.length > 0);
+      marcas[dia.data] = registrado
+        ? 'feito'
+        : temPlano && dia.data >= hojeIso
+          ? 'planejado'
+          : undefined;
+    }
+    setMarcasSemana(marcas);
 
     const editavel = await repositorioDieta.buscarPlanoDietaEditavelAtivo();
     if (editavel?.plano_json) {
@@ -225,8 +242,44 @@ export default function TelaDieta() {
     );
   }, [refeicoes]);
 
-  const caloriasRestantes = Math.max(0, metaCalorias - totais.calorias);
-  const pctCalorias = Math.min(100, Math.round((totais.calorias / (metaCalorias || 1)) * 100));
+  // "Faltam X" sem meta (0) não inventa número: mostra "Sem meta".
+  const textoFaltam = (atual: number, meta: number, unidade: string, pctMostrar: boolean) => {
+    if (meta <= 0) return 'Sem meta';
+    if (pctMostrar) return `${Math.round((atual / meta) * 100)}%`;
+    const falta = Math.max(0, Math.round(meta - atual));
+    return falta === 0 ? 'Meta atingida' : `Faltam ${falta.toLocaleString('pt-BR')}${unidade}`;
+  };
+  const emPct = modoExibicaoMacros === '%';
+  const aneis = [
+    {
+      titulo: 'Calorias',
+      atual: totais.calorias,
+      meta: metaCalorias,
+      cor: cores.destaque,
+      textoAbaixo: textoFaltam(totais.calorias, metaCalorias, '', false),
+    },
+    {
+      titulo: 'Proteína',
+      atual: totais.proteinas,
+      meta: metaProteinas,
+      cor: cores.macros.proteina,
+      textoAbaixo: textoFaltam(totais.proteinas, metaProteinas, ' g', emPct),
+    },
+    {
+      titulo: 'Carbo',
+      atual: totais.carbos,
+      meta: metaCarbos,
+      cor: cores.macros.carboidrato,
+      textoAbaixo: textoFaltam(totais.carbos, metaCarbos, ' g', emPct),
+    },
+    {
+      titulo: 'Gordura',
+      atual: totais.gorduras,
+      meta: metaGorduras,
+      cor: cores.macros.gordura,
+      textoAbaixo: textoFaltam(totais.gorduras, metaGorduras, ' g', emPct),
+    },
+  ];
 
   const salvarDia = async (atualizadas: RefeicaoDiaria[]) => {
     setRefeicoes(atualizadas);
@@ -352,112 +405,47 @@ export default function TelaDieta() {
           </TouchableOpacity>
         </View>
 
-        {/* ── MyFitnessPal Card Header 1: Calories Consumed & Remaining (Left) ── */}
-        <CardVidro semBorda estilo={estilos.cardCaloriasMFP}>
-          <View style={estilos.rowHeaderCalorias}>
-            <View>
-              <Text style={estilos.labelKcalMFP}>Calorias</Text>
-              <Text style={estilos.valKcalMFP}>
-                {totais.calorias.toLocaleString()}{' '}
-                <Text style={estilos.subValKcal}>/ {metaCalorias.toLocaleString()}</Text>
-              </Text>
-            </View>
+        {/* ── Tira da semana: dia atual em lima, ponto por dia ── */}
+        <TiraSemana
+          dataSelecionada={dataSelecionada}
+          aoSelecionar={setDataSelecionada}
+          marcas={marcasSemana}
+        />
 
-            <View style={estilos.colKcalRestantes}>
-              <Text style={estilos.valRestantes}>{caloriasRestantes.toLocaleString()}</Text>
-              <Text style={estilos.labelRestantes}>restantes</Text>
-            </View>
-          </View>
-
-          <View style={estilos.trilhoProgressoKcal}>
-            <View style={[estilos.preenchimentoKcal, { width: `${pctCalorias}%` }]} />
-          </View>
-        </CardVidro>
-
-        {/* ── MyFitnessPal Card Header 2: 3 Macro Progress Bars with Toggle ── */}
-        <CardVidro semBorda estilo={estilos.cardMacrosMFP}>
-          <View style={estilos.headerMacrosRow}>
-            <Text style={estilos.tituloMacrosMFP}>Macronutrientes</Text>
-            <TouchableOpacity
-              style={estilos.btnToggleUnidade}
-              onPress={() => setModoExibicaoMacros((prev) => (prev === 'g' ? '%' : 'g'))}
-            >
-              <SymbolView name="arrow.triangle.2.circlepath" size={12} tintColor={cores.destaque} />
-              <Text style={estilos.txtToggleUnidade}>
-                {modoExibicaoMacros === 'g' ? 'Exibir %' : 'Exibir gramas'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={estilos.gridBarrasMacros}>
-            {/* Carbos */}
-            <View style={estilos.itemMacroLinha}>
-              <View style={estilos.infoMacroLinha}>
-                <Text style={estilos.nomeMacroLinha}>Carbos</Text>
-                <Text style={estilos.valMacroLinha}>
-                  {modoExibicaoMacros === 'g'
-                    ? `${totais.carbos}g / ${metaCarbos}g`
-                    : `${Math.round((totais.carbos / (metaCarbos || 1)) * 100)}%`}
-                </Text>
-              </View>
-              <View style={estilos.trilhoMacro}>
-                <View
-                  style={[
-                    estilos.preenchimentoMacro,
-                    {
-                      backgroundColor: CoresMacros.carboidrato,
-                      width: `${Math.min(100, (totais.carbos / (metaCarbos || 1)) * 100)}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-
-            {/* Gordura */}
-            <View style={estilos.itemMacroLinha}>
-              <View style={estilos.infoMacroLinha}>
-                <Text style={estilos.nomeMacroLinha}>Gordura</Text>
-                <Text style={estilos.valMacroLinha}>
-                  {modoExibicaoMacros === 'g'
-                    ? `${totais.gorduras}g / ${metaGorduras}g`
-                    : `${Math.round((totais.gorduras / (metaGorduras || 1)) * 100)}%`}
-                </Text>
-              </View>
-              <View style={estilos.trilhoMacro}>
-                <View
-                  style={[
-                    estilos.preenchimentoMacro,
-                    {
-                      backgroundColor: CoresMacros.gordura,
-                      width: `${Math.min(100, (totais.gorduras / (metaGorduras || 1)) * 100)}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-
-            {/* Proteína */}
-            <View style={estilos.itemMacroLinha}>
-              <View style={estilos.infoMacroLinha}>
-                <Text style={estilos.nomeMacroLinha}>Proteína</Text>
-                <Text style={estilos.valMacroLinha}>
-                  {modoExibicaoMacros === 'g'
-                    ? `${totais.proteinas}g / ${metaProteinas}g`
-                    : `${Math.round((totais.proteinas / (metaProteinas || 1)) * 100)}%`}
-                </Text>
-              </View>
-              <View style={estilos.trilhoMacro}>
-                <View
-                  style={[
-                    estilos.preenchimentoMacro,
-                    {
-                      backgroundColor: CoresMacros.proteina,
-                      width: `${Math.min(100, (totais.proteinas / (metaProteinas || 1)) * 100)}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
+        {/* ── Quatro anéis: calorias (lima) e macros (cores fixas), "Faltam" embaixo ── */}
+        <CardVidro semBorda estilo={estilos.cardAneis}>
+          <TouchableOpacity
+            style={estilos.btnToggleUnidade}
+            onPress={() => setModoExibicaoMacros((prev) => (prev === 'g' ? '%' : 'g'))}
+            accessibilityRole="button"
+            accessibilityLabel={
+              modoExibicaoMacros === 'g'
+                ? 'Exibir macros em porcentagem'
+                : 'Exibir macros em gramas'
+            }
+          >
+            <SymbolView
+              name="arrow.triangle.2.circlepath"
+              size={12}
+              tintColor={cores.destaqueTexto}
+            />
+            <Text style={estilos.txtToggleUnidade}>
+              {modoExibicaoMacros === 'g' ? 'Exibir %' : 'Exibir gramas'}
+            </Text>
+          </TouchableOpacity>
+          <View style={estilos.linhaAneis}>
+            {aneis.map((anel) => (
+              <AnelProgresso
+                key={anel.titulo}
+                titulo={anel.titulo}
+                atual={Math.round(anel.atual)}
+                meta={anel.meta}
+                cor={anel.cor}
+                tamanho={68}
+                espessura={7}
+                subtextoCustom={anel.textoAbaixo}
+              />
+            ))}
           </View>
         </CardVidro>
 
@@ -553,7 +541,6 @@ export default function TelaDieta() {
               <CardRefeicao
                 key={ref.id}
                 nome={ref.nome}
-                icone={ref.icone}
                 horario={ref.horario}
                 alimentos={ref.alimentos}
                 expandido={refeicaoExpandidaId === ref.id}
@@ -613,8 +600,8 @@ const criarEstilos = (cores: CoresTema) =>
       marginBottom: 16,
     },
     btnSetaData: {
-      width: 36,
-      height: 36,
+      width: 44,
+      height: 44,
       borderRadius: Raio.full,
       backgroundColor: cores.elevada,
       alignItems: 'center',
@@ -637,123 +624,28 @@ const criarEstilos = (cores: CoresTema) =>
       color: cores.texto,
     },
 
-    // Card Calorias MFP
-    cardCaloriasMFP: {
-      // Com padding 0 o canto arredondado cortava o rótulo ("ALORIAS").
-      padding: Espacamento.lg,
-      marginBottom: 0,
+    // Card dos quatro anéis
+    cardAneis: {
+      padding: Espacamento.md,
+      marginBottom: Espacamento.lg,
     },
-    rowHeaderCalorias: {
+    linhaAneis: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 12,
-    },
-    labelKcalMFP: {
-      fontFamily: FamiliaFonte.semibold,
-      fontSize: Fonte.micro,
-      color: cores.textoSecundario,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    valKcalMFP: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Tipografia.titulo2,
-      color: cores.texto,
-      marginTop: 2,
-    },
-    subValKcal: {
-      fontSize: Fonte.label,
-      color: cores.textoSecundario,
-      fontFamily: FamiliaFonte.regular,
-    },
-    colKcalRestantes: {
-      alignItems: 'flex-end',
-    },
-    valRestantes: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Tipografia.titulo2,
-      color: cores.destaque,
-      letterSpacing: -0.5,
-    },
-    labelRestantes: {
-      fontFamily: FamiliaFonte.regular,
-      fontSize: Fonte.micro,
-      color: cores.textoSecundario,
-    },
-    trilhoProgressoKcal: {
-      height: 6,
-      backgroundColor: cores.destaqueSuave,
-      borderRadius: 3,
-      overflow: 'hidden',
-    },
-    preenchimentoKcal: {
-      height: '100%',
-      backgroundColor: cores.destaque,
-      borderRadius: 3,
-    },
-
-    // Card Macros MFP
-    cardMacrosMFP: {
-      padding: 16,
-      marginBottom: 14,
-    },
-    headerMacrosRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 12,
-    },
-    tituloMacrosMFP: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Tipografia.rodape,
-      color: cores.textoSecundario,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
     },
     btnToggleUnidade: {
       flexDirection: 'row',
       alignItems: 'center',
+      alignSelf: 'flex-end',
       gap: 4,
-      backgroundColor: cores.elevada,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: Raio.sm,
+      minHeight: 44,
+      paddingHorizontal: Espacamento.sm,
     },
     txtToggleUnidade: {
       fontFamily: FamiliaFonte.semibold,
       fontSize: Fonte.micro,
-      color: cores.destaque,
-    },
-    gridBarrasMacros: {
-      gap: 10,
-    },
-    itemMacroLinha: {
-      gap: 4,
-    },
-    infoMacroLinha: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    nomeMacroLinha: {
-      fontFamily: FamiliaFonte.regular,
-      fontSize: Fonte.micro,
-      color: cores.texto,
-    },
-    valMacroLinha: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Fonte.micro,
-      color: cores.texto,
-    },
-    trilhoMacro: {
-      height: 4,
-      backgroundColor: cores.destaqueSuave,
-      borderRadius: 2,
-      overflow: 'hidden',
-    },
-    preenchimentoMacro: {
-      height: '100%',
-      borderRadius: 2,
+      color: cores.destaqueTexto,
     },
 
     // Banner Busca Rápida
@@ -772,7 +664,7 @@ const criarEstilos = (cores: CoresTema) =>
       width: 36,
       height: 36,
       borderRadius: Raio.lg,
-      backgroundColor: 'rgba(234, 179, 8, 0.2)',
+      backgroundColor: cores.destaqueSuave,
       alignItems: 'center',
       justifyContent: 'center',
     },

@@ -455,3 +455,28 @@ export function IconeSaida({
     </Svg>
   );
 }
+
+/** Cookie com uma mordida (alimentos e carboidratos; o SF Symbols não tem cookie). */
+export function IconeCookie({
+  tamanho = 20,
+  cor = Cores.texto.secundario,
+  strokeWidth = strokePadrao,
+}: PropsIcone) {
+  return (
+    <Svg width={tamanho} height={tamanho} viewBox="0 0 24 24" fill="none">
+      {/* Círculo com a mordida no canto superior direito */}
+      <Path
+        d="M12 3a9 9 0 1 0 9 9c-1.4 0-2.5-1.1-2.5-2.5 0-.4.1-.8.2-1.1-1.5.2-2.9-.9-3.1-2.4-.3.1-.6.1-.9.1C13 6.1 12.1 5 12 3z"
+        stroke={cor}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Gotas de chocolate */}
+      <Circle cx="8.5" cy="9.5" r="0.9" fill={cor} />
+      <Circle cx="9" cy="15" r="0.9" fill={cor} />
+      <Circle cx="14.5" cy="14" r="0.9" fill={cor} />
+      <Circle cx="15" cy="18" r="0.9" fill={cor} />
+    </Svg>
+  );
+}

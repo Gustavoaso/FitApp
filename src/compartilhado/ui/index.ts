@@ -8,6 +8,8 @@
 export { CardVidro } from './CardVidro';
 export { BotaoPrimario } from './BotaoPrimario';
 export { AnelProgresso } from './AnelProgresso';
+export { TiraSemana } from './TiraSemana';
+export type { MarcaDia } from './TiraSemana';
 export { Skeleton } from './Skeleton';
 export { EstadoVazio } from './EstadoVazio';
 export { EstadoErro } from './EstadoErro';

@@ -21,6 +21,7 @@ import {
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { EstadoErro, Skeleton } from '@/compartilhado/ui';
+import { IconeCookie } from '@/compartilhado/ui/IconesFitApp';
 
 interface ItemTreeProps {
   label: string;
@@ -159,10 +160,9 @@ export function VisualizadorJSONModal({
                 }}
               >
                 <View style={estilos.segmentLabel}>
-                  <SymbolView
-                    name="leaf.fill"
-                    size={14}
-                    tintColor={abaAtiva === 'taco' ? cores.destaque : cores.textoSecundario}
+                  <IconeCookie
+                    tamanho={14}
+                    cor={abaAtiva === 'taco' ? cores.destaque : cores.textoSecundario}
                   />
                   <Text
                     style={[estilos.segmentTxt, abaAtiva === 'taco' && estilos.segmentTxtAtivo]}
