@@ -7,15 +7,35 @@ import TelaResultadoQuestionario, { AVISO_PROFISSIONAL } from './TelaResultadoQu
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockVoltar = jest.fn();
+let mockReduzirMovimento = false;
 let mockParametros: Record<string, string> = {};
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace, back: mockVoltar }),
   useLocalSearchParams: () => mockParametros,
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }),
 }));
+// Skia não roda no Jest: o orbe vira um texto que expõe a prop `parado`.
+jest.mock('@/compartilhado/ui/OrbeGeracao', () => {
+  const { Text } = jest.requireActual('react-native');
+  return {
+    OrbeGeracao: ({ parado }: { parado: boolean }) => (
+      <Text>{parado ? 'orbe parado' : 'orbe girando'}</Text>
+    ),
+  };
+});
+jest.mock('react-native-reanimated', () => {
+  const real = jest.requireActual('react-native-reanimated');
+  return {
+    ...real,
+    __esModule: true,
+    default: real.default,
+    useReducedMotion: () => mockReduzirMovimento,
+  };
+});
 jest.mock('expo-haptics', () => ({
   impactAsync: jest.fn(),
   notificationAsync: jest.fn(),
@@ -107,14 +127,31 @@ it('mostra o aviso de grupo que ficou fora do treino', async () => {
   expect(screen.getByText(aviso)).toBeTruthy();
 });
 
-it('enquanto gera, o texto avança de "Montando seu treino" para "Escolhendo alimentos"', async () => {
+it('enquanto gera, mostra o orbe e as fases com check nas concluídas', async () => {
   jest.useFakeTimers();
+  mockReduzirMovimento = false;
   (gerarPlano as jest.Mock).mockReturnValue(new Promise(() => {}));
   mockParametros = { respostas: JSON.stringify({ perfil: { nome: 'Pessoa Teste' } }) };
   await render(<TelaResultadoQuestionario />);
+  expect(screen.getByText('Montando seu plano')).toBeTruthy();
+  expect(screen.getByText('orbe girando')).toBeTruthy();
+  expect(screen.getByRole('progressbar').props.accessibilityValue.now).toBe(0);
   expect(screen.getByText('Montando seu treino…')).toBeTruthy();
-  expect(screen.getByText('Isso pode levar até 3 minutos.')).toBeTruthy();
+  expect(screen.queryByText('Escolhendo alimentos…')).toBeNull();
   await act(() => jest.advanceTimersByTime(20_000));
+  expect(screen.getByText('Montando seu treino…')).toBeTruthy();
   expect(screen.getByText('Escolhendo alimentos…')).toBeTruthy();
+  expect(screen.getByLabelText('Escolhendo alimentos…')).toBeTruthy();
+  fireEvent.press(screen.getByRole('button', { name: 'Cancelar' }));
+  expect(mockVoltar).toHaveBeenCalled();
   jest.useRealTimers();
+});
+
+it('com Reduzir Movimento, o orbe fica parado', async () => {
+  mockReduzirMovimento = true;
+  (gerarPlano as jest.Mock).mockReturnValue(new Promise(() => {}));
+  mockParametros = { respostas: JSON.stringify({ perfil: { nome: 'Pessoa Teste' } }) };
+  await render(<TelaResultadoQuestionario />);
+  expect(screen.getByText('orbe parado')).toBeTruthy();
+  mockReduzirMovimento = false;
 });

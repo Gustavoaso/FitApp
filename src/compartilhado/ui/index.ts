@@ -14,3 +14,5 @@ export { Skeleton } from './Skeleton';
 export { EstadoVazio } from './EstadoVazio';
 export { EstadoErro } from './EstadoErro';
 export { MomentoConquista } from './MomentoConquista';
+export { OrbeGeracao } from './OrbeGeracao';
+export { BarraProgresso } from './BarraProgresso';

@@ -286,3 +286,16 @@
   - typecheck, lint, jest e format:check passam.
 - **Dependências permitidas:** nenhuma nova.
 - **Premissas:** pode, exceto RN16.
+
+## Etapa 18: tela de geração com orbe de partículas (decisão do dono em 2026-11-10)
+
+- **Escopo:**
+  - Trocar o indicador atual da geração do plano (`TelaResultadoQuestionario`, fases por tempo) pelo orbe do mockup `docs/mockups/geracao-plano-opcoes-2026-11-10.html` (opção B): globo de pontos girando, varredura lima, partículas em órbitas inclinadas, título "Montando seu plano", log de fases com check e Cancelar.
+  - Componente próprio em `src/compartilhado/ui/` (orbe isolado, sem lógica de plano), com tokens do `docs/VISUAL.md`, claro e escuro.
+  - Desenho: `@shopify/react-native-skia` (conferir a versão compatível com o SDK 58 via `npx expo install`); se não for compatível, `react-native-svg` com Reanimated e ~150 pontos.
+  - Orbe sempre em movimento (parado só com Reduzir Movimento). Percentual e barra de progresso ESTIMADOS (o serviço não informa o real): `1 - exp(-t/25 s)`, teto de 95% enquanto gera, piso por fase concluída, sem retroceder (função pura `progresso-geracao.ts`; `BarraProgresso` com `accessibilityValue`). Fases (`FASES_GERACAO`) com check nas concluídas.
+  - Reduzir Movimento: orbe parado, fases em texto. `accessibilityLabel` e `accessibilityLiveRegion` na fase atual.
+  - Cancelar continua voltando ao resumo, como hoje.
+- **Pronto quando:** typecheck, lint, jest e format:check passam; o teste cobre fases (check nas concluídas) e Reduzir Movimento; `npx expo export --platform ios` compila; o orbe aparece no simulador pelo Expo Go do SDK 58.
+- **Dependências permitidas:** `@shopify/react-native-skia` (versão do `expo install`).
+- **Premissas:** o questionário V1 (10 telas) fica para a etapa 19; esta etapa só troca a tela de geração.

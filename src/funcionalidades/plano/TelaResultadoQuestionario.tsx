@@ -14,8 +14,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import Svg, { Circle } from 'react-native-svg';
+import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BotaoPrimario, EstadoErro, MomentoConquista, Skeleton } from '@/compartilhado/ui';
+import {
+  BotaoPrimario,
+  EstadoErro,
+  MomentoConquista,
+  OrbeGeracao,
+  BarraProgresso,
+} from '@/compartilhado/ui';
 import {
   CoresMacros,
   CoresTema,
@@ -32,6 +39,7 @@ import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { gerarPlano } from './gerar-plano-servico';
 import { descreverBalanco, segmentosAnel } from './resumo-resultado';
+import { progressoEstimado } from './progresso-geracao';
 import { perfilDoQuestionario } from './mapear-plano';
 
 // PREMISSA (textos): aviso e rótulos da tela.
@@ -83,11 +91,15 @@ const INTERVALO_FASE_MS = 20_000;
 
 function useFaseGeracao(ativo: boolean) {
   const [fase, setFase] = useState(0);
+  const [segundos, setSegundos] = useState(0);
   // Volta à primeira fase quando a geração recomeça (ajuste no render, sem setState em efeito).
   const [ativoAnterior, setAtivoAnterior] = useState(ativo);
   if (ativo !== ativoAnterior) {
     setAtivoAnterior(ativo);
-    if (ativo) setFase(0);
+    if (ativo) {
+      setFase(0);
+      setSegundos(0);
+    }
   }
   useEffect(() => {
     if (!ativo) return;
@@ -97,7 +109,12 @@ function useFaseGeracao(ativo: boolean) {
     );
     return () => clearInterval(relogio);
   }, [ativo]);
-  return fase;
+  useEffect(() => {
+    if (!ativo) return;
+    const relogio = setInterval(() => setSegundos((s) => s + 0.5), 500);
+    return () => clearInterval(relogio);
+  }, [ativo]);
+  return { fase, segundos };
 }
 
 export default function TelaResultadoQuestionario() {
@@ -119,7 +136,8 @@ export default function TelaResultadoQuestionario() {
   const [gerarAoAbrir] = useState(!dadosPlano && !!dadosRespostas);
   const [gerando, setGerando] = useState(gerarAoAbrir);
   const [erroGeracao, setErroGeracao] = useState<string | null>(null);
-  const fase = useFaseGeracao(gerando);
+  const { fase, segundos } = useFaseGeracao(gerando);
+  const reduzirMovimento = useReducedMotion();
 
   // setState só nos callbacks da promessa, para poder rodar no efeito de abertura.
   const executarGeracao = useCallback(() => {
@@ -157,16 +175,39 @@ export default function TelaResultadoQuestionario() {
   if (gerando) {
     return (
       <View style={[estilos.container, estilos.centralizado]}>
-        <Skeleton largura={ORBE} altura={ORBE} raio={ORBE / 2} />
-        <View style={estilos.linhaNos}>
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} largura={64} altura={64} raio={32} />
+        <OrbeGeracao cor={cores.destaqueTexto} parado={reduzirMovimento} />
+        <Text style={estilos.titulo3} accessibilityRole="header">
+          Montando seu plano
+        </Text>
+        <BarraProgresso
+          valor={progressoEstimado(segundos, fase, FASES_GERACAO.length)}
+          cor={cores.destaqueTexto}
+        />
+        <Text style={estilos.legenda}>Isso pode levar até 3 minutos.</Text>
+        <View
+          style={estilos.fases}
+          accessible
+          accessibilityLabel={FASES_GERACAO[fase]}
+          accessibilityLiveRegion="polite"
+        >
+          {FASES_GERACAO.slice(0, fase + 1).map((texto, i) => (
+            <View key={texto} style={estilos.fase}>
+              {i < fase ? (
+                <SymbolView
+                  name="checkmark.circle.fill"
+                  size={18}
+                  tintColor={cores.destaqueTexto}
+                />
+              ) : (
+                <SymbolView name="circle.dotted" size={18} tintColor={cores.textoSecundario} />
+              )}
+              <Text style={i < fase ? estilos.legenda : estilos.passoTexto}>{texto}</Text>
+            </View>
           ))}
         </View>
-        <Text style={estilos.titulo3} accessibilityLiveRegion="polite">
-          {FASES_GERACAO[fase]}
-        </Text>
-        <Text style={estilos.legenda}>Isso pode levar até 3 minutos.</Text>
+        <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={12}>
+          <Text style={estilos.legenda}>Cancelar</Text>
+        </Pressable>
       </View>
     );
   }
@@ -504,6 +545,8 @@ const criarEstilos = (cores: CoresTema) =>
       letterSpacing: -1,
     },
 
+    fases: { alignSelf: 'stretch', gap: Espacamento.sm, paddingVertical: Espacamento.md },
+    fase: { flexDirection: 'row', alignItems: 'center', gap: Espacamento.sm },
     linhaNos: {
       flexDirection: 'row',
       justifyContent: 'space-between',
