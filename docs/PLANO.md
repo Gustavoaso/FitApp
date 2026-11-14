@@ -312,3 +312,55 @@
 - **Pronto quando:** typecheck, lint, jest e format:check passam; testes por passo (validação, avançar/voltar, rascunho, resumo); `npx expo export --platform ios` compila.
 - **Dependências permitidas:** nenhuma nova (`expo-haptics` já vem no SDK).
 - **Premissas:** layout e textos seguem o mockup V1; onde o mockup divergir das regras do `PROJETO.md`, vale o `PROJETO.md` e o desvio vai para o `ANDAMENTO.md`.
+
+## Bloco de 2026-11-14: validação, correção e melhoria (pedido do dono, execução autônoma)
+
+Ordem fixa, uma etapa por vez, um commit por etapa. Regras novas: RN19 a RN25 do `PROJETO.md`. Banco: migrations novas só aditivas, testadas no banco local (pgTAP) antes de qualquer envio ao remoto; o envio ao remoto é feito pelo maestro na etapa 27.
+
+## Etapa 20: validação e correções de funcionamento
+
+- **Escopo:**
+  - Geração recusada duas vezes com a base remota: achar a causa (rodar o serviço fora do app, só leitura), corrigir e remover a linha `DEBUG-TEMP` de `gerar-plano-servico.ts`. A mensagem de erro passa a dizer o que a pessoa pode fazer.
+  - Aba Treino: tocar no card de um treino abre o detalhe do treino (exercícios, séries, cargas da última vez) e dali dá para **iniciar o treino ao vivo daquele treino** (não só o do dia).
+  - "O app não conversa entre si": auditar o fluxo de dados entre Início, Treino, Dieta e Perfil (plano aceito, treino concluído, água, peso, refazer plano) e corrigir o que não reflete na outra aba sem reabrir o app. Listar no `ANDAMENTO.md` cada falha achada e a correção.
+  - `EXPO_PUBLIC_OLLAMA_URL` aceita nome `.local`.
+- **Pronto quando:** typecheck, lint, jest, format:check e `expo export --platform ios` passam; teste cobre abrir o card, iniciar o treino escolhido e a atualização entre abas.
+- **Dependências permitidas:** nenhuma nova.
+
+## Etapa 21: plano com cara de profissional (RN19)
+
+- **Escopo:** prescrição por objetivo e nível, ordem dos exercícios, aquecimento, progressão de 4 semanas, nomes dos dias pelo foco, refeições por horário e rotina, medidas caseiras, substituições e o texto "Por que este plano". Telas de resultado, treino e dieta mostram essas informações. Rodar `scripts/avaliar-planos.ts` e salvar relatório novo.
+- **Pronto quando:** testes do motor cobrem cada regra da RN19 (incluindo textos distintos para perfis distintos); avaliação com pelo menos 6 de 8 perfis aprovados; verificações padrão passam.
+- **Dependências permitidas:** nenhuma nova. Migration aditiva só se faltar coluna.
+
+## Etapa 22: gasto calórico do treino (RN20)
+
+- **Escopo:** função pura `estimarKcalTreino` (MET por densidade), gravada na sessão concluída (coluna nova, migration aditiva), mostrada no resumo do fim do treino, no histórico e no Início. Sempre rotulada "estimativa".
+- **Pronto quando:** testes da função (faixas de MET, sem peso não calcula, limites); verificações padrão passam.
+
+## Etapa 23: foto do treino para compartilhar (RN21)
+
+- **Escopo:** tela de fim de treino com "Registrar com foto": câmera ou galeria, selo TreinaAI com os números da sessão por cima (2 modelos de selo), salvar na galeria e compartilhar. Formato 9:16 (stories) e 4:5 (feed).
+- **Dependências permitidas:** `expo-image-picker`, `expo-sharing`, `expo-media-library`, `react-native-view-shot` (versões do `expo install`; todas funcionam no Expo Go). Permissões com texto em português no `app.json`.
+- **Pronto quando:** testes do componente do selo e do fluxo com módulos simulados (permissão negada → galeria/cartão sem foto); verificações padrão passam.
+
+## Etapa 24: gamificação (RN22)
+
+- **Escopo:** XP, níveis, sequência semanal e conquistas calculados no banco (função `security invoker` sobre os registros do próprio usuário, ou tabela de eventos preenchida por gatilho; RLS). Início ganha cartão de nível e sequência; Perfil ganha a estante de conquistas; `MomentoConquista` dispara ao subir de nível ou ganhar medalha.
+- **Pronto quando:** pgTAP (cada usuário só vê o seu; XP não aceita escrita do cliente), testes das regras de pontos e níveis, verificações padrão passam.
+
+## Etapa 25: grupos e competição (RN23, RN24)
+
+- **Escopo:** tabelas `grupos`, `grupo_membros`, `grupo_checkins` e apelido no perfil; RPCs para criar grupo, entrar por código, sair, remover membro, encerrar e ler ranking; check-in automático ao concluir treino. Aba nova "Grupos" (ou seção dentro de Início se a barra já tiver 5 abas): lista de grupos, ranking, feed de check-ins, criar, entrar por código, compartilhar código.
+- **Pronto quando:** pgTAP prova que quem não é membro não lê nada do grupo, que membro só vê apelido/check-ins/pontos e nunca dados de saúde, que código inválido não entra, e os limites (30 membros, 5 grupos); testes das telas; verificações padrão passam.
+- **Premissas:** não pode criar premissa em RLS; dúvida de RLS = mais restrito.
+
+## Etapa 26: movimento no padrão Apple (RN25)
+
+- **Escopo:** utilitário único de molas e transições (Reanimated 4) em `src/compartilhado/`; aplicar em: pressão de botões e cartões (escala com mola), entrada de listas (cascata curta), troca de valores numéricos (contagem), anéis e barras (preenchimento com mola), abrir/fechar detalhes (transição compartilhada quando houver), conclusão de série e de treino (haptic + quique leve), `MomentoConquista`. Reduzir Movimento desliga tudo e mantém o estado final.
+- **Pronto quando:** teste do utilitário (Reduzir Movimento → sem animação); nenhuma animação com `Animated` antigo nas telas tocadas; verificações padrão passam.
+- **Dependências permitidas:** nenhuma nova.
+
+## Etapa 27: testes finais do bloco e envio das migrations
+
+- Testador (modo completo) e segurança (modo etapa, base = commit anterior à etapa 20, testes práticos no banco local). Correções dos CORRIGIR. Depois o maestro aplica as migrations aditivas no banco remoto (`supabase db push`) e registra no `ANDAMENTO.md`.

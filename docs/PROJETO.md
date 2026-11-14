@@ -73,6 +73,19 @@ Regra padrão de RLS: cada usuário só os próprios registros. As tabelas `base
 
 Datas: fuso `America/Sao_Paulo`.
 
+### Regras acrescentadas em 2026-11-14 (pedido do dono; decisões tomadas pelo maestro com autonomia total)
+
+- **RN19 (plano com cara de profissional):** a LLM continua só escolhendo IDs (RN07). Todo o resto é código, a partir das respostas do usuário:
+  - treino: ordem compostos → acessórios → isolados; séries, faixa de repetições, descanso e esforço alvo (repetições na reserva) por objetivo **e** nível; aquecimento por dia; progressão de 4 semanas (dupla progressão: sobe repetição até o teto da faixa, depois carga; semana 4 mais leve para iniciante); nome de cada dia pelo foco ("Peito e tríceps"), nunca "Treino A" sozinho;
+  - dieta: refeições nomeadas pelo horário e pela rotina (pré e pós-treino conforme os dias de treino), porções em medidas caseiras ao lado das gramas quando a base tiver, e 1 substituição equivalente por alimento;
+  - texto "Por que este plano": 3 a 5 frases montadas por código citando as respostas da pessoa (objetivo, dias, local, lesões, restrições) e a fonte da diretriz. Proibido texto igual para perfis diferentes; teste garante que dois perfis distintos geram textos distintos.
+- **RN20 (gasto calórico do treino):** `kcal = MET × peso(kg) × horas ativas`, com MET do Compendium of Physical Activities 2024: 3,5 (musculação geral, 8 a 15 repetições), 5,0 (predomínio de agachamento/terra/compostos pesados), 6,0 (esforço vigoroso), 3,0 (peso do corpo). O MET da sessão é escolhido pela densidade: volume (carga × repetições) por minuto relativo ao peso corporal e proporção de exercícios compostos. Mostra sempre "estimativa" e nunca soma às calorias da dieta automaticamente. Sem peso no perfil, não calcula.
+- **RN21 (foto do treino):** ao concluir o treino, a pessoa pode tirar ou escolher uma foto; o app aplica por cima um selo com a marca TreinaAI e os números da sessão (nome do treino, duração, volume total, kcal estimadas, sequência) e abre a folha de compartilhamento do iOS. A foto fica só no aparelho; nada é enviado ao servidor. Sem permissão de câmera, oferece a galeria e o cartão sem foto (fundo da marca).
+- **RN22 (gamificação):** pontos (XP) por ação concluída: treino concluído 100; meta de água do dia 20; todas as refeições do dia registradas 40; peso registrado na semana 20; bônus de sequência semanal (cumpriu os dias planejados) 150. Níveis por XP acumulado (curva crescente, 10 níveis nomeados). Sequência conta **semanas** cumpridas (não dias), para não punir descanso. Conquistas (medalhas) por marcos: primeiro treino, 10/50/100 treinos, 4/12 semanas seguidas, recorde de carga. XP é derivado de registros reais (não se edita à mão) e é calculado no banco por função, nunca enviado pelo app.
+- **RN23 (grupos, inspirado no GymRats):** qualquer usuário cria um grupo (nome, duração opcional em semanas, modo de pontuação: treinos, minutos ou XP) e convida por **código de 6 caracteres**. Limite de 30 membros e 5 grupos por pessoa. Cada treino concluído vira um **check-in** automático nos grupos da pessoa (pode desligar por grupo). Ranking por período do grupo. Membros veem dos outros apenas: apelido, check-ins (nome do treino, duração, kcal, pontos) e posição. **Nunca** peso, medidas, dieta, e-mail. Sair do grupo apaga os check-ins da pessoa naquele grupo; o criador pode remover membros e encerrar o grupo. Sem foto no servidor e sem chat nesta versão.
+- **RN24 (apelido):** para aparecer em grupos a pessoa escolhe um apelido (3 a 20 caracteres, sem e-mail). É o único dado pessoal visível a outros usuários.
+- **RN25 (movimento):** animações com mola no padrão Apple (interrompíveis, sem quique por padrão; quique leve só em conquista), durações curtas, haptics nos momentos de confirmação e respeito a Reduzir Movimento em tudo.
+
 ## 7. Telas e navegação (levantado do código)
 
 | Tela | Onde | O que mostra |
