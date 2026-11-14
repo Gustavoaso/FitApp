@@ -4,6 +4,9 @@
 // Modo de execução do treino em tempo real.
 // Rodada 3 — Ajuste 1: Atualização automática de carga/reps por série no progressoServico.
 // Botão 'Sair' pílula amarela no canto superior esquerdo.
+// Etapa 20: o parâmetro de rota `treinoId` escolhe o treino (card da grade, detalhe,
+// dia selecionado); sem ele, vale o treino de hoje. Ao concluir, grava o histórico
+// do dia, que a tira da semana da aba Treino lê.
 // ============================================================
 
 import React, { useMemo, useState, useEffect } from 'react';
@@ -20,10 +23,16 @@ import {
   KeyboardAvoidingView,
   InputAccessoryView,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
-import { CardVidro, BotaoPrimario, AnelProgresso, MomentoConquista } from '@/compartilhado/ui';
+import {
+  CardVidro,
+  BotaoPrimario,
+  AnelProgresso,
+  EstadoVazio,
+  MomentoConquista,
+} from '@/compartilhado/ui';
 import {
   CoresTema,
   Espacamento,
@@ -35,10 +44,14 @@ import {
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
-import { registrarExecucaoSerie } from '@/compartilhado/servicos/progresso-servico';
+import {
+  incrementarTreinoRealizado,
+  registrarExecucaoSerie,
+} from '@/compartilhado/servicos/progresso-servico';
+import { salvarHistoricoTreino } from '@/compartilhado/servicos/historico-servico';
 import {
   obterPlanoTreinoCustomizado,
-  obterMapeamentoSemanal,
+  obterTreinoDeHoje,
   descreverSerie,
   repeticoesAlvo,
 } from '@/compartilhado/servicos/plano-gestao-servico';
@@ -52,37 +65,11 @@ interface ExercicioAoVivo {
   descansoSegundos: number;
 }
 
-const EXERCICIOS_PADRAO: ExercicioAoVivo[] = [
-  {
-    id: 'ex-1',
-    nome: 'Supino Reto com Barra',
-    series: 4,
-    reps: 10,
-    cargaSugerida: 60,
-    descansoSegundos: 90,
-  },
-  {
-    id: 'ex-2',
-    nome: 'Supino Inclinado com Halteres',
-    series: 3,
-    reps: 12,
-    cargaSugerida: 24,
-    descansoSegundos: 60,
-  },
-  {
-    id: 'ex-4',
-    nome: 'Tríceps Pulley com Corda',
-    series: 4,
-    reps: 12,
-    cargaSugerida: 35,
-    descansoSegundos: 60,
-  },
-];
-
 export default function TelaTreinoAoVivo() {
   const { cores } = useTema();
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
+  const { treinoId } = useLocalSearchParams<{ treinoId?: string }>();
 
   const fecharTreino = () => {
     if (router.canGoBack()) {
@@ -92,8 +79,12 @@ export default function TelaTreinoAoVivo() {
     router.replace('/(tabs)/treino');
   };
 
-  const [listaExercicios, setListaExercicios] = useState<ExercicioAoVivo[]>(EXERCICIOS_PADRAO);
+  // Sem treino para mostrar, a tela diz isso: nunca exercícios inventados.
+  const [situacao, setSituacao] = useState<'carregando' | 'pronto' | 'vazio'>('carregando');
+  const [listaExercicios, setListaExercicios] = useState<ExercicioAoVivo[]>([]);
   const [tituloTreino, setTituloTreino] = useState('Treino ao Vivo');
+  const [inicioMs] = useState(() => Date.now());
+  const [exerciciosFeitos, setExerciciosFeitos] = useState(0);
   const [indexExercicio, setIndexExercicio] = useState(0);
   const [serieAtual, setSerieAtual] = useState(1);
   const [cargaUsada, setCargaUsada] = useState('');
@@ -118,35 +109,34 @@ export default function TelaTreinoAoVivo() {
   useEffect(() => {
     async function carregarTreinoReal() {
       try {
-        const planos = await obterPlanoTreinoCustomizado();
-        const mapSemana = await obterMapeamentoSemanal();
-        const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-        const abrevHoje = abrevs[new Date().getDay()];
-        const idHoje = mapSemana[abrevHoje];
-
-        const planoHoje = (idHoje && planos.find((p) => p.id === idHoje)) || planos[0];
-        if (planoHoje && planoHoje.exercicios && planoHoje.exercicios.length > 0) {
-          setTituloTreino(planoHoje.foco || planoHoje.diaSemana);
-          const adaptados: ExercicioAoVivo[] = planoHoje.exercicios.map((ex) => ({
-            id: ex.id,
-            nome: ex.nome,
-            series: ex.series || 4,
-            // Valores do plano, sem inventar carga (0 = a pessoa informa).
-            reps: ex.repeticoes,
-            cargaSugerida: ex.cargaKg || 0,
-            descansoSegundos: ex.tempoDescansoSegundos || 60,
-          }));
-          setListaExercicios(adaptados);
-          setTempoRestante(adaptados[0].descansoSegundos);
+        // O treino pedido pela rota; sem parâmetro, o de hoje (com a troca do dia).
+        const treino = treinoId
+          ? ((await obterPlanoTreinoCustomizado()).find((p) => p.id === treinoId) ?? null)
+          : await obterTreinoDeHoje();
+        if (!treino || treino.exercicios.length === 0) {
+          setSituacao('vazio');
+          return;
         }
+        setTituloTreino(treino.foco || treino.diaSemana);
+        const adaptados: ExercicioAoVivo[] = treino.exercicios.map((ex) => ({
+          id: ex.id,
+          nome: ex.nome,
+          series: ex.series || 4,
+          // Valores do plano, sem inventar carga (0 = a pessoa informa).
+          reps: ex.repeticoes,
+          cargaSugerida: ex.cargaKg || 0,
+          descansoSegundos: ex.tempoDescansoSegundos || 60,
+        }));
+        setListaExercicios(adaptados);
+        setTempoRestante(adaptados[0].descansoSegundos);
+        setSituacao('pronto');
       } catch (err) {
         console.warn('Erro ao carregar treino real para execução ao vivo:', err);
+        setSituacao('vazio');
       }
     }
     carregarTreinoReal();
-  }, []);
-
-  const exAtual = listaExercicios[indexExercicio] || EXERCICIOS_PADRAO[0];
+  }, [treinoId]);
 
   // Um passo por segundo; o fim do descanso fica no callback (sem setState síncrono no efeito).
   useEffect(() => {
@@ -166,6 +156,23 @@ export default function TelaTreinoAoVivo() {
     );
     return () => clearTimeout(passo);
   }, [emDescanso, tempoRestante]);
+
+  if (situacao === 'carregando') return <View style={estilos.container} />;
+  if (situacao === 'vazio') {
+    return (
+      <View style={[estilos.container, estilos.centro]}>
+        <EstadoVazio
+          simbolo="dumbbell"
+          titulo={treinoId ? 'Treino não encontrado' : 'Hoje é dia de descanso'}
+          mensagem="Escolha um treino na aba Treino para começar."
+          textoAcao="Voltar"
+          aoAgir={fecharTreino}
+        />
+      </View>
+    );
+  }
+
+  const exAtual = listaExercicios[indexExercicio] ?? listaExercicios[0];
 
   // Rodada 3 — Ajuste 1: Conclui a série e registra automaticamente no progressoServico
   const concluirSerie = async () => {
@@ -188,15 +195,26 @@ export default function TelaTreinoAoVivo() {
       setTempoRestante(exAtual.descansoSegundos);
       setEmDescanso(true);
     } else {
+      setExerciciosFeitos((n) => n + 1);
       if (indexExercicio < listaExercicios.length - 1) {
         setIndexExercicio(indexExercicio + 1);
         setSerieAtual(1);
         setTempoRestante(listaExercicios[indexExercicio + 1].descansoSegundos);
         setEmDescanso(true);
       } else {
-        const { incrementarTreinoRealizado } =
-          await import('@/compartilhado/servicos/progresso-servico');
         await incrementarTreinoRealizado();
+        // Marca o dia como treinado: é o que a tira da semana da aba Treino lê.
+        const hoje = new Date().toISOString().split('T')[0];
+        await salvarHistoricoTreino(hoje, {
+          idSessao: `sessao-${inicioMs}`,
+          data: hoje,
+          foco: tituloTreino,
+          duracaoMinutos: Math.max(1, Math.round((Date.now() - inicioMs) / 60000)),
+          // Este exercício acabou de terminar e ainda não entrou no estado.
+          exerciciosConcluidos: exerciciosFeitos + 1,
+          totalExercicios: listaExercicios.length,
+          concluido: true,
+        });
         // O MomentoConquista dá o haptic Success e sai do treino ao terminar.
         setConcluido(true);
       }
@@ -339,6 +357,7 @@ const criarEstilos = (cores: CoresTema) =>
       fontSize: Fonte.corpo,
       fontWeight: PesoFonte.semibold,
     },
+    centro: { justifyContent: 'center' },
     container: {
       flex: 1,
       backgroundColor: cores.fundo,

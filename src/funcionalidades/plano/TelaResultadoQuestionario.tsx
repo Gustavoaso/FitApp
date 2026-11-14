@@ -36,6 +36,7 @@ import {
 import { useTema } from '@/compartilhado/useTema';
 import { formatarAgua } from '@/compartilhado/utilidades';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
+import { adicionarEntradaPeso } from '@/compartilhado/servicos/progresso-servico';
 import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { gerarPlano } from './gerar-plano-servico';
 import { descreverBalanco, segmentosAnel } from './resumo-resultado';
@@ -242,6 +243,10 @@ export default function TelaResultadoQuestionario() {
         dadosRespostas,
         dadosRespostas ? perfilDoQuestionario(dadosRespostas) : undefined,
       );
+      // O peso do questionário entra no histórico: o gráfico do Início e o Perfil
+      // passam a mostrar o mesmo peso do plano novo (etapa 20).
+      const pesoKg = Number(dadosRespostas?.perfil?.peso_atual);
+      if (Number.isFinite(pesoKg) && pesoKg > 0) await adicionarEntradaPeso(pesoKg);
       setConquista(true);
     } catch (erro) {
       setErroSalvar(

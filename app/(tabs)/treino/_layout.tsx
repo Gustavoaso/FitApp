@@ -8,6 +8,11 @@ export default function LayoutAbaTreino() {
   return (
     <Stack screenOptions={opcoesPilhaAba(cores)}>
       <Stack.Screen name="index" options={{ title: 'Treino' }} />
+      {/* Detalhe: título pequeno (o nome do treino vem da tela) e volta para a aba. */}
+      <Stack.Screen
+        name="[treinoId]"
+        options={{ title: 'Treino', headerLargeTitle: false, headerBackTitle: 'Treino' }}
+      />
     </Stack>
   );
 }

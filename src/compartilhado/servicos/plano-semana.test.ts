@@ -1,11 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { definirUsuarioLocal } from './armazenamento-usuario';
 import {
+  definirTreinoEspecialParaData,
   derivarMapeamentoSemanal,
   descreverSerie,
   obterMapeamentoSemanal,
+  obterTreinoDeHoje,
   repeticoesAlvo,
   salvarMapeamentoSemanal,
+  treinoDoDia,
   type DiaTreinoCustomizado,
 } from './plano-gestao-servico';
 import { calcularAderenciaSemanal } from './progresso-servico';
@@ -66,6 +69,44 @@ describe('mapa semanal', () => {
         { ...primeiro, id: 'domingo', diaSemanaIndice: 0 },
       ]),
     ).toEqual({ dom: 'domingo' });
+  });
+});
+
+describe('treino do dia (o mesmo para Início, Treino e treino ao vivo)', () => {
+  const MAPA = { seg: 'dia-servidor-1', qua: 'dia-servidor-3', sex: 'dia-servidor-5' };
+
+  it('vem do mapa semanal; dia sem treino é descanso', () => {
+    expect(treinoDoDia(PLANO_SERVIDOR, MAPA, 'qua')?.id).toBe('dia-servidor-3');
+    expect(treinoDoDia(PLANO_SERVIDOR, MAPA, 'ter')).toBeNull();
+    expect(treinoDoDia(PLANO_SERVIDOR, { ter: 'descanso' }, 'ter')).toBeNull();
+  });
+
+  it('a troca feita para a data vence o mapa', () => {
+    expect(treinoDoDia(PLANO_SERVIDOR, MAPA, 'qua', 'dia-servidor-5')?.id).toBe('dia-servidor-5');
+    expect(treinoDoDia(PLANO_SERVIDOR, MAPA, 'ter', 'dia-servidor-1')?.id).toBe('dia-servidor-1');
+  });
+
+  it('troca ou mapa apontando para treino que não existe mais não quebra', () => {
+    expect(treinoDoDia(PLANO_SERVIDOR, MAPA, 'qua', 'apagado')?.id).toBe('dia-servidor-3');
+    expect(treinoDoDia(PLANO_SERVIDOR, { qua: 'apagado' }, 'qua')).toBeNull();
+    expect(treinoDoDia([], MAPA, 'qua', null)).toBeNull();
+  });
+
+  describe('obterTreinoDeHoje', () => {
+    // Quarta-feira fictícia.
+    beforeEach(() => jest.useFakeTimers({ now: new Date('2026-11-11T15:00:00Z') }));
+    afterEach(() => jest.useRealTimers());
+
+    it('lê o plano e o mapa; depois de "Trocar" na aba Treino, devolve o treino trocado', async () => {
+      expect((await obterTreinoDeHoje())?.id).toBe('dia-servidor-3');
+      await definirTreinoEspecialParaData('2026-11-11', 'dia-servidor-5');
+      expect((await obterTreinoDeHoje())?.id).toBe('dia-servidor-5');
+    });
+
+    it('descanso quando a semana foi redefinida sem treino hoje', async () => {
+      await salvarMapeamentoSemanal({ seg: 'dia-servidor-1' });
+      expect(await obterTreinoDeHoje()).toBeNull();
+    });
   });
 });
 

@@ -272,6 +272,83 @@ describe('gramas por mínimos quadrados (RN09)', () => {
     expect(Math.max(...gramas)).toBe(GRAMAS_MAX);
   });
 
+  describe('troca de alimentos quando a escolha não fecha a meta', () => {
+    // Proteína magra e complemento pouco gorduroso: 40 g de abacate dão só 3 g de gordura.
+    const PEIXE: AlimentoCandidato = {
+      ...ALIMENTOS[0],
+      id: 'peixe',
+      nome: 'Abadejo cozido',
+      kcal: 91,
+      proteina: 19.3,
+      gordura: 0.9,
+    };
+    const ABACATE: AlimentoCandidato = {
+      ...ALIMENTOS[4],
+      id: 'abacate',
+      nome: 'Abacate',
+      kcal: 96,
+      proteina: 1.2,
+      carboidrato: 6,
+      gordura: 8.4,
+    };
+    const { caloriasAlvo, macros } = calcularTudo(
+      85,
+      182,
+      31,
+      'masculino',
+      'moderado',
+      'hipertrofia',
+    );
+    const meta = { ...macros, calorias: caloriasAlvo };
+    const slots = slotsPara(3);
+    const montar = (candidatos: AlimentoCandidato[]) =>
+      montarPlano(
+        escolhaValida(slots, 'peixe', 'arroz', 'abacate'),
+        slots,
+        EXERCICIOS,
+        candidatos,
+        prescrever('hipertrofia', 'intermediario'),
+        meta,
+      );
+
+    it('troca só o necessário entre os candidatos e o dia fecha em ±5%', () => {
+      const { plano, erros } = montar([PEIXE, ...ALIMENTOS, ABACATE]);
+      expect(erros).toEqual([]);
+      expect(conferirTolerancia(plano!.totalDia, meta)).toEqual([]);
+      const ids = plano!.refeicoes.flatMap((r) => r.itens.map((i) => i.alimento.id));
+      expect(ids).not.toContain('abacate');
+      // O que já servia na escolha da LLM continua no plano.
+      expect(ids).toContain('arroz');
+      // Cada refeição continua com um alimento de cada slot.
+      plano!.refeicoes.forEach((r) =>
+        expect(r.itens.map((i) => i.alimento.slot)).toEqual([
+          'proteina',
+          'carboidrato',
+          'complemento',
+        ]),
+      );
+    });
+
+    it('sem candidato que resolva, continua recusando com o erro da gordura', () => {
+      const { plano, erros } = montar([PEIXE, ALIMENTOS[2], ABACATE]);
+      expect(plano).toBeUndefined();
+      expect(erros.join(' ')).toContain('gorduras do dia fora de ±5%');
+    });
+
+    it('escolha que já fecha não é trocada', () => {
+      const { plano } = montarPlano(
+        escolhaValida(slots),
+        slots,
+        EXERCICIOS,
+        [PEIXE, ...ALIMENTOS, ABACATE],
+        prescrever('hipertrofia', 'intermediario'),
+        meta,
+      );
+      const ids = new Set(plano!.refeicoes.flatMap((r) => r.itens.map((i) => i.alimento.id)));
+      expect([...ids].sort()).toEqual(['arroz', 'azeite', 'frango']);
+    });
+  });
+
   it('acusa fora de ±5% quando os alimentos não fecham a meta', () => {
     expect(
       conferirTolerancia(

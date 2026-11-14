@@ -52,6 +52,14 @@ describe('montarDadosFisicos', () => {
     expect(dados.objetivo).toBe(SEM_DADO);
   });
 
+  it('o peso registrado no Início vence o do perfil; inválido cai no perfil', () => {
+    const perfil = { peso_kg: 80, altura_cm: 170, idade: 30 };
+    expect(montarDadosFisicos(perfil, null, 'metrico', 78.4).peso).toBe('78.4 kg');
+    for (const invalido of [null, undefined, 0, -3, Number.NaN]) {
+      expect(montarDadosFisicos(perfil, null, 'metrico', invalido).peso).toBe('80 kg');
+    }
+  });
+
   it('converte para imperial', () => {
     const dados = montarDadosFisicos({ peso_kg: 100, altura_cm: 180 }, null, 'imperial');
     expect(dados.peso).toBe('220 lbs');

@@ -37,6 +37,7 @@ import {
 import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
+import { obterHistoricoPeso } from '@/compartilhado/servicos/progresso-servico';
 import { montarDadosFisicos, SEM_DADO } from './dados-fisicos';
 import { obterDadosRawTacoAPI } from './taco-sincronizacao-servico';
 import { obterDadosRawExerciseDB } from './exercise-db-sincronizacao-servico';
@@ -101,7 +102,11 @@ export default function TelaPerfil() {
     const perfilBanco = await repositorioPlano.obterPerfilUsuario();
     const ultimasRespostas = await repositorioPlano.obterUltimasRespostasQuestionario();
 
-    setDadosFisicos(montarDadosFisicos(perfilBanco, ultimasRespostas, sistemaUnidades));
+    // O peso registrado no Início aparece aqui sem reabrir o app.
+    const pesagens = await obterHistoricoPeso();
+    const ultimoPeso = pesagens[pesagens.length - 1]?.pesoKg;
+
+    setDadosFisicos(montarDadosFisicos(perfilBanco, ultimasRespostas, sistemaUnidades, ultimoPeso));
   };
 
   useFocusEffect(

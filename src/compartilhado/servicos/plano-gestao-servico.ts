@@ -47,6 +47,21 @@ export function derivarMapeamentoSemanal(planos: DiaTreinoCustomizado[]): Record
   return mapa;
 }
 
+/**
+ * Treino de um dia: a troca feita para a data vence o mapa semanal.
+ * Sem treino no dia (ou id que não existe mais no plano), null = descanso.
+ */
+export function treinoDoDia(
+  planos: DiaTreinoCustomizado[],
+  mapaSemanal: Record<string, string>,
+  abrevDia: string,
+  idTroca?: string | null,
+): DiaTreinoCustomizado | null {
+  const porId = (id?: string | null) =>
+    id && id !== 'descanso' ? (planos.find((p) => p.id === id) ?? null) : null;
+  return porId(idTroca) ?? porId(mapaSemanal?.[abrevDia]);
+}
+
 /** Texto de séries de um exercício: "20 kg × 8-12 reps", ou só as reps sem carga definida. */
 export function descreverSerie(cargaKg: number, repeticoes: number | string): string {
   const reps = String(repeticoes ?? '').trim() || '—';
@@ -286,6 +301,18 @@ export async function obterTreinoEspecialParaData(dataStr: string): Promise<stri
   } catch (erro) {
     return null;
   }
+}
+
+/** Treino de hoje como a aba Treino mostra (com a troca do dia), para o Início e o treino ao vivo. */
+export async function obterTreinoDeHoje(): Promise<DiaTreinoCustomizado | null> {
+  const hoje = new Date().toISOString().split('T')[0];
+  const abrev = ABREVIACOES_DIAS[new Date(`${hoje}T12:00:00`).getDay()];
+  const [planos, mapa, troca] = await Promise.all([
+    obterPlanoTreinoCustomizado(),
+    obterMapeamentoSemanal(),
+    obterTreinoEspecialParaData(hoje),
+  ]);
+  return treinoDoDia(planos, mapa, abrev, troca);
 }
 
 /**

@@ -6,7 +6,20 @@
 // seção 8 do PROJETO.md: a tela só mostra esse texto.
 // ============================================================
 
-export const OLLAMA_URL = process.env.EXPO_PUBLIC_OLLAMA_URL || 'http://localhost:11434';
+const URL_PADRAO = 'http://localhost:11434';
+
+/**
+ * Aceita o que a pessoa costuma colar no .env: IP ou nome Bonjour do Mac
+ * (`Meu-Mac.local:11434`), com ou sem `http://` e com ou sem barra no fim.
+ */
+export function normalizarUrlOllama(valor: string | undefined | null): string {
+  const texto = typeof valor === 'string' ? valor.trim() : '';
+  if (!texto) return URL_PADRAO;
+  const comEsquema = /^https?:\/\//i.test(texto) ? texto : `http://${texto}`;
+  return comEsquema.replace(/\/+$/, '');
+}
+
+export const OLLAMA_URL = normalizarUrlOllama(process.env.EXPO_PUBLIC_OLLAMA_URL);
 export const MODELO_GERACAO = 'llama3.2';
 export const MODELO_EMBEDDING = 'mxbai-embed-large';
 // PREMISSA: 180 s; o llama3.2 no Mac de 8 GB passa de 60 s nos perfis maiores (etapa 13).

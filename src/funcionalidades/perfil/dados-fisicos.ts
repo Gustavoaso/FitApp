@@ -52,6 +52,8 @@ export function montarDadosFisicos(
   // Formato livre (JSON salvo no plano): só lemos campos conhecidos.
   respostas: Record<string, unknown> | null | undefined,
   unidades: 'metrico' | 'imperial',
+  // Última pesagem registrada no Início: é mais nova que o peso do perfil (etapa 20).
+  pesoRegistradoKg?: number | null,
 ): DadosFisicos {
   const r = respostas && typeof respostas === 'object' ? respostas : {};
   const rPerfil = (r.perfil && typeof r.perfil === 'object' ? r.perfil : {}) as Record<
@@ -64,7 +66,7 @@ export function montarDadosFisicos(
       ? (rObjetivo as Record<string, unknown>).objetivo_principal
       : rObjetivo;
 
-  const peso = numeroValido(perfil?.peso_kg, r.pesoKg, rPerfil.peso_atual);
+  const peso = numeroValido(pesoRegistradoKg, perfil?.peso_kg, r.pesoKg, rPerfil.peso_atual);
   const altura = numeroValido(perfil?.altura_cm, r.alturaCm, rPerfil.altura);
   const idade = numeroValido(perfil?.idade, r.idade, rPerfil.idade);
   const metrico = unidades === 'metrico';

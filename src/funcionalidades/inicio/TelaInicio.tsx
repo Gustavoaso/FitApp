@@ -44,9 +44,10 @@ import {
 } from '@/compartilhado/servicos/progresso-servico';
 import { calcularSequenciaDias } from './calcular-sequencia';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
+import { somarConsumoDoDia } from './consumo-do-dia';
 import {
   obterPlanoTreinoCustomizado,
-  obterMapeamentoSemanal,
+  obterTreinoDeHoje,
 } from '@/compartilhado/servicos/plano-gestao-servico';
 
 export default function TelaInicio() {
@@ -126,28 +127,12 @@ export default function TelaInicio() {
     const { obterHistoricoDieta } = await import('@/compartilhado/servicos/historico-servico');
     const salvoRefeicoes = await obterHistoricoDieta(hojeStr);
 
-    let cConsumidas = 0;
-    let pConsumidas = 0;
-    let carbConsumidos = 0;
-    let gConsumidas = 0;
-
-    if (salvoRefeicoes && Array.isArray(salvoRefeicoes)) {
-      for (const ref of salvoRefeicoes) {
-        if (ref.concluida && Array.isArray(ref.alimentos)) {
-          for (const ali of ref.alimentos) {
-            cConsumidas += ali.calorias || 0;
-            pConsumidas += ali.proteinas || 0;
-            carbConsumidos += ali.carbos || 0;
-            gConsumidas += ali.gorduras || 0;
-          }
-        }
-      }
-    }
-
-    setCaloriasConsumidas(cConsumidas);
-    setProteina(pConsumidas);
-    setCarboidrato(carbConsumidos);
-    setGordura(gConsumidas);
+    // Tudo o que a aba Dieta registrou hoje (ver consumo-do-dia.ts).
+    const consumo = somarConsumoDoDia(salvoRefeicoes);
+    setCaloriasConsumidas(consumo.calorias);
+    setProteina(consumo.proteinas);
+    setCarboidrato(consumo.carbos);
+    setGordura(consumo.gorduras);
 
     // 1. Busca hidratação do Supabase para a data de hoje
     const registroAgua = await repositorioAgua.buscarAguaDoDia(hojeStr);
@@ -158,28 +143,17 @@ export default function TelaInicio() {
 
     // 2. Busca o treino planejado para hoje
     try {
-      const planos = await obterPlanoTreinoCustomizado();
-      const mapSemana = await obterMapeamentoSemanal();
-      const abrevs = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-      const abrevHoje = abrevs[new Date().getDay()];
-      const idTreinoHoje = mapSemana[abrevHoje];
-
-      if (idTreinoHoje && idTreinoHoje !== 'descanso') {
-        const treinoEncontrado = planos.find((p) => p.id === idTreinoHoje);
-        if (treinoEncontrado) {
-          setTreinoHojeTitulo(treinoEncontrado.foco || treinoEncontrado.diaSemana);
-          setTreinoHojeSub(`${treinoEncontrado.exercicios.length} exercícios · ~45 min`);
-          setTreinoHojeId(treinoEncontrado.id);
-        } else {
-          setTreinoHojeTitulo('Descanso Planejado');
-          setTreinoHojeSub('Aproveite para recuperar as energias');
-          setTreinoHojeId(null);
-        }
-      } else if (planos.length > 0) {
-        const primeiro = planos[0];
-        setTreinoHojeTitulo(primeiro.foco || primeiro.diaSemana);
-        setTreinoHojeSub(`${primeiro.exercicios.length} exercícios · ~45 min`);
-        setTreinoHojeId(primeiro.id);
+      // Mesma regra da aba Treino: a troca do dia vale, e dia sem treino é descanso
+      // (antes o Início mostrava o primeiro treino do plano como "hoje").
+      const treinoHoje = await obterTreinoDeHoje();
+      if (treinoHoje) {
+        setTreinoHojeTitulo(treinoHoje.foco || treinoHoje.diaSemana);
+        setTreinoHojeSub(`${treinoHoje.exercicios.length} exercícios · ~45 min`);
+        setTreinoHojeId(treinoHoje.id);
+      } else if ((await obterPlanoTreinoCustomizado()).length > 0) {
+        setTreinoHojeTitulo('Descanso Planejado');
+        setTreinoHojeSub('Aproveite para recuperar as energias');
+        setTreinoHojeId(null);
       } else {
         setTreinoHojeTitulo('Sem Treino Cadastrado');
         setTreinoHojeSub('Crie ou recalcule um plano no perfil');
@@ -452,9 +426,14 @@ export default function TelaInicio() {
               </View>
             </View>
 
+            {/* Sem treino hoje, o botão leva à aba Treino em vez de abrir um treino qualquer. */}
             <BotaoPrimario
-              texto="Iniciar Treino ao Vivo"
-              aoPresionar={() => router.push('/treino-ao-vivo')}
+              texto={treinoHojeId ? 'Iniciar Treino ao Vivo' : 'Ver treinos'}
+              aoPresionar={() =>
+                treinoHojeId
+                  ? router.push({ pathname: '/treino-ao-vivo', params: { treinoId: treinoHojeId } })
+                  : router.push('/(tabs)/treino')
+              }
               estilo={estilos.botaoIniciar}
             />
           </CardVidro>

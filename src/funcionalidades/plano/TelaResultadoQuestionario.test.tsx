@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import type { PlanoIAGerado } from '@/compartilhado/tipos';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
+import { adicionarEntradaPeso } from '@/compartilhado/servicos/progresso-servico';
 import { gerarPlano } from './gerar-plano-servico';
 import TelaResultadoQuestionario, { AVISO_PROFISSIONAL } from './TelaResultadoQuestionario';
 
@@ -44,6 +45,9 @@ jest.mock('expo-haptics', () => ({
 }));
 jest.mock('@/compartilhado/servicos/repositorio', () => ({
   repositorioPlano: { salvarPlanoComoAtivo: jest.fn() },
+}));
+jest.mock('@/compartilhado/servicos/progresso-servico', () => ({
+  adicionarEntradaPeso: jest.fn(),
 }));
 // A geração (rede) não roda: o plano chega pronto nos parâmetros.
 jest.mock('./gerar-plano-servico', () => ({ gerarPlano: jest.fn() }));
@@ -110,6 +114,8 @@ it('aceitar salva e mostra o momento de conquista', async () => {
     await screen.findByLabelText('Plano ativado. Seu primeiro dia começa agora.'),
   ).toBeTruthy();
   expect(repositorioPlano.salvarPlanoComoAtivo).toHaveBeenCalledTimes(1);
+  // O peso do questionário vai para o histórico que o Início e o Perfil leem.
+  expect(adicionarEntradaPeso).toHaveBeenCalledWith(82);
 });
 
 it('erro ao salvar aparece na barra e não comemora', async () => {
@@ -118,6 +124,7 @@ it('erro ao salvar aparece na barra e não comemora', async () => {
   await fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
   await waitFor(() => expect(screen.getByText('Sem conexão.')).toBeTruthy());
   expect(screen.queryByText('Plano ativado')).toBeNull();
+  expect(adicionarEntradaPeso).not.toHaveBeenCalled();
 });
 
 it('mostra o aviso de grupo que ficou fora do treino', async () => {

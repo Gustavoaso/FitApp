@@ -502,6 +502,9 @@ export default function TelaTreino() {
                 foco: p.foco,
                 totalExercicios: p.exercicios.length,
               }))}
+              aoAbrir={(treinoId) =>
+                router.push({ pathname: '/(tabs)/treino/[treinoId]', params: { treinoId } })
+              }
             />
 
             {/* ── Card do Foco do Dia ── */}
@@ -598,7 +601,10 @@ export default function TelaTreino() {
 
                 <BotaoPrimario
                   texto="Iniciar Treino ao Vivo"
-                  aoPresionar={() => router.push('/treino-ao-vivo')}
+                  // O treino mostrado (dia escolhido ou troca), não sempre o de hoje.
+                  aoPresionar={() =>
+                    router.push({ pathname: '/treino-ao-vivo', params: { treinoId: diaAtual.id } })
+                  }
                   estilo={estilos.botaoIniciar}
                 />
               </>

@@ -1,7 +1,7 @@
 // Grade de treinos do plano (mockup treino v1): 2 colunas, cada card com um neon do tema
 // em gradiente suave e a letra do treino grande ao fundo. Com texto extra grande vira 1 coluna.
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CoresTema, FamiliaFonte, Tipografia, RAIO_CARTAO } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
@@ -17,7 +17,12 @@ const FATOR_UMA_COLUNA = 1.3;
 /** 22% de opacidade em hex, como no mockup (neon sobre o card). */
 const ALFA_GRADIENTE = '38';
 
-export function GradeTreinos({ treinos }: { treinos: TreinoDaGrade[] }) {
+interface Props {
+  treinos: TreinoDaGrade[];
+  aoAbrir: (idTreino: string) => void;
+}
+
+export function GradeTreinos({ treinos, aoAbrir }: Props) {
   const { cores } = useTema();
   const { fontScale } = useWindowDimensions();
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
@@ -31,21 +36,32 @@ export function GradeTreinos({ treinos }: { treinos: TreinoDaGrade[] }) {
         const letra = String.fromCharCode(65 + (i % 26));
         const exercicios = `${treino.totalExercicios} ${treino.totalExercicios === 1 ? 'exercício' : 'exercícios'}`;
         return (
-          <LinearGradient
+          // O card inteiro é o botão: abre o detalhe do treino (etapa 20).
+          <Pressable
             key={treino.id}
-            colors={[`${neon}${ALFA_GRADIENTE}`, cores.superficie]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0.6, y: 1 }}
-            style={[estilos.card, umaColuna && estilos.cardLargo]}
+            onPress={() => aoAbrir(treino.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Treino ${letra}, ${treino.foco}, ${exercicios}`}
+            accessibilityHint="Abre os exercícios deste treino"
+            style={({ pressed }) => [
+              estilos.celula,
+              umaColuna && estilos.cardLargo,
+              pressed && estilos.pressionado,
+            ]}
           >
-            <Text style={[estilos.letra, { color: neon }]} importantForAccessibility="no">
-              {letra}
-            </Text>
-            <View accessible accessibilityLabel={`Treino ${letra}, ${treino.foco}, ${exercicios}`}>
+            <LinearGradient
+              colors={[`${neon}${ALFA_GRADIENTE}`, cores.superficie]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0.6, y: 1 }}
+              style={estilos.card}
+            >
+              <Text style={[estilos.letra, { color: neon }]} importantForAccessibility="no">
+                {letra}
+              </Text>
               <Text style={estilos.foco}>{treino.foco}</Text>
               <Text style={estilos.detalhe}>{exercicios}</Text>
-            </View>
-          </LinearGradient>
+            </LinearGradient>
+          </Pressable>
         );
       })}
     </View>
@@ -55,9 +71,10 @@ export function GradeTreinos({ treinos }: { treinos: TreinoDaGrade[] }) {
 const criarEstilos = (cores: CoresTema) =>
   StyleSheet.create({
     grade: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+    celula: { flexBasis: '47%', flexGrow: 1 },
+    pressionado: { opacity: 0.85, transform: [{ scale: 0.98 }] },
     card: {
-      flexBasis: '47%',
-      flexGrow: 1,
+      flex: 1,
       minHeight: 168,
       borderRadius: RAIO_CARTAO,
       padding: 16,

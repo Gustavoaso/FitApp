@@ -42,6 +42,7 @@ Fluxo: novo-projeto
 | 16. Atualizar para o SDK 58 | Concluída (testador: APROVADO) | 1 | b031459 |
 | 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
 | 19. Questionário V1 (10 passos) | Implementada, aguardando o testador | 1 | ver git log |
+| 20. Validação e correções de funcionamento | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -151,6 +152,20 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 19: padrões visíveis de roda, régua e stepper (idade 30, altura 170, peso 70, refeições 4; PREMISSA em `campos-pendentes.ts`) viram resposta ao Continuar. Réguas vão de 80 a 270 cm e 10 a 320 kg (mais largas que os limites) para o aviso de erro do mockup ser alcançável.
 - Etapa 19: rascunho novo (`rascunho.ts`, AsyncStorage por usuário, chave `@fitapp_rascunho_questionario`), pois não existia. Refazer (parâmetro `dadosFormulario`) vence o rascunho; o rascunho é apagado ao gerar. "Editar" no resumo percorre só os passos do bloco (Perfil 2 e 3; Treino 5 a 7; Alimentação 8 e 10) e volta ao resumo.
 - Etapa 19: `Roda` é um `ScrollView` com snap (não `@expo/ui` Picker), sem dependência nova. Haptic de seleção na régua, na roda, no stepper, nos cartões e chips.
+- Etapa 20 (geração recusada): causa achada rodando o serviço fora do app contra a base remota, só leitura: os 590 `base_alimentos` do remoto estão **sem embedding**, a similaridade vem nula e a RPC ordena por id. O topo de proteína vira só peixe magro e o de complemento começa por abacate; a LLM (que não vê macros) escolhia combinações em que a gordura do dia não fechava ±5% ("gorduras 48 de 87") nas duas tentativas.
+- Etapa 20: correção no motor (`motor/validador.ts`, `trocarParaFechar`): quando o dia não fecha, o código troca o mínimo de alimentos da refeição por candidatos do mesmo slot (que já respeitam as restrições) antes de recusar. A LLM continua só escolhendo IDs (RN07) e a tolerância de ±5% (RN09) não mudou. Alternativa descartada: afrouxar a tolerância. Conferido com 3 perfis contra a base remota: os 3 geram.
+- Etapa 20: `MENSAGEM_FALHA` nova (PREMISSA de texto): manda tentar de novo e, se continuar, mudar dias de treino ou restrições no questionário.
+- Etapa 20: `EXPO_PUBLIC_OLLAMA_URL` passa por `normalizarUrlOllama` (aceita `Meu-Mac.local:11434` sem `http://` e com barra no fim). O cliente já aceitava nome `.local` com `http://`.
+- Etapa 20: detalhe do treino é rota nova na pilha da aba (`app/(tabs)/treino/[treinoId].tsx`, `TelaDetalheTreino`); o treino ao vivo recebe `treinoId` por parâmetro de rota e, sem ele, usa o treino de hoje. O botão "Iniciar este treino" fica no fim da lista (não fixo) para não ficar atrás da tab bar de vidro.
+- Etapa 20: o treino ao vivo não mostra mais exercícios fictícios quando não acha treino; mostra "Treino não encontrado" ou "Hoje é dia de descanso".
+- Etapa 20, falhas de integração entre abas achadas e corrigidas:
+  1. Dieta → Início: o Início só somava refeições com `concluida = true`, marca que a Dieta nunca liga; calorias e macros do dia ficavam em zero. Agora soma todo alimento registrado (`inicio/consumo-do-dia.ts`).
+  2. Treino ao vivo → Treino: concluir o treino não gravava o histórico do dia (`salvarHistoricoTreino` nunca era chamado); a tira da semana nunca marcava "feito". Agora grava.
+  3. Treino → treino ao vivo: o botão "Iniciar" abria sempre o treino do dia da semana de hoje, mesmo com outro dia selecionado ou com "Trocar". Agora leva o id do treino mostrado.
+  4. Treino → Início: o card "Hoje" ignorava a troca do dia e, em dia de descanso, mostrava o primeiro treino do plano. Agora usa a mesma regra da aba Treino (`treinoDoDia`/`obterTreinoDeHoje`); em descanso o botão vira "Ver treinos".
+  5. Início → Perfil: o peso registrado no Início ficava só no histórico local e o Perfil mostrava o peso antigo do perfil. O Perfil agora mostra a última pesagem.
+  6. Refazer plano → Início/Perfil: o peso informado no questionário não entrava no histórico; ao aceitar o plano ele vira uma pesagem (alternativa descartada: gravar a pesagem do Início em `perfis.peso_kg`, que mudaria a base do próximo plano sem a pessoa pedir).
+- Etapa 20, conferido e sem falha: aceitar/refazer plano regrava o cache de treino, o mapa semanal e as metas, e as quatro abas releem no foco; água só existe no Início (lida do servidor no foco).
 
 ## Pendências
 
@@ -187,3 +202,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - 2026-10-31 (testes finais): testador reprovou só pelo expo-doctor (`react-native` 0.88.0, SDK espera 0.88.1); a troca reescreve o lockfile e exige `--legacy-peer-deps` (conflito `react-dom` 19.3.1 × `react` 19.3.0): decidir com o dono. Segurança sem falha alta; `validar_compatibilidade_planejamento` revogada do `anon` (migration 20261031000100). Ficam: deep link `plano` sem validação, CORS `*` em `excluir-conta`, `npm audit` e Edge Functions rodando não verificados.
 - Etapa 19: régua, roda e stepper só testados em jest (eventos de rolagem simulados); falta ver no simulador (snap, haptic, texto XXL, claro e escuro) e conferir o ícone de cada cartão (`figure.walk`, `desktopcomputer` etc.).
 - Etapa 19: alergias alimentares e "Outra" só voltam se o motor ganhar regra para elas; "Parte B" (meta de peso, tempo por sessão, equipamentos, "não como") segue fora.
+- Etapa 20 (dono/maestro): os 590 alimentos de `base_alimentos` no remoto estão sem embedding. A geração já funciona sem eles, mas o cardápio fica pouco variado (os primeiros por id: peixes, arroz). Gerar os embeddings no remoto é escrita e precisa de aprovação (etapa 27).
+- Etapa 20: nada foi visto no simulador (detalhe do treino, card tocável, título da pilha, botão no fim da lista com a tab bar de vidro): papel do testador de usuário.
+- Etapa 20, fora do escopo e não corrigido: o campo "Carga usada" do treino ao vivo não limpa ao mudar de exercício; concluir o mesmo treino duas vezes no dia conta dois treinos na semana; "hoje" é a data UTC em todas as telas (depois das 21h de Brasília vira o dia seguinte); a meta de água editada vale só para o dia; o peso padrão do modal do Início é fixo em 85,0; meta semanal manual continua valendo depois de refazer o plano; `salvarPlanoComoAtivo` grava uma chave de dieta do dia que ninguém lê.
+- Etapa 20: mais de 3 conceitos novos para o dono ler (rota dinâmica `[treinoId]`, parâmetro de rota, `useFocusEffect`, busca exaustiva de combinações no motor).

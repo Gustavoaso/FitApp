@@ -262,6 +262,37 @@ describe('gerarPlano com o Ollama simulado', () => {
     expect(salvou()).toBe(false);
   });
 
+  it('base sem embedding (só peixe magro e abacate no topo): troca alimentos e o plano sai', async () => {
+    // Como a base remota em 2026-11-14: sem similaridade, a ordem cai no id e a LLM
+    // (primeiro de cada lista) escolhe uma combinação que não fecha a gordura do dia.
+    const peixe = { ...ALIMENTOS[0], id: 10, nome: 'Abadejo cozido', categoria: 'pescados' };
+    const magro = { ...peixe, calorias_100g: 91, proteinas_100g: 19.3, gorduras_100g: 0.9 };
+    const abacate = {
+      id: 11,
+      nome: 'Abacate',
+      categoria: 'frutas',
+      calorias_100g: 96,
+      proteinas_100g: 1.2,
+      carboidratos_100g: 6,
+      gorduras_100g: 8.4,
+    };
+    const fetchMock = simularOllama([VALIDA]);
+    simularBanco({ alimentos: [magro, ALIMENTOS[0], ALIMENTOS[1], abacate, ALIMENTOS[2]] });
+
+    const { plano } = await gerarPlano(RESPOSTAS);
+
+    expect(chamadasGenerate(fetchMock)).toHaveLength(1);
+    const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
+    expect(nomes).toContain('Azeite');
+    expect(salvou()).toBe(true);
+  });
+
+  it('a mensagem de falha diz o que a pessoa pode fazer', () => {
+    expect(MENSAGEM_FALHA).toContain('Tentar de novo');
+    expect(MENSAGEM_FALHA).toContain('questionário');
+    expect(MENSAGEM_FALHA).not.toContain('DEBUG');
+  });
+
   it('Ollama fora do ar: mensagem da seção 8 e nada gravado', async () => {
     global.fetch = jest.fn().mockRejectedValue(new TypeError('Network request failed'));
     await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_OLLAMA_FORA);

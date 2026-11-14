@@ -4,7 +4,8 @@
 // 1. Travas de saúde e metas (código).
 // 2. RAG híbrido (RN14): um embedding da consulta ordena exercícios,
 //    alimentos e diretrizes; filtros SQL tiram o que não pode entrar.
-// 3. LLM escolhe IDs; validação; 1 retry com os erros.
+// 3. LLM escolhe IDs; validação; 1 retry com os erros. Se as gramas não
+//    fecham, o código troca alimentos entre os candidatos (etapa 20).
 // 4. RPC salvar_plano_gerado grava tudo numa transação e
 //    recusa a 6ª geração do dia. Falha antes daqui não grava nada.
 // ============================================================
@@ -33,7 +34,7 @@ import { ErroOllama, gerarComSchema, gerarEmbedding, MODELO_GERACAO } from './ol
 
 // PREMISSA (textos): mensagens da tela de geração.
 export const MENSAGEM_FALHA =
-  'Não consegui montar um plano válido agora. Tente de novo em alguns minutos.';
+  'Não consegui montar um plano válido com as suas respostas. Toque em "Tentar de novo"; se continuar, volte ao questionário e mude os dias de treino ou as restrições.';
 export const MENSAGEM_LIMITE = 'Você já gerou 5 planos hoje. Tente de novo amanhã.';
 export const MENSAGEM_SALVAR = 'Não consegui salvar o seu plano. Tente de novo.';
 

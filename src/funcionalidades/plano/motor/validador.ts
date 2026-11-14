@@ -12,7 +12,13 @@ import type {
   GrupoMuscular,
   RestricaoAlimentar,
 } from '@/compartilhado/tipos';
-import { calcularGramas, conferirTolerancia, metaDaRefeicao, somarMacros } from './gramas';
+import {
+  calcularGramas,
+  conferirTolerancia,
+  metaDaRefeicao,
+  somarMacros,
+  TOLERANCIA,
+} from './gramas';
 import { REFEICOES, SLOTS } from './schema-prompt';
 import type {
   AlimentoCandidato,
@@ -126,7 +132,54 @@ export interface PlanoMontado {
   totalDia: MetaDia;
 }
 
-/** Monta o plano de uma escolha já validada; devolve erros se as gramas não fecham ±5%. */
+/** Maior desvio relativo entre os macros da refeição (com as gramas já calculadas) e a meta. */
+function desvioDaRefeicao(itens: AlimentoCandidato[], meta: MetaDia): number {
+  const gramas = calcularGramas(itens, meta);
+  const total = somarMacros(itens.map((alimento, i) => ({ alimento, gramas: gramas[i] })));
+  return Math.max(
+    ...(Object.keys(meta) as (keyof MetaDia)[]).map((k) => Math.abs(total[k] - meta[k]) / meta[k]),
+  );
+}
+
+/**
+ * Refeição que fecha a meta trocando o mínimo de alimentos da escolha da LLM por candidatos
+ * do mesmo slot (os candidatos já respeitam as restrições). Se nenhuma combinação fecha,
+ * devolve a de menor desvio; quem decide se o dia passa é a tolerância do dia.
+ */
+function trocarParaFechar(
+  escolhidos: AlimentoCandidato[],
+  alimentos: AlimentoCandidato[],
+  meta: MetaDia,
+): AlimentoCandidato[] {
+  let melhor = { itens: escolhidos, trocas: 0, desvio: desvioDaRefeicao(escolhidos, meta) };
+  if (melhor.desvio <= TOLERANCIA || escolhidos.length !== SLOTS.length) return escolhidos;
+  const [proteinas, carboidratos, complementos] = SLOTS.map((s) =>
+    alimentos.filter((a) => a.slot === s),
+  );
+  for (const proteina of proteinas) {
+    for (const carboidrato of carboidratos) {
+      for (const complemento of complementos) {
+        const itens = [proteina, carboidrato, complemento];
+        const trocas = itens.filter((a, i) => a.id !== escolhidos[i].id).length;
+        const desvio = desvioDaRefeicao(itens, meta);
+        const fecha = desvio <= TOLERANCIA;
+        const melhorFecha = melhor.desvio <= TOLERANCIA;
+        const ganha = fecha
+          ? !melhorFecha ||
+            trocas < melhor.trocas ||
+            (trocas === melhor.trocas && desvio < melhor.desvio)
+          : !melhorFecha && desvio < melhor.desvio;
+        if (ganha) melhor = { itens, trocas, desvio };
+      }
+    }
+  }
+  return melhor.itens;
+}
+
+/**
+ * Monta o plano de uma escolha já validada. Se as gramas não fecham ±5%, troca alimentos
+ * entre os candidatos; devolve erros só quando nem assim o dia fecha.
+ */
 export function montarPlano(
   escolha: EscolhaLLM,
   slots: SlotDia[],
@@ -147,14 +200,26 @@ export function montarPlano(
     return { nome: slot.nome, exercicios: lista.map((e) => ({ ...e, ...prescricao })) };
   });
 
-  const refeicoes = REFEICOES.map((refeicao) => {
-    const escolhidos = SLOTS.map((s: SlotAlimento) =>
-      alimentoPorId.get(escolha.refeicoes[refeicao][s]),
-    ).filter((a): a is AlimentoCandidato => a !== undefined);
-    const gramas = calcularGramas(escolhidos, metaDaRefeicao(meta, refeicao));
-    return { refeicao, itens: escolhidos.map((alimento, i) => ({ alimento, gramas: gramas[i] })) };
-  });
+  const montarRefeicoes = (ajustar: boolean) =>
+    REFEICOES.map((refeicao) => {
+      const metaRefeicao = metaDaRefeicao(meta, refeicao);
+      let escolhidos = SLOTS.map((s: SlotAlimento) =>
+        alimentoPorId.get(escolha.refeicoes[refeicao][s]),
+      ).filter((a): a is AlimentoCandidato => a !== undefined);
+      if (ajustar) escolhidos = trocarParaFechar(escolhidos, alimentos, metaRefeicao);
+      const gramas = calcularGramas(escolhidos, metaRefeicao);
+      return {
+        refeicao,
+        itens: escolhidos.map((alimento, i) => ({ alimento, gramas: gramas[i] })),
+      };
+    });
 
+  // A LLM escolhe sem ver os macros: quando o dia não fecha, o código troca o mínimo de
+  // alimentos pelos candidatos do mesmo slot antes de recusar (etapa 20).
+  let refeicoes = montarRefeicoes(false);
+  if (conferirTolerancia(somarMacros(refeicoes.flatMap((r) => r.itens)), meta).length > 0) {
+    refeicoes = montarRefeicoes(true);
+  }
   const totalDia = somarMacros(refeicoes.flatMap((r) => r.itens));
   const erros = conferirTolerancia(totalDia, meta);
   return erros.length > 0 ? { erros } : { erros, plano: { dias, refeicoes, totalDia } };
