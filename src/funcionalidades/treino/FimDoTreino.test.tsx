@@ -132,7 +132,21 @@ describe('FimDoTreino', () => {
     await fireEvent.press(screen.getByRole('button', { name: 'Escolher da galeria' }));
     expect(screen.queryByRole('button', { name: 'Compartilhar' })).toBeNull();
     await fireEvent.press(screen.getByRole('button', { name: 'Concluir' }));
-    expect(aoConcluir).toHaveBeenCalled();
+    // Fecha o modal primeiro; a navegação só vem quando ele termina de sair (evita tela preta no iOS).
+    expect(screen.queryByRole('button', { name: 'Concluir' })).toBeNull();
+    expect(aoConcluir).not.toHaveBeenCalled();
+  });
+
+  it('no editor da foto, Voltar retorna ao resumo sem concluir', async () => {
+    const aoConcluir = jest.fn();
+    await render(<FimDoTreino resumo={resumo} aoConcluir={aoConcluir} />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Usar cartão sem foto' }));
+    expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Voltar ao resumo do treino' }));
+    expect(screen.queryByRole('button', { name: 'Compartilhar' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Registrar com foto' })).toBeTruthy();
+    expect(aoConcluir).not.toHaveBeenCalled();
   });
 
   it('sem permissão para salvar: não grava e avisa', async () => {

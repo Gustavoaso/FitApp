@@ -1,7 +1,16 @@
 // Fim do treino (RN21): resumo da sessão e "Registrar com foto". A foto só existe no
 // aparelho: vira imagem com o selo aqui e sai pela galeria ou pela folha de compartilhar.
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, View, type HostInstance } from 'react-native';
+import {
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type HostInstance,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
@@ -36,6 +45,17 @@ export function FimDoTreino({ resumo, aoConcluir }: PropsFimDoTreino) {
   const [aviso, setAviso] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
   const refSelo = useRef<HostInstance>(null);
+  // Fecha o modal antes de navegar: navegar com o modal de tela cheia aberto deixa a tela preta no iOS.
+  const [visivel, setVisivel] = useState(true);
+  const concluir = () => {
+    setVisivel(false);
+    if (Platform.OS !== 'ios') aoConcluir();
+  };
+  const voltarAoResumo = () => {
+    setEditando(false);
+    setFotoUri(null);
+    setAviso(null);
+  };
 
   const abrirEditor = (uri: string | null) => {
     setFotoUri(uri);
@@ -113,10 +133,25 @@ export function FimDoTreino({ resumo, aoConcluir }: PropsFimDoTreino) {
   const corSecundaria = { color: cores.textoSecundario };
 
   return (
-    <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={aoConcluir}>
+    <Modal
+      visible={visivel}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onDismiss={aoConcluir}
+      onRequestClose={editando ? voltarAoResumo : concluir}
+    >
       <SafeAreaView style={[estilos.tela, { backgroundColor: cores.fundo }]}>
         {editando ? (
           <ScrollView contentContainerStyle={estilos.conteudo}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Voltar ao resumo do treino"
+              onPress={voltarAoResumo}
+              hitSlop={12}
+              style={estilos.voltar}
+            >
+              <Text style={[estilos.textoVoltar, corTexto]}>‹ Voltar</Text>
+            </Pressable>
             <View style={formato === '9:16' ? estilos.previaStories : estilos.previaFeed}>
               <SeloTreino
                 ref={refSelo}
@@ -174,7 +209,7 @@ export function FimDoTreino({ resumo, aoConcluir }: PropsFimDoTreino) {
               aoPresionar={salvarNaGaleria}
               desabilitado={ocupado}
             />
-            <BotaoPrimario texto="Concluir" variante="outline" aoPresionar={aoConcluir} />
+            <BotaoPrimario texto="Concluir" variante="outline" aoPresionar={concluir} />
           </ScrollView>
         ) : (
           <ScrollView contentContainerStyle={estilos.conteudo}>
@@ -205,7 +240,7 @@ export function FimDoTreino({ resumo, aoConcluir }: PropsFimDoTreino) {
               variante="ghost"
               aoPresionar={() => abrirEditor(null)}
             />
-            <BotaoPrimario texto="Concluir" variante="outline" aoPresionar={aoConcluir} />
+            <BotaoPrimario texto="Concluir" variante="outline" aoPresionar={concluir} />
           </ScrollView>
         )}
       </SafeAreaView>
@@ -214,6 +249,8 @@ export function FimDoTreino({ resumo, aoConcluir }: PropsFimDoTreino) {
 }
 
 const estilos = StyleSheet.create({
+  voltar: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  textoVoltar: { fontSize: 17, fontWeight: '600' },
   tela: { flex: 1 },
   conteudo: { padding: Espacamento.md, gap: Espacamento.md },
   // Prévia limitada em altura para os controles caberem na tela.
