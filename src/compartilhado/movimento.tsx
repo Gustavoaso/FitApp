@@ -24,7 +24,7 @@ export const MOLAS = {
   /** Resposta ao toque. */
   rapida: { duration: 250, dampingRatio: 1 },
   /** Só em celebração (conquista, série concluída). */
-  celebracao: { duration: 450, dampingRatio: 0.65 },
+  celebracao: { duration: 450, dampingRatio: 0.7 },
 } as const;
 
 export type NomeMola = keyof typeof MOLAS;

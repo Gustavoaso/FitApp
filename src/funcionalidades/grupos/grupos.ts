@@ -75,6 +75,8 @@ export function valorDoModo(linha: LinhaRanking, modo: ModoGrupo): string {
 
 const MENSAGENS: Record<string, string> = {
   codigo_invalido: 'Código não encontrado. Confira com quem convidou.',
+  muitas_tentativas: 'Muitas tentativas. Tente de novo mais tarde.',
+  removido_do_grupo: 'Você não pode voltar a este grupo.',
   grupo_cheio: 'Este grupo já tem 30 pessoas.',
   limite_grupos: 'Você já está em 5 grupos. Saia de um para entrar em outro.',
   apelido_obrigatorio: 'Escolha um apelido antes.',

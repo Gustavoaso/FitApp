@@ -32,8 +32,8 @@ select is(length((select r->>'codigo' from g)), 6, 'código tem 6 caracteres');
 -- Usuário 2 entra por código; código inválido não entra.
 select pg_temp.como(2);
 insert into public.apelidos_usuario (apelido) values ('Beto');
-select throws_ok($$select public.entrar_grupo('ZZZZZZ')$$, null, 'codigo_invalido', 'código inexistente não entra');
-select throws_ok($$select public.entrar_grupo(null)$$, null, 'codigo_invalido', 'código nulo não entra');
+select is(public.entrar_grupo('ZZZZZZ'), null, 'código inexistente não entra');
+select is(public.entrar_grupo(null), null, 'código nulo não entra');
 select lives_ok(format($$select public.entrar_grupo(%L)$$, lower((select r->>'codigo' from g))), 'entra por código (minúsculas ok)');
 
 -- Usuário 3 sem entrar: não lê nada.
@@ -101,7 +101,7 @@ select throws_ok(format($$select public.remover_membro(%L, gen_random_uuid())$$,
 select pg_temp.como(1);
 select lives_ok(format($$select public.encerrar_grupo(%L)$$, (select r->>'id' from g)), 'criador encerra');
 select pg_temp.como(32);
-select throws_ok(format($$select public.entrar_grupo(%L)$$, (select r->>'codigo' from g)), null, 'codigo_invalido', 'grupo encerrado não aceita entrada');
+select is(public.entrar_grupo((select r->>'codigo' from g)), null, 'grupo encerrado não aceita entrada');
 
 -- Anon não tem acesso.
 reset role;

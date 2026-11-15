@@ -412,6 +412,33 @@ export type Database = {
           },
         ];
       };
+      grupo_removidos: {
+        Row: {
+          grupo_id: string;
+          removido_em: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          grupo_id: string;
+          removido_em?: string;
+          usuario_id: string;
+        };
+        Update: {
+          grupo_id?: string;
+          removido_em?: string;
+          usuario_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'grupo_removidos_grupo_id_fkey';
+            columns: ['grupo_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupos';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       grupos: {
         Row: {
           codigo: string;
@@ -1010,6 +1037,25 @@ export type Database = {
           },
         ];
       };
+      tentativas_entrar_grupo: {
+        Row: {
+          criado_em: string;
+          id: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          id?: string;
+          usuario_id: string;
+        };
+        Update: {
+          criado_em?: string;
+          id?: string;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1072,7 +1118,7 @@ export type Database = {
       e_dono_plano_dieta: { Args: { plano: string }; Returns: boolean };
       e_dono_plano_treino: { Args: { plano: string }; Returns: boolean };
       encerrar_grupo: { Args: { p_grupo: string }; Returns: undefined };
-      entrar_grupo: { Args: { p_codigo: string }; Returns: string };
+      entrar_grupo: { Args: { p_codigo: string }; Returns: string | null };
       feed_grupo: {
         Args: { p_grupo: string; p_limite?: number };
         Returns: {

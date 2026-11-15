@@ -89,8 +89,12 @@ export async function criarGrupo(
     : { ok: false, erro: mensagemDeErro(null) };
 }
 
-export const entrarNoGrupo = (codigo: string) =>
-  chamar(() => supabase.rpc('entrar_grupo', { p_codigo: codigo }));
+// O banco devolve null (sem erro) para código errado, para registrar a tentativa.
+export async function entrarNoGrupo(codigo: string): Promise<Resultado<string | null>> {
+  const r = await chamar<string>(() => supabase.rpc('entrar_grupo', { p_codigo: codigo }));
+  if (r.ok && !r.valor) return { ok: false, erro: mensagemDeErro({ message: 'codigo_invalido' }) };
+  return r;
+}
 export const sairDoGrupo = (grupo: string) =>
   chamar(() => supabase.rpc('sair_grupo', { p_grupo: grupo }));
 export const encerrarGrupo = (grupo: string) =>
