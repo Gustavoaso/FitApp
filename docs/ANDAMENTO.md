@@ -47,6 +47,7 @@ Fluxo: novo-projeto
 | 22. Gasto calórico do treino (RN20) | Implementada, aguardando o testador | 1 | ver git log |
 | 23. Foto do treino para compartilhar (RN21) | Implementada, aguardando o testador | 1 | ver git log |
 | 24. Gamificação (RN22) | Implementada, aguardando o testador | 1 | ver git log |
+| 25. Grupos e competição (RN23, RN24) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -199,6 +200,11 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 22: a exibição na aba Treino e no Início não tem teste de tela (só o resumo do fim do treino e o histórico gravado).
 - Etapa 23: câmera, salvar nas Fotos e a folha de compartilhar não foram vistas no simulador (o simulador não tem câmera; conferir em aparelho). Sequência no selo feita na etapa 24.
 - Etapa 24: treino concluído offline fica só no histórico local (a sessão não é reenviada depois, então não conta XP); `p_hoje` vem do aparelho. Sem teste de tela do cartão de nível e da estante.
+- Etapa 25: tabelas `grupos`, `grupo_membros`, `grupo_checkins` com RLS ligada e **nenhuma política** e privilégios revogados: o app só fala por RPC `security definer` (`search_path` vazio) que devolvem apelido, check-ins e pontos. `membro_id` é um id opaco do grupo (nunca o id de auth). Alternativa descartada: políticas de leitura por membro (expõem `usuario_id` de outros).
+- Etapa 25 (PREMISSAS, lado restrito): só o criador vê o código e só ele convida; criador não sai (encerra); grupo encerrado ou vencido não aceita entrada e o código some; não membro recebe `nao_membro`; código inexistente/encerrado dá o mesmo erro `codigo_invalido`; limite de 5 conta só grupos ativos.
+- Etapa 25: check-in vem de gatilho em `sessoes_treino` (treino finalizado, grupo ativo, data dentro do período e depois da entrada, respeita o interruptor por grupo). Pontos: 100 por **dia** distinto (igual à RN22); modo treinos = dias distintos, minutos = soma. Empate divide a posição. Período = do dia da criação até `duracao_semanas` (ou sem fim).
+- Etapa 25: apelido em tabela própria `apelidos_usuario` (único sem diferenciar maiúsculas) e editado na aba Grupos, não na tela de Perfil (perfis tem campos obrigatórios que o app não sincroniza). Aba nova Grupos (5ª aba, a barra tinha 4). Compartilhar usa `Share` do RN (folha do iOS).
+- Etapa 25: sem limite de tentativas no código de convite (espaço de ~1 bilhão de códigos); sem tela para trocar o apelido depois e sem pódio animado. Pendências para o dono avaliar.
 - `expo-doctor`: `expo` 58.0.21 (pede ~58.0.25) e `react-native-safe-area-context` 5.10.1 (pede ~5.11.1), já antes da etapa 23.
 
 - 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.

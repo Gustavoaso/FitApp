@@ -19,6 +19,10 @@ export default function LayoutTabs() {
         <NativeTabs.Trigger.Label>Dieta</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'fork.knife', selected: 'fork.knife' }} />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="grupos">
+        <NativeTabs.Trigger.Label>Grupos</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: 'person.3', selected: 'person.3.fill' }} />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="perfil">
         <NativeTabs.Trigger.Label>Perfil</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} />
