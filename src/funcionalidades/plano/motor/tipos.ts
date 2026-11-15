@@ -11,6 +11,7 @@ import type {
   Macros,
   NivelExperiencia,
   ObjetivoTreino,
+  PapelExercicio,
   RestricaoAlimentar,
   EquipamentosDisponiveis,
   SexoBiologico,
@@ -36,6 +37,9 @@ export interface AlimentoCandidato {
   carboidrato: number;
   gordura: number;
   restricoesAtendidas: RestricaoAlimentar[];
+  /** Porção típica da base ("4 colheres de sopa" = 100 g), quando houver (RN17). */
+  porcaoDescricao?: string;
+  porcaoGramas?: number;
 }
 
 export interface DiaDivisao {
@@ -49,18 +53,26 @@ export interface Prescricao {
   descansoSegundos: number;
 }
 
+/** Prescrição de um exercício pelo papel dele na sessão (RN19). */
+export interface PrescricaoExercicio extends Prescricao {
+  repeticoesReserva: number;
+}
+
+export type PrescreverPorPapel = (papel: PapelExercicio) => PrescricaoExercicio;
+
 /** Quantos exercícios a LLM escolhe por grupo em cada dia. */
 export interface SlotDia {
   nome: string;
   porGrupo: { grupo: GrupoMuscular; quantidade: number }[];
 }
 
-export type NomeRefeicao = 'cafe' | 'almoco' | 'lanche' | 'jantar';
+export type NomeRefeicao = 'cafe' | 'lanche_manha' | 'almoco' | 'lanche' | 'jantar' | 'ceia';
 
 /** O que a LLM devolve: só IDs (RN07). */
 export interface EscolhaLLM {
   dias: { exercicios: Partial<Record<GrupoMuscular, string[]>> }[];
-  refeicoes: Record<NomeRefeicao, Record<SlotAlimento, string>>;
+  // Só as refeições do dia da pessoa (3 a 6); o validador garante que todas vieram.
+  refeicoes: Partial<Record<NomeRefeicao, Record<SlotAlimento, string>>>;
 }
 
 /** Só o que pode ir para o prompt (RN12): nada que identifique a pessoa. */

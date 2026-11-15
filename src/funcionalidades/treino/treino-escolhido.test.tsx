@@ -13,7 +13,8 @@ import {
   calcularAderenciaSemanal,
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
-import { repositorioTreino } from '@/compartilhado/servicos/repositorio';
+import { repositorioDieta, repositorioTreino } from '@/compartilhado/servicos/repositorio';
+import type { PlanoIAGerado } from '@/compartilhado/tipos';
 import { GradeTreinos } from './GradeTreinos';
 import TelaDetalheTreino from './TelaDetalheTreino';
 import TelaTreinoAoVivo from './TelaTreinoAoVivo';
@@ -82,6 +83,8 @@ beforeEach(async () => {
   mockParametros = {};
   jest.spyOn(repositorioTreino, 'buscarPlanosTreino').mockResolvedValue(PLANOS);
   jest.spyOn(repositorioTreino, 'contarSessoesConcluidas').mockResolvedValue(0);
+  // Sem plano gerado (plano antigo ou treino criado à mão), salvo no teste da RN19.
+  jest.spyOn(repositorioDieta, 'buscarUltimoPlanoIA').mockResolvedValue(null);
   // Todos os dias da semana apontam para o treino A.
   await salvarMapeamentoSemanal(
     Object.fromEntries(
@@ -111,6 +114,46 @@ describe('grade de treinos', () => {
 });
 
 describe('detalhe do treino', () => {
+  it('RN19: mostra a semana da progressão, o aquecimento e a reserva do plano gerado', async () => {
+    const inicioEm = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
+    const plano = {
+      treino: {
+        inicioEm,
+        progressao: [1, 2, 3, 4].map((semana) => ({
+          semana,
+          titulo: `Fase ${semana}`,
+          orientacao: `Faça a fase ${semana}.`,
+        })),
+        dias: [
+          {
+            diaSemana: 1,
+            nome: 'Costas e bíceps',
+            aquecimento: ['5 minutos de bicicleta.'],
+            exercicios: [
+              {
+                nome: 'Remada curvada',
+                series: 2,
+                repeticoes: '8-12',
+                descansoSegundos: 60,
+                repeticoesReserva: 2,
+              },
+            ],
+          },
+        ],
+      },
+    } as unknown as PlanoIAGerado;
+    jest
+      .spyOn(repositorioDieta, 'buscarUltimoPlanoIA')
+      .mockResolvedValue({ id: 'p', plano_gerado: plano, criado_em: inicioEm });
+    mockParametros = { treinoId: 'treino-b' };
+    await render(<TelaDetalheTreino />);
+
+    expect(await screen.findByText('Semana 2 de 4 · Fase 2')).toBeTruthy();
+    expect(screen.getByText('Na próxima semana: fase 3.')).toBeTruthy();
+    expect(screen.getByText('1. 5 minutos de bicicleta.')).toBeTruthy();
+    expect(screen.getByText('2 séries · 8-12 reps · 60s descanso · 2 na reserva')).toBeTruthy();
+  });
+
   it('mostra exercícios, séries e a carga da última vez', async () => {
     await registrarExecucaoSerie('b1', 'Remada curvada', 1, 40, 10);
     mockParametros = { treinoId: 'treino-b' };

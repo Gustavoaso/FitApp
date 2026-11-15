@@ -127,6 +127,48 @@ it('erro ao salvar aparece na barra e não comemora', async () => {
   expect(adicionarEntradaPeso).not.toHaveBeenCalled();
 });
 
+it('RN19: mostra "Por que este plano", o primeiro exercício e a progressão', async () => {
+  const novo = {
+    ...PLANO,
+    treino: {
+      ...PLANO.treino,
+      dias: [
+        {
+          diaSemana: 1,
+          nome: 'Peito, ombros e tríceps',
+          exercicios: [
+            {
+              nome: 'Supino reto',
+              series: 4,
+              repeticoes: '6-10',
+              descansoSegundos: 120,
+              papel: 'principal',
+            },
+          ],
+        },
+      ],
+      progressao: [
+        { semana: 1, titulo: 'Ajuste de carga', orientacao: 'Ache a carga.' },
+        { semana: 2, titulo: 'Mais repetições', orientacao: 'Some 1.' },
+      ],
+    },
+    porQue: ['Seu objetivo é ganhar massa muscular.', 'Você tem 3 dias por semana.'],
+  };
+  mockParametros = { ...mockParametros, plano: JSON.stringify(novo) };
+  await render(<TelaResultadoQuestionario />);
+  expect(screen.getByRole('header', { name: 'Por que este plano' })).toBeTruthy();
+  expect(screen.getByText('Você tem 3 dias por semana.')).toBeTruthy();
+  expect(screen.getByText('1 exercício · começa por Supino reto, 4x6-10')).toBeTruthy();
+  expect(screen.getByText('Semana 1 · Ajuste de carga')).toBeTruthy();
+  expect(screen.getByText('Ache a carga. Na semana 2: mais repetições.')).toBeTruthy();
+});
+
+it('plano antigo, sem os campos novos, mostra só a contagem e nada do RN19', async () => {
+  await render(<TelaResultadoQuestionario />);
+  expect(screen.getByText('0 exercícios')).toBeTruthy();
+  expect(screen.queryByText('Por que este plano')).toBeNull();
+});
+
 it('mostra o aviso de grupo que ficou fora do treino', async () => {
   const aviso = 'Não achei exercício de bíceps; o grupo ficou fora do treino.';
   mockParametros = { ...mockParametros, plano: JSON.stringify({ ...PLANO, avisos: [aviso] }) };

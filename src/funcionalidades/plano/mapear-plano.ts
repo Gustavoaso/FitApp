@@ -15,11 +15,13 @@ import type {
   ObjetivoTreino,
   PlanoIAGerado,
   RestricaoAlimentar,
+  SemanaProgressao,
   SexoBiologico,
 } from '@/compartilhado/tipos';
 import type { ResultadoCalculo } from '@/compartilhado/utilidades';
 import type { AtualizacaoPerfil } from '@/compartilhado/servicos/repositorio';
 import type { PlanoMontado } from './motor/validador';
+import { escolherSubstituicao, medidaCaseira, type RefeicaoNomeada } from './motor/dieta-rotina';
 import type {
   AlimentoCandidato,
   ExercicioCandidato,
@@ -206,6 +208,8 @@ export interface LinhaAlimento {
   proteinas_100g: number;
   carboidratos_100g: number;
   gorduras_100g: number;
+  porcao_descricao?: string | null;
+  porcao_gramas?: number | null;
 }
 
 // PREMISSA: palavras do nome/categoria que quebram cada restrição. Na dúvida, exclui.
@@ -231,6 +235,10 @@ const PROIBIDOS: Record<Exclude<RestricaoAlimentar, 'nenhuma'>, string[]> = {
     'presunto',
     'bacon',
     'linguica',
+    // Categoria TACO "Pescados e frutos do mar": pintado, cação, camarão... (etapa 21).
+    'pescado',
+    'frutos do mar',
+    'camarao',
   ],
   vegano: [
     'ovo',
@@ -407,6 +415,9 @@ export function mapearAlimento(
     carboidrato,
     gordura,
     restricoesAtendidas,
+    ...(linha.porcao_descricao && Number(linha.porcao_gramas) > 0
+      ? { porcaoDescricao: linha.porcao_descricao, porcaoGramas: Number(linha.porcao_gramas) }
+      : {}),
   };
 }
 
@@ -414,10 +425,24 @@ export function mapearAlimento(
 const DIA_SEMANA_INICIAL = 1;
 const NOME_REFEICAO: Record<NomeRefeicao, { nome: string; horario: string }> = {
   cafe: { nome: 'Café da manhã', horario: '07:00' },
+  lanche_manha: { nome: 'Lanche da manhã', horario: '10:00' },
   almoco: { nome: 'Almoço', horario: '12:00' },
   lanche: { nome: 'Lanche da tarde', horario: '16:00' },
   jantar: { nome: 'Jantar', horario: '20:00' },
+  ceia: { nome: 'Ceia', horario: '22:00' },
 };
+
+/** O que a RN19 acrescenta ao plano; tudo opcional para o formato antigo continuar valendo. */
+export interface ExtrasPlano {
+  diasDaSemana?: number[];
+  aquecimentos?: string[][];
+  refeicoesNomeadas?: RefeicaoNomeada[];
+  /** Candidatos da geração: de onde sai a substituição de cada alimento. */
+  alimentos?: AlimentoCandidato[];
+  progressao?: SemanaProgressao[];
+  inicioEm?: string;
+  porQue?: string[];
+}
 
 const um = (v: number) => Math.round(v * 10) / 10;
 
@@ -426,6 +451,7 @@ export function paraPlanoGerado(
   calculo: ResultadoCalculo,
   nomeDivisao: string,
   fontes: string[],
+  extras: ExtrasPlano = {},
 ): PlanoIAGerado {
   return {
     resumo: {
@@ -442,7 +468,7 @@ export function paraPlanoGerado(
     treino: {
       nomeDivisao,
       dias: plano.dias.map((dia, i) => ({
-        diaSemana: (DIA_SEMANA_INICIAL + i) % 7,
+        diaSemana: extras.diasDaSemana?.[i] ?? (DIA_SEMANA_INICIAL + i) % 7,
         nome: dia.nome,
         tipo: 'treino',
         exercicios: dia.exercicios.map((e) => ({
@@ -452,23 +478,42 @@ export function paraPlanoGerado(
           repeticoes: e.repeticoes,
           descansoSegundos: e.descansoSegundos,
           grupoMuscular: e.grupo,
+          papel: e.papel,
+          ...(e.repeticoesReserva !== undefined ? { repeticoesReserva: e.repeticoesReserva } : {}),
         })),
+        ...(extras.aquecimentos?.[i] ? { aquecimento: extras.aquecimentos[i] } : {}),
       })),
+      ...(extras.progressao ? { progressao: extras.progressao } : {}),
+      ...(extras.inicioEm ? { inicioEm: extras.inicioEm } : {}),
     },
     dieta: {
-      refeicoes: plano.refeicoes.map(({ refeicao, itens }) => ({
-        ...NOME_REFEICAO[refeicao],
-        alimentos: itens.map(({ alimento, gramas }) => ({
-          alimentoId: alimento.id,
-          nome: alimento.nome,
-          porcao: `${gramas}g`,
-          calorias: Math.round((alimento.kcal * gramas) / 100),
-          proteinas: um((alimento.proteina * gramas) / 100),
-          carboidratos: um((alimento.carboidrato * gramas) / 100),
-          gorduras: um((alimento.gordura * gramas) / 100),
-        })),
+      refeicoes: plano.refeicoes.map(({ refeicao, itens }, r) => ({
+        ...(extras.refeicoesNomeadas?.[r] ?? NOME_REFEICAO[refeicao]),
+        alimentos: itens.map(({ alimento, gramas }) => {
+          const caseira = medidaCaseira(gramas, alimento.porcaoDescricao, alimento.porcaoGramas);
+          const troca = extras.alimentos
+            ? escolherSubstituicao(
+                alimento,
+                gramas,
+                extras.alimentos,
+                itens.map((i) => i.alimento.id),
+              )
+            : undefined;
+          return {
+            alimentoId: alimento.id,
+            nome: alimento.nome,
+            porcao: `${gramas}g`,
+            calorias: Math.round((alimento.kcal * gramas) / 100),
+            proteinas: um((alimento.proteina * gramas) / 100),
+            carboidratos: um((alimento.carboidrato * gramas) / 100),
+            gorduras: um((alimento.gordura * gramas) / 100),
+            ...(caseira ? { medidaCaseira: caseira } : {}),
+            ...(troca ? { substituicao: troca } : {}),
+          };
+        }),
       })),
     },
     comentarios: fontes,
+    ...(extras.porQue ? { porQue: extras.porQue } : {}),
   };
 }

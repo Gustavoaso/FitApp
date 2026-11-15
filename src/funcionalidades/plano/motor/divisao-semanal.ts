@@ -35,6 +35,87 @@ const DIVISOES: Record<number, DiaDivisao[]> = {
   7: [EMPURRAR, PUXAR, PERNAS, EMPURRAR, PUXAR, PERNAS, CONDICIONAMENTO],
 };
 
+// PREMISSA: dias da semana de cada frequência (0 = domingo), com descanso espalhado.
+const DIAS_DA_SEMANA: Record<number, number[]> = {
+  2: [1, 4],
+  3: [1, 3, 5],
+  4: [1, 2, 4, 5],
+  5: [1, 2, 3, 5, 6],
+  6: [1, 2, 3, 4, 5, 6],
+  7: [1, 2, 3, 4, 5, 6, 0],
+};
+
+/** Dia da semana de cada sessão; frequência desconhecida cai em dias seguidos desde segunda. */
+export function diasDaSemana(sessoes: number): number[] {
+  return DIAS_DA_SEMANA[sessoes] ?? Array.from({ length: sessoes }, (_, i) => (1 + i) % 7);
+}
+
+export const NOME_GRUPO: Record<GrupoMuscular, string> = {
+  peito: 'peito',
+  costas: 'costas',
+  ombros: 'ombros',
+  biceps: 'bíceps',
+  triceps: 'tríceps',
+  quadriceps: 'quadríceps',
+  posterior: 'posterior de coxa',
+  gluteos: 'glúteos',
+  panturrilha: 'panturrilha',
+  abdomen: 'abdômen',
+  antebraco: 'antebraço',
+  corpo_inteiro: 'corpo inteiro',
+};
+
+/** "a, b e c" */
+export function listar(itens: string[]): string {
+  return itens.length <= 1
+    ? (itens[0] ?? '')
+    : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+}
+
+// Grupos pequenos não dão nome ao dia quando há um grupo grande.
+const GRUPOS_DE_APOIO: GrupoMuscular[] = ['panturrilha', 'abdomen', 'antebraco'];
+
+/** Nome do dia pelo foco (RN19): "Peito, ombros e tríceps", "Pernas e glúteos". */
+export function focoDoDia(grupos: GrupoMuscular[]): string {
+  const tem = (g: GrupoMuscular) => grupos.includes(g);
+  let nomes: string[];
+  if (tem('quadriceps') && tem('posterior')) {
+    const superiores = grupos.filter(
+      (g) => !['quadriceps', 'posterior', 'gluteos', ...GRUPOS_DE_APOIO].includes(g),
+    );
+    nomes = [
+      'pernas',
+      ...(tem('gluteos') ? ['glúteos'] : []),
+      ...superiores.map((g) => NOME_GRUPO[g]),
+    ];
+  } else {
+    const principais = grupos.filter((g) => !GRUPOS_DE_APOIO.includes(g));
+    const base = principais.length > 0 ? principais : grupos;
+    // Bíceps e tríceps juntos num dia cheio viram "braços", para o nome caber no card.
+    const juntarBracos = base.length > 3 && tem('biceps') && tem('triceps');
+    nomes = juntarBracos
+      ? [
+          ...base.filter((g) => g !== 'biceps' && g !== 'triceps').map((g) => NOME_GRUPO[g]),
+          'braços',
+        ]
+      : base.map((g) => NOME_GRUPO[g]);
+  }
+  const texto = listar(nomes.slice(0, 4));
+  return texto ? texto[0].toUpperCase() + texto.slice(1) : 'Treino';
+}
+
+/** Um nome por sessão; focos repetidos na semana ganham A, B... para não se confundirem. */
+export function nomearDias(gruposPorDia: GrupoMuscular[][]): string[] {
+  const focos = gruposPorDia.map(focoDoDia);
+  const vistos = new Map<string, number>();
+  return focos.map((foco) => {
+    if (focos.filter((f) => f === foco).length === 1) return foco;
+    const n = vistos.get(foco) ?? 0;
+    vistos.set(foco, n + 1);
+    return `${foco} ${String.fromCharCode(65 + n)}`;
+  });
+}
+
 export function montarDivisaoSemanal(dias: number): DiaDivisao[] {
   const divisao = DIVISOES[dias];
   if (!Number.isInteger(dias) || !divisao) {

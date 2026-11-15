@@ -43,6 +43,7 @@ Fluxo: novo-projeto
 | 15. Testes finais: correções | Concluída (testador: APROVADO) | — | 8b21358, b160b5c, e75e0c5, 1af1577, 671112d, 57f26c9, d3f4899, ab8de6d |
 | 19. Questionário V1 (10 passos) | Implementada, aguardando o testador | 1 | ver git log |
 | 20. Validação e correções de funcionamento | Implementada, aguardando o testador | 1 | ver git log |
+| 21. Plano com cara de profissional (RN19) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -166,6 +167,17 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
   5. Início → Perfil: o peso registrado no Início ficava só no histórico local e o Perfil mostrava o peso antigo do perfil. O Perfil agora mostra a última pesagem.
   6. Refazer plano → Início/Perfil: o peso informado no questionário não entrava no histórico; ao aceitar o plano ele vira uma pesagem (alternativa descartada: gravar a pesagem do Início em `perfis.peso_kg`, que mudaria a base do próximo plano sem a pessoa pedir).
 - Etapa 20, conferido e sem falha: aceitar/refazer plano regrava o cache de treino, o mapa semanal e as metas, e as quatro abas releem no foco; água só existe no Início (lida do servidor no foco).
+- Etapa 21: campos novos só no jsonb do plano (`papel`, `repeticoesReserva`, `aquecimento`, `progressao`, `inicioEm`, `momentoTreino`, `orientacao`, `medidaCaseira`, `substituicao`, `porQue`), todos opcionais; sem migration. Plano antigo mostra o que mostrava antes (testes em `orientacao-treino.test.ts`, `TelaResultadoQuestionario.test.tsx`, `alimento-planejado.test.ts`).
+- Etapa 21: prescrição pelo papel do exercício (principal, acessório, isolado), não uma só por plano: até 2 compostos principais por sessão (o primeiro composto de cada grupo grande), faixa e descanso por objetivo, séries e repetições na reserva por nível (`motor/prescricao.ts`, PREMISSA; ACSM 2009/Schoenfeld 2017). Alternativa descartada: a mesma prescrição para todos os exercícios, como antes.
+- Etapa 21: progressão = ciclo fixo de 4 semanas de dupla progressão (ajuste, +repetições, +carga, leve para iniciante/consolidação para os outros); peso do corpo sobe a variação em vez da carga. A semana atual conta a partir de `inicioEm` (data da geração, não do aceite: PREMISSA; o aceite não regrava o jsonb).
+- Etapa 21: nome do dia pelo foco (`focoDoDia`), com A/B só quando o foco se repete na semana; dias da semana espalhados com descanso (3x = seg/qua/sex; PREMISSA em `diasDaSemana`).
+- Etapa 21: refeições de 3 a 6 conforme a resposta (antes eram sempre 4); a fração de kcal de cada uma é o peso dela normalizado. Pré-treino = última refeição da tarde e pós-treino = jantar, porque o questionário não pergunta o horário do treino (PREMISSA: treino no fim da tarde). O `nome` continua o padrão ("Jantar") porque a RPC `salvar_plano_gerado` traduz o nome para o tipo; o pré/pós vai em `momentoTreino` e aparece como rótulo na aba Dieta. Rotina ativa (leve ou moderado) adianta o café em 30 min.
+- Etapa 21: medida caseira pela porção típica da TACO (`porcao_descricao`/`porcao_gramas`), arredondada de meia em meia unidade; o serviço lê as porções por um `select` em `base_alimentos` (sem mudar a RPC); se falhar, o plano sai só com gramas.
+- Etapa 21: substituição = outro candidato do mesmo slot (já filtrado pelas restrições) com kcal por grama do macro principal mais parecida, nas gramas que mantêm esse macro, de 5 em 5 g.
+- Etapa 21: o detalhe do treino liga o dia do plano gerado pelo nome (o cache local guarda o nome como `foco`) e lê o último plano gerado (`buscarUltimoPlanoIA`); treino criado à mão ou de plano antigo não mostra aquecimento nem progressão.
+- Etapa 21: a avaliação mostrou o perfil vegano com camarão e pintado: a lista de termos do vegetariano não pegava a categoria TACO "Pescados e frutos do mar". Acrescentei `pescado`, `frutos do mar` e `camarao` (vale também para a RPC, que recebe os mesmos termos). A reconferência do script usa a mesma lista, por isso não reprovou antes.
+- Etapa 21: o script de avaliação passou a reprovar plano sem "Por que", sem progressão, sem aquecimento, sem reserva, com dia "Treino X" ou com número de refeições diferente do pedido, e grava um exemplo de treino e refeição por perfil.
+- Etapa 21: banco local repopulado para a avaliação sem o `preparar-bases-locais.sh` (ele trunca `base_alimentos` e perderia os básicos da TACO da migration): `db reset`, importação de exercícios, curadoria da migration 20261103, ingestão de conhecimento e embeddings.
 
 ## Pendências
 
@@ -205,4 +217,10 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 20 (dono/maestro): os 590 alimentos de `base_alimentos` no remoto estão sem embedding. A geração já funciona sem eles, mas o cardápio fica pouco variado (os primeiros por id: peixes, arroz). Gerar os embeddings no remoto é escrita e precisa de aprovação (etapa 27).
 - Etapa 20: nada foi visto no simulador (detalhe do treino, card tocável, título da pilha, botão no fim da lista com a tab bar de vidro): papel do testador de usuário.
 - Etapa 20, fora do escopo e não corrigido: o campo "Carga usada" do treino ao vivo não limpa ao mudar de exercício; concluir o mesmo treino duas vezes no dia conta dois treinos na semana; "hoje" é a data UTC em todas as telas (depois das 21h de Brasília vira o dia seguinte); a meta de água editada vale só para o dia; o peso padrão do modal do Início é fixo em 85,0; meta semanal manual continua valendo depois de refazer o plano; `salvarPlanoComoAtivo` grava uma chave de dieta do dia que ninguém lê.
+- Etapa 21: avaliação 7 de 8 (`docs/avaliacoes/2026-11-15-avaliacao-planos.md`). O vegano falha de forma honesta: sem peixe e camarão, os básicos veganos da TACO (leguminosas, tofu) não chegam a 154 g de proteína dentro de ±5%. Opções para o dono: 1) meta de proteína menor para vegano; 2) incluir mais proteína vegetal concentrada na base; 3) manter a recusa.
+- Etapa 21: `preparar-bases-locais.sh` trunca `base_alimentos` e recarrega o seed antigo; depois da migration da TACO (20261103) ele deixa o banco local sem os básicos. Ajustar o script numa etapa futura.
+- Etapa 21: a referência da diretriz entra inteira no "Por que este plano" (ex.: "Kerksick CM, Arent S, Schoenfeld BJ, et al. ... 2017;14:33"); um campo de citação curta na `base_conhecimento` deixaria o texto mais limpo.
+- Etapa 21: no perfil "peso do corpo", bíceps, tríceps, glúteos e panturrilha ficam fora do treino por falta de exercício curado sem equipamento (já avisado no plano); curadoria da base é do dono.
+- Etapa 21: nada visto no simulador (cards de aquecimento e semana no detalhe, "Por que este plano", rótulos pré/pós e trocas na Dieta): papel do testador de usuário.
+- Etapa 21: mais de 3 conceitos novos para o dono ler (papel do exercício, repetições na reserva, dupla progressão, medida caseira por porção da TACO).
 - Etapa 20: mais de 3 conceitos novos para o dono ler (rota dinâmica `[treinoId]`, parâmetro de rota, `useFocusEffect`, busca exaustiva de combinações no motor).

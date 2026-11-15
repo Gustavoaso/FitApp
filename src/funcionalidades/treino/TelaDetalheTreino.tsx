@@ -19,6 +19,12 @@ import {
   type ExercicioCustomizado,
 } from '@/compartilhado/servicos/plano-gestao-servico';
 import { obterSeriesUltimaExecucao } from '@/compartilhado/servicos/progresso-servico';
+import { repositorioDieta } from '@/compartilhado/servicos/repositorio';
+import {
+  descreverPrescricao,
+  orientacaoDoTreino,
+  type OrientacaoTreino,
+} from './orientacao-treino';
 
 type SeriesFeitas = Record<number, { cargaKg: number; repeticoes: number }>;
 
@@ -31,6 +37,7 @@ export default function TelaDetalheTreino() {
   // undefined = carregando; null = o treino não existe mais (plano refeito ou treino apagado).
   const [treino, setTreino] = useState<DiaTreinoCustomizado | null | undefined>(undefined);
   const [ultimaVez, setUltimaVez] = useState<Record<string, SeriesFeitas>>({});
+  const [orientacao, setOrientacao] = useState<OrientacaoTreino | null>(null);
 
   // No foco: ao voltar do treino ao vivo, as cargas da última vez já aparecem.
   useFocusEffect(
@@ -44,7 +51,10 @@ export default function TelaDetalheTreino() {
           const feitas = await obterSeriesUltimaExecucao(ex.id);
           if (feitas) series[ex.id] = feitas;
         }
+        // Aquecimento, reserva e progressão vêm do plano gerado (RN19); plano antigo não tem.
+        const ultimoPlano = await repositorioDieta.buscarUltimoPlanoIA().catch(() => null);
         if (!ativo) return;
+        setOrientacao(orientacaoDoTreino(ultimoPlano?.plano_gerado, encontrado?.foco, new Date()));
         setUltimaVez(series);
         setTreino(encontrado);
       })();
@@ -91,8 +101,12 @@ export default function TelaDetalheTreino() {
           <View style={estilos.colunaNome}>
             <Text style={estilos.nome}>{item.nome}</Text>
             <Text style={estilos.prescricao}>
-              {item.series} séries · {String(item.repeticoes || '—')} reps ·{' '}
-              {item.tempoDescansoSegundos || 60}s descanso
+              {descreverPrescricao(
+                item.series,
+                item.repeticoes,
+                item.tempoDescansoSegundos,
+                orientacao?.reservaPorExercicio[item.nome],
+              )}
             </Text>
           </View>
         </View>
@@ -123,9 +137,34 @@ export default function TelaDetalheTreino() {
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={estilos.lista}
         ListHeaderComponent={
-          <Text style={estilos.resumo} accessibilityRole="header">
-            {total} {total === 1 ? 'exercício' : 'exercícios'}
-          </Text>
+          <View style={estilos.cabecalho}>
+            <Text style={estilos.resumo} accessibilityRole="header">
+              {total} {total === 1 ? 'exercício' : 'exercícios'}
+            </Text>
+            {orientacao?.semana ? (
+              <CardVidro semBorda estilo={estilos.card}>
+                <Text style={estilos.rotuloSecao}>
+                  Semana {orientacao.semana.atual.semana} de 4 · {orientacao.semana.atual.titulo}
+                </Text>
+                <Text style={estilos.textoSecao}>{orientacao.semana.atual.orientacao}</Text>
+                <Text style={estilos.prescricao}>
+                  Na próxima semana: {orientacao.semana.proxima.titulo.toLowerCase()}.
+                </Text>
+              </CardVidro>
+            ) : null}
+            {orientacao && orientacao.aquecimento.length > 0 ? (
+              <CardVidro semBorda estilo={estilos.card}>
+                <Text style={estilos.rotuloSecao} accessibilityRole="header">
+                  Aquecimento
+                </Text>
+                {orientacao.aquecimento.map((passo, i) => (
+                  <Text key={passo} style={estilos.textoSecao}>
+                    {i + 1}. {passo}
+                  </Text>
+                ))}
+              </CardVidro>
+            ) : null}
+          </View>
         }
         ListEmptyComponent={
           <EstadoVazio
@@ -169,6 +208,18 @@ const criarEstilos = (cores: CoresTema) =>
       color: cores.textoSecundario,
     },
     card: { gap: Espacamento.sm },
+    cabecalho: { gap: Espacamento.md },
+    rotuloSecao: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: Tipografia.destaque,
+      color: cores.texto,
+    },
+    textoSecao: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Tipografia.subtitulo,
+      color: cores.texto,
+      lineHeight: 21,
+    },
     topoExercicio: { flexDirection: 'row', gap: Espacamento.md, alignItems: 'flex-start' },
     ordem: {
       fontFamily: FamiliaFonte.bold,

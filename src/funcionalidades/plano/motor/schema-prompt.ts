@@ -17,6 +17,19 @@ import type {
 } from './tipos';
 
 export const REFEICOES: NomeRefeicao[] = ['cafe', 'almoco', 'lanche', 'jantar'];
+
+// PREMISSA: quais refeições entram para cada quantidade por dia (RN18: 3 a 6).
+const REFEICOES_POR_QUANTIDADE: Record<number, NomeRefeicao[]> = {
+  3: ['cafe', 'almoco', 'jantar'],
+  4: REFEICOES,
+  5: ['cafe', 'lanche_manha', 'almoco', 'lanche', 'jantar'],
+  6: ['cafe', 'lanche_manha', 'almoco', 'lanche', 'jantar', 'ceia'],
+};
+
+/** Refeições do dia pela resposta da pessoa; fora de 3 a 6, as 4 padrão. */
+export function refeicoesDoDia(quantidade: number): NomeRefeicao[] {
+  return REFEICOES_POR_QUANTIDADE[quantidade] ?? REFEICOES;
+}
 export const SLOTS: SlotAlimento[] = ['proteina', 'carboidrato', 'complemento'];
 
 type Schema = Record<string, unknown>;
@@ -34,6 +47,7 @@ export function montarSchemaEscolha(
   dias: SlotDia[],
   exercicios: ExercicioCandidato[],
   alimentos: AlimentoCandidato[],
+  refeicoes: NomeRefeicao[] = REFEICOES,
 ): Schema {
   const itensDias = dias.map((dia) => {
     const propriedades: Record<string, Schema> = {};
@@ -85,8 +99,8 @@ export function montarSchemaEscolha(
       dias: { type: 'array', prefixItems: itensDias, minItems: dias.length, maxItems: dias.length },
       refeicoes: {
         type: 'object',
-        properties: Object.fromEntries(REFEICOES.map((r) => [r, refeicao])),
-        required: REFEICOES,
+        properties: Object.fromEntries(refeicoes.map((r) => [r, refeicao])),
+        required: refeicoes,
         additionalProperties: false,
       },
     },

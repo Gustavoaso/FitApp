@@ -36,3 +36,5 @@ export {
 } from './validadores';
 
 export type { ResultadoValidacao } from './validadores';
+
+export { progressaoDaSemana, semanaDaProgressao } from './progressao-treino';

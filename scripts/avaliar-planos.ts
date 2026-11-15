@@ -315,9 +315,48 @@ async function checar(dados: DadosQuestionario, plano: PlanoIAGerado) {
       .filter((n) => CARGA_JOELHO.some((p) => semAcento(n).includes(p)));
     if (pesados.length) problemas.push(`Joelho: saíram ${[...new Set(pesados)].join(', ')}.`);
   }
+  // RN19: o plano tem de sair com cara de profissional.
+  if (!plano.porQue || plano.porQue.length < 3) problemas.push('Sem o texto "Por que este plano".');
+  if (plano.treino.progressao?.length !== 4) problemas.push('Sem a progressão de 4 semanas.');
+  for (const d of dias) {
+    if (/^Treino [A-Z]$/.test(d.nome)) problemas.push(`Dia sem foco no nome: ${d.nome}.`);
+    if (!d.aquecimento?.length) problemas.push(`${d.nome}: sem aquecimento.`);
+    if (d.exercicios.some((e) => e.repeticoesReserva === undefined))
+      problemas.push(`${d.nome}: exercício sem repetições na reserva.`);
+  }
+  if (plano.dieta.refeicoes.length !== dados.dieta.refeicoes_por_dia)
+    problemas.push(
+      `${plano.dieta.refeicoes.length} refeições (pedidas ${dados.dieta.refeicoes_por_dia}).`,
+    );
+  if (!plano.dieta.refeicoes.some((r) => r.momentoTreino === 'pos'))
+    problemas.push('Sem refeição pós-treino.');
+  const semTroca = plano.dieta.refeicoes.flatMap((r) => r.alimentos).filter((a) => !a.substituicao);
+  if (semTroca.length) alertas.push(`${semTroca.length} alimento(s) sem substituição.`);
   if (!plano.fundamentos?.length) alertas.push('Sem fundamentos da base de conhecimento.');
   alertas.push(...(plano.avisos ?? []).map((a) => `Aviso no plano: ${a}`));
   return { problemas, alertas };
+}
+
+/** Primeiro dia de treino e refeição pós-treino, para ler o plano como a pessoa vê. */
+function exemplo(plano: PlanoIAGerado): string[] {
+  const dia = plano.treino.dias[0];
+  const refeicao =
+    plano.dieta.refeicoes.find((r) => r.momentoTreino === 'pos') ?? plano.dieta.refeicoes[0];
+  return [
+    `Exemplo de treino: ${dia?.nome}. ${(dia?.exercicios ?? [])
+      .map(
+        (e) =>
+          `${e.nome} ${e.series}x${e.repeticoes}, ${e.descansoSegundos}s, ${e.repeticoesReserva ?? '?'} na reserva`,
+      )
+      .join('; ')}.`,
+    `Exemplo de refeição: ${refeicao?.nome} (${refeicao?.horario}). ${(refeicao?.alimentos ?? [])
+      .map(
+        (a) =>
+          `${a.nome} ${a.porcao}${a.medidaCaseira ? ` (${a.medidaCaseira})` : ''}${a.substituicao ? `, troca: ${a.substituicao.nome} ${a.substituicao.porcao}` : ''}`,
+      )
+      .join('; ')}.`,
+    `Por que: ${(plano.porQue ?? []).join(' ')}`,
+  ];
 }
 
 interface Resultado {
@@ -349,7 +388,7 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
       rotulo,
       segundos,
       situacao: problemas.length ? 'reprovado' : 'aprovado',
-      detalhes: [...problemas, ...alertas],
+      detalhes: [...problemas, ...alertas, ...exemplo(plano)],
       resumo,
     };
   } catch (erro) {

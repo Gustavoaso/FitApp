@@ -17,6 +17,7 @@ import {
   type EntradaMotor,
   type LinhaExercicio,
 } from './mapear-plano';
+import { NOME_GRUPO } from './motor/divisao-semanal';
 import type { ExercicioCandidato, SlotDia } from './motor/tipos';
 import { EQUIPAMENTOS_PERMITIDOS } from './motor/validador';
 
@@ -24,21 +25,6 @@ const NIVEIS_ACEITOS: Record<NivelExperiencia, string[]> = {
   iniciante: ['iniciante'],
   intermediario: ['iniciante', 'intermediario'],
   avancado: ['iniciante', 'intermediario', 'avancado'],
-};
-
-const NOME_GRUPO: Record<GrupoMuscular, string> = {
-  peito: 'peito',
-  costas: 'costas',
-  ombros: 'ombros',
-  biceps: 'bíceps',
-  triceps: 'tríceps',
-  quadriceps: 'quadríceps',
-  posterior: 'posterior de coxa',
-  gluteos: 'glúteos',
-  panturrilha: 'panturrilha',
-  abdomen: 'abdômen',
-  antebraco: 'antebraço',
-  corpo_inteiro: 'corpo inteiro',
 };
 
 export interface Selecao {

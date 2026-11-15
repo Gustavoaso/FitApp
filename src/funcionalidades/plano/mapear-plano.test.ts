@@ -289,6 +289,24 @@ describe('proteína vegetal (vegano)', () => {
     gorduras_100g: 0.2,
   });
 
+  it.each([
+    ['Pintado, grelhado', 'Pescados e frutos do mar'],
+    ['Camarão, Rio Grande, grande, cozido', 'Pescados e frutos do mar'],
+  ])('%s não é vegetariano nem vegano (categoria TACO)', (nome, categoria) => {
+    const peixe = mapearAlimento(
+      linhaAlimento({
+        nome,
+        categoria,
+        calorias_100g: 100,
+        proteinas_100g: 20,
+        carboidratos_100g: 0,
+        gorduras_100g: 2,
+      }),
+    );
+    expect(peixe?.restricoesAtendidas).not.toContain('vegetariano');
+    expect(peixe?.restricoesAtendidas).not.toContain('vegano');
+  });
+
   it('leguminosa vira proteína só para o vegano', () => {
     expect(mapearAlimento(feijao)?.slot).toBe('carboidrato');
     expect(mapearAlimento(feijao, true)?.slot).toBe('proteina');

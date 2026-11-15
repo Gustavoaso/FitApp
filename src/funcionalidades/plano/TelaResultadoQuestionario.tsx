@@ -37,11 +37,20 @@ import { useTema } from '@/compartilhado/useTema';
 import { formatarAgua } from '@/compartilhado/utilidades';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
 import { adicionarEntradaPeso } from '@/compartilhado/servicos/progresso-servico';
-import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
+import type { DadosQuestionario, DiaTreinoIA, PlanoIAGerado } from '@/compartilhado/tipos';
 import { gerarPlano } from './gerar-plano-servico';
 import { descreverBalanco, segmentosAnel } from './resumo-resultado';
 import { progressoEstimado } from './progresso-geracao';
 import { perfilDoQuestionario } from './mapear-plano';
+
+/** "5 exercícios · Supino reto 4x6-10 primeiro" (plano antigo: só a contagem). */
+export function resumirDia(dia: DiaTreinoIA): string {
+  const total = `${dia.exercicios.length} ${dia.exercicios.length === 1 ? 'exercício' : 'exercícios'}`;
+  const primeiro = dia.exercicios[0];
+  return primeiro?.papel
+    ? `${total} · começa por ${primeiro.nome}, ${primeiro.series}x${primeiro.repeticoes}`
+    : total;
+}
 
 // PREMISSA (textos): aviso e rótulos da tela.
 export const AVISO_PROFISSIONAL = 'Estimativa geral, não substitui nutricionista ou médico.';
@@ -288,6 +297,8 @@ export default function TelaResultadoQuestionario() {
     },
   ];
 
+  const [primeiraSemana, segundaSemana] = dadosPlano.treino?.progressao ?? [];
+  const porQue = dadosPlano.porQue ?? [];
   const proteinaPorRefeicao =
     refeicoes.length > 0 ? Math.round(macros.proteinas / refeicoes.length) : 0;
   const passos: { simbolo: SFSymbol; cor: string; rotulo: string; texto: string }[] = [
@@ -301,8 +312,19 @@ export default function TelaResultadoQuestionario() {
       simbolo: 'dumbbell.fill' as SFSymbol,
       cor: cores.texto,
       rotulo: dia.nome,
-      texto: `${dia.exercicios.length} exercícios`,
+      texto: resumirDia(dia),
     })),
+    // Plano antigo não tem progressão: o passo só aparece quando ela existe (RN19).
+    ...(primeiraSemana && segundaSemana
+      ? [
+          {
+            simbolo: 'chart.line.uptrend.xyaxis' as SFSymbol,
+            cor: cores.texto,
+            rotulo: `Semana 1 · ${primeiraSemana.titulo}`,
+            texto: `${primeiraSemana.orientacao} Na semana 2: ${segundaSemana.titulo.toLowerCase()}.`,
+          },
+        ]
+      : []),
     {
       simbolo: 'drop.fill',
       cor: CoresMacros.agua,
@@ -429,6 +451,19 @@ export default function TelaResultadoQuestionario() {
             </View>
           ))}
         </View>
+
+        {porQue.length > 0 ? (
+          <View style={estilos.card}>
+            <Text style={estilos.tituloCard} accessibilityRole="header">
+              Por que este plano
+            </Text>
+            {porQue.map((frase) => (
+              <Text key={frase} style={[estilos.passoTexto, estilos.frasePorQue]}>
+                {frase}
+              </Text>
+            ))}
+          </View>
+        ) : null}
 
         {/* Justificativas da base de conhecimento */}
         {fundamentos.length > 0 || comentarios.length > 0 ? (
@@ -632,6 +667,7 @@ const criarEstilos = (cores: CoresTema) =>
     },
 
     porque: { paddingVertical: Espacamento.sm },
+    frasePorQue: { paddingVertical: Espacamento.xs, lineHeight: 21 },
     porqueSeparado: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: cores.separador },
     fonte: { minHeight: 28, justifyContent: 'center', alignSelf: 'flex-start' },
     fonteTexto: {

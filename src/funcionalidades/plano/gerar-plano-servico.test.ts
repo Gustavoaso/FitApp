@@ -4,9 +4,10 @@ import { ErroGeracao, gerarPlano, MENSAGEM_FALHA, MENSAGEM_LIMITE } from './gera
 import { MENSAGEM_PROFISSIONAL } from './motor/travas-saude';
 import { MENSAGEM_OLLAMA_FORA } from './ollama-cliente';
 
-jest.mock('@/compartilhado/supabase', () => ({ supabase: { rpc: jest.fn() } }));
+jest.mock('@/compartilhado/supabase', () => ({ supabase: { rpc: jest.fn(), from: jest.fn() } }));
 
 const rpc = supabase.rpc as jest.Mock;
+const from = supabase.from as jest.Mock;
 
 // Dados fictícios. Nomes de grupo como estão na base (traduzidos do free-exercise-db).
 const GRUPOS_BASE = [
@@ -167,6 +168,47 @@ beforeEach(() => {
 afterEach(() => jest.restoreAllMocks());
 
 describe('gerarPlano com o Ollama simulado', () => {
+  it('RN19: nomes pelo foco, prescrição, aquecimento, progressão, refeições e por quê', async () => {
+    // Porção caseira só do arroz (id 2): os outros alimentos ficam só em gramas.
+    from.mockReturnValue({
+      select: () => ({
+        in: async () => ({
+          data: [{ id: 2, porcao_descricao: '4 colheres de sopa', porcao_gramas: 100 }],
+          error: null,
+        }),
+      }),
+    });
+    simularOllama([VALIDA]);
+    const { plano } = await gerarPlano({
+      ...RESPOSTAS,
+      dieta: { ...RESPOSTAS.dieta, refeicoes_por_dia: 5 },
+    });
+
+    const [dia] = plano.treino.dias;
+    expect(dia.nome).not.toMatch(/^Treino|^Superior$/);
+    expect(dia.aquecimento?.length).toBeGreaterThanOrEqual(3);
+    expect(dia.exercicios[0]).toMatchObject({ papel: 'principal', repeticoesReserva: 2 });
+    expect(plano.treino.dias.map((d) => d.diaSemana)).toEqual([1, 2, 4, 5]);
+    expect(plano.treino.progressao).toHaveLength(4);
+    expect(plano.treino.inicioEm).toEqual(expect.any(String));
+    expect(plano.dieta.refeicoes).toHaveLength(5);
+    expect(plano.dieta.refeicoes.find((r) => r.momentoTreino === 'pos')?.nome).toBe('Jantar');
+    const arroz = plano.dieta.refeicoes[0].alimentos.find((a) => a.nome === 'Arroz cozido');
+    expect(arroz?.medidaCaseira).toMatch(/^cerca de .* colheres de sopa$/);
+    expect(plano.porQue?.join(' ')).toContain('Schoenfeld 2017');
+  });
+
+  it('sem as porções da base, o plano sai só com gramas', async () => {
+    from.mockImplementation(() => {
+      throw new Error('fora do ar');
+    });
+    simularOllama([VALIDA]);
+    const { plano } = await gerarPlano(RESPOSTAS);
+    expect(plano.dieta.refeicoes.flatMap((r) => r.alimentos).every((a) => !a.medidaCaseira)).toBe(
+      true,
+    );
+  });
+
   it('sucesso: gera, salva pela RPC e o prompt não leva o nome', async () => {
     const fetchMock = simularOllama([VALIDA]);
     const { plano, planoIaId } = await gerarPlano(RESPOSTAS);

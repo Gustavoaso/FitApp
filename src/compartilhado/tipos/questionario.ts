@@ -75,6 +75,19 @@ export interface ExercicioPlanoIA {
   repeticoes: number | string;
   descansoSegundos: number;
   grupoMuscular?: string;
+  /** RN19: repetições que sobram ao fim de cada série (esforço alvo). */
+  repeticoesReserva?: number;
+  /** RN19: lugar do exercício na sessão; define a faixa e o descanso. */
+  papel?: PapelExercicio;
+}
+
+export type PapelExercicio = 'principal' | 'acessorio' | 'isolado';
+
+/** Uma semana do ciclo de 4 semanas de dupla progressão (RN19). */
+export interface SemanaProgressao {
+  semana: number;
+  titulo: string;
+  orientacao: string;
 }
 
 /** Dia de treino no plano gerado pela IA */
@@ -83,6 +96,8 @@ export interface DiaTreinoIA {
   nome: string;
   tipo?: 'treino' | 'descanso';
   exercicios: ExercicioPlanoIA[];
+  /** RN19: passos do aquecimento do dia. Ausente em plano antigo. */
+  aquecimento?: string[];
 }
 
 /** Alimento dentro de uma refeição no plano gerado pela IA */
@@ -94,6 +109,16 @@ export interface AlimentoPlanoIA {
   proteinas?: number;
   carboidratos?: number;
   gorduras?: number;
+  /** RN19: a porção em medida caseira ("cerca de 6 colheres de sopa"), quando a base tem. */
+  medidaCaseira?: string;
+  /** RN19: troca equivalente no macro principal do alimento. */
+  substituicao?: SubstituicaoAlimento;
+}
+
+export interface SubstituicaoAlimento {
+  nome: string;
+  porcao: string;
+  medidaCaseira?: string;
 }
 
 /** Refeição no plano gerado pela IA */
@@ -101,6 +126,9 @@ export interface RefeicaoPlanoIA {
   nome: string;
   horario: string;
   alimentos: AlimentoPlanoIA[];
+  /** RN19: refeição que fica antes ou depois do treino nos dias de treino. */
+  momentoTreino?: 'pre' | 'pos';
+  orientacao?: string;
 }
 
 /** Estrutura completa do plano gerado pela IA (Gemini) */
@@ -109,11 +137,16 @@ export interface PlanoIAGerado {
   treino: {
     nomeDivisao: string;
     dias: DiaTreinoIA[];
+    /** RN19: ciclo de 4 semanas e o dia em que ele começou (ISO). Ausentes em plano antigo. */
+    progressao?: SemanaProgressao[];
+    inicioEm?: string;
   };
   dieta: {
     refeicoes: RefeicaoPlanoIA[];
   };
   comentarios?: string[];
+  /** RN19: 3 a 5 frases que ligam o plano às respostas da pessoa. */
+  porQue?: string[];
   /** Trechos da base_conhecimento que embasaram o plano (justificativa + fonte). */
   fundamentos?: FundamentoPlano[];
   /** Grupos que ficaram fora do treino por falta de exercício possível. */

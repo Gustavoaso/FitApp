@@ -1,0 +1,62 @@
+# Avaliação dos planos: 2026-11-15
+
+Modelo llama3.2 (embeddings mxbai-embed-large), Ollama e Supabase locais, 8 perfis fictícios em sequência.
+**7 de 8 aprovados.** Reprovado = o plano saiu, mas a reconferência achou problema; falhou = o serviço não entregou plano.
+Tempo médio (planos entregues): 27 s. Limite do app 180 s; meta 60 s.
+
+| Perfil | Situação | Tempo | Plano |
+|---|---|---|---|
+| Iniciante em casa | aprovado | 93 s | Empurrar / Puxar / Pernas; 3 dias, 13 exercícios; 2303 kcal; 3 fundamentos |
+| Avançado 6x | aprovado | 19 s | Empurrar / Puxar / Pernas; 6 dias, 36 exercícios; 3134 kcal; 3 fundamentos |
+| Mulher 50+ emagrecimento | aprovado | 13 s | Empurrar / Puxar / Pernas; 3 dias, 13 exercícios; 1476 kcal; 3 fundamentos |
+| Vegano | falhou | 28 s | - |
+| Sem lactose | aprovado | 17 s | Superior / Inferior; 4 dias, 20 exercícios; 2625 kcal; 3 fundamentos |
+| 2x por semana | aprovado | 13 s | Superior / Inferior; 2 dias, 10 exercícios; 1917 kcal; 3 fundamentos |
+| Restrição no joelho | aprovado | 19 s | Empurrar / Puxar / Pernas; 3 dias, 13 exercícios; 1722 kcal; 3 fundamentos |
+| Peso do corpo intermediário | aprovado | 16 s | Superior / Inferior; 4 dias, 12 exercícios; 1967 kcal; 3 fundamentos |
+
+## Detalhes
+
+### Iniciante em casa
+- Levou 93 s: acima da meta de 60 s.
+- Exemplo de treino: Peito, ombros e tríceps. Supino com Halteres 3x6-10, 120s, 3 na reserva; Elevação Frontal com Halteres 3x6-10, 120s, 3 na reserva; Supino Inclinado com Halteres 3x8-12, 90s, 3 na reserva; Tríceps Coice com Halter 3x8-12, 90s, 3 na reserva.
+- Exemplo de refeição: Jantar (20:00). Atum, conserva em óleo 125g (cerca de 1 lata), troca: Frango, coxa, sem pele, cozida 120g; Arroz, tipo 2, cozido 216g (cerca de 8,5 colheres de sopa), troca: Arroz, tipo 1, cozido 215g; Amendoim, grão, cru 17g (cerca de 1/2 punhado), troca: Queijo, mozarela 30g.
+- Por que: Seu objetivo é ganhar massa muscular: a meta é de 2.303 kcal por dia, 209 kcal acima do que você gasta, com 173 g de proteína (2,2 g por kg) divididos em 4 refeições. Você tem 3 dias por semana e treina em casa, com halteres e o que dá para usar sem máquina, então a semana ficou assim: peito, ombros e tríceps, costas e bíceps e pernas e glúteos, sem repetir o mesmo músculo em dias seguidos. Como você está começando, o primeiro exercício de cada dia fica em 6-10 repetições, parando com 3 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. As faixas de repetição, o descanso e a proteína para quem quer ganhar massa muscular seguem Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.
+
+### Avançado 6x
+- Exemplo de treino: Peito, ombros e tríceps A. Supino com Halteres 4x6-10, 120s, 2 na reserva; Desenvolvimento de Ombros com Halteres 4x6-10, 120s, 2 na reserva; Supino Inclinado com Halteres 4x8-12, 90s, 1 na reserva; Elevação Lateral com Halteres 4x8-12, 90s, 1 na reserva; Supino Reto com Barra em Pegada Fechada 4x8-12, 90s, 1 na reserva; Mergulho no Banco 4x8-12, 90s, 1 na reserva.
+- Exemplo de refeição: Jantar (20:00). Pintado, grelhado 142g (cerca de 1,5 filés), troca: Frango, coxa, sem pele, cozida 165g; Pão, trigo, francês 143g (cerca de 3 pãezinhos), troca: Arroz, integral, cozido 325g; Noz, crua 24g (cerca de 5 unidades), troca: Queijo, requeijão, cremoso 40g.
+- Por que: Seu objetivo é ganhar massa muscular: a meta é de 3.134 kcal por dia, 285 kcal acima do que você gasta, com 235 g de proteína (2,8 g por kg) divididos em 4 refeições. Você tem 6 dias por semana e treina na academia, com máquinas, polias e pesos livres, então a semana ficou assim: peito, ombros e tríceps A, costas e bíceps A, pernas e glúteos A, peito, ombros e tríceps B, costas e bíceps B e pernas e glúteos B, sem repetir o mesmo músculo em dias seguidos. Como você treina há mais de 2 anos, o primeiro exercício de cada dia fica em 6-10 repetições, parando com 2 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. As faixas de repetição, o descanso e a proteína para quem quer ganhar massa muscular seguem Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.
+
+### Mulher 50+ emagrecimento
+- Exemplo de treino: Peito, ombros e tríceps. Flexões 3x10-12, 75s, 3 na reserva; Desenvolvimento de Ombros na Máquina de Alavanca 3x10-12, 75s, 3 na reserva; Supino Inclinado com Halteres 3x12-15, 60s, 3 na reserva; Mergulho no Banco 3x12-15, 60s, 3 na reserva.
+- Exemplo de refeição: Jantar (20:00). Frango, peito, sem pele, cozido 92g (cerca de 1 filé), troca: Sardinha, assada 90g; Arroz, tipo 2, cozido 114g (cerca de 4,5 colheres de sopa), troca: Arroz, tipo 1, cozido 115g; Azeite, de oliva, extra virgem 9g (cerca de 1/2 colher de sopa), troca: Queijo, requeijão, cremoso 40g.
+- Por que: Seu objetivo é emagrecer com saúde: a meta é de 1.476 kcal por dia, 369 kcal abaixo do que você gasta, com 129 g de proteína (1,7 g por kg) divididos em 4 refeições. Você tem 3 dias por semana e treina na academia, com máquinas, polias e pesos livres, então a semana ficou assim: peito, ombros e tríceps, costas e bíceps e pernas e glúteos, sem repetir o mesmo músculo em dias seguidos. Como você está começando, o primeiro exercício de cada dia fica em 10-12 repetições, parando com 3 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. As faixas de repetição, o descanso e a proteína para quem quer emagrecer com saúde seguem Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.
+
+### Vegano
+- Não consegui montar um plano válido com as suas respostas. Toque em "Tentar de novo"; se continuar, volte ao questionário e mude os dias de treino ou as restrições.
+- [geracao] recusada duas vezes: ["calorias do dia fora de ±5% da meta (1578 de 1765).","proteinas do dia fora de ±5% da meta (77 de 154).","carboidratos do dia fora de ±5% da meta (192 de 154).","gorduras do dia fora de ±5% da meta (64 de 59)."]
+
+### Sem lactose
+- Exemplo de treino: Peito, costas, ombros e braços A. Supino Inclinado com Halteres 4x3-5, 180s, 2 na reserva; Remada Curvada com Dois Halteres 4x3-5, 180s, 2 na reserva; Desenvolvimento de Ombros com Halteres 3x6-8, 120s, 2 na reserva; Rosca Martelo 3x6-8, 120s, 2 na reserva; Mergulho no Banco 3x6-8, 120s, 2 na reserva.
+- Exemplo de refeição: Jantar (20:00). Frango, inteiro, sem pele, cozido 188g (cerca de 2 porções), troca: Frango, inteiro, sem pele, assado 170g; Maçã, Fuji, com casca, crua 480g (cerca de 3,5 unidades), troca: Manga, Tommy Atkins, crua 500g; Noz, crua 8g (cerca de 1,5 unidades), troca: Castanha-do-Brasil, crua 5g.
+- Por que: Seu objetivo é ficar mais forte: a meta é de 2.625 kcal por dia, 125 kcal acima do que você gasta, com 197 g de proteína (2,2 g por kg) divididos em 4 refeições. Você tem 4 dias por semana e treina na academia, com máquinas, polias e pesos livres, então a semana ficou assim: peito, costas, ombros e braços A, pernas e glúteos A, peito, costas, ombros e braços B e pernas e glúteos B, sem repetir o mesmo músculo em dias seguidos. Como você já tem uma base, o primeiro exercício de cada dia fica em 3-5 repetições, parando com 2 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. O cardápio é sem leite e derivados, como você pediu. As faixas de repetição, o descanso e a proteína para quem quer ficar mais forte seguem Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.
+
+### 2x por semana
+- Exemplo de treino: Peito, costas, ombros e braços. Flexões 3x12-15, 60s, 3 na reserva; Barra Fixa 3x12-15, 60s, 3 na reserva; Crucifixo Inverso 3x15-20, 45s, 3 na reserva; Rosca Concentrada 3x15-20, 45s, 3 na reserva; Mergulho no Banco 3x15-20, 45s, 3 na reserva.
+- Exemplo de refeição: Jantar (20:00). Frango, sobrecoxa, sem pele, assada 64g (cerca de 1/2 sobrecoxa), troca: Frango, inteiro, sem pele, assado 65g; Pão, trigo, forma, integral 120g (cerca de 5 fatias), troca: Pão, trigo, francês 100g; Abacate, cru 14g, troca: Queijo, requeijão, cremoso 5g.
+- Por que: Seu objetivo é ganhar fôlego e disposição: a meta é de 1.917 kcal por dia, o mesmo que você gasta, com 120 g de proteína (1,8 g por kg) divididos em 4 refeições. Você tem 2 dias por semana e treina na academia, com máquinas, polias e pesos livres, então a semana ficou assim: peito, costas, ombros e braços e pernas e glúteos, sem repetir o mesmo músculo em dias seguidos. Como você está começando, o primeiro exercício de cada dia fica em 12-15 repetições, parando com 3 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. As faixas de repetição, o descanso e a proteína para quem quer ganhar fôlego e disposição seguem Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.
+
+### Restrição no joelho
+- Exemplo de treino: Peito, ombros e tríceps. Flexões 3x10-12, 75s, 3 na reserva; Desenvolvimento de Ombros na Máquina de Alavanca 3x10-12, 75s, 3 na reserva; Supino Inclinado com Halteres 3x12-15, 60s, 3 na reserva; Mergulho no Banco 3x12-15, 60s, 3 na reserva.
+- Exemplo de refeição: Jantar (20:00). Sardinha, assada 108g (cerca de 2 unidades), troca: Frango, peito, sem pele, cozido 110g; Cará, cozido 200g (cerca de 2 pedaços), troca: Arroz, tipo 1, cozido 135g; Azeite, de oliva, extra virgem 11g (cerca de 1 colher de sopa), troca: Queijo, requeijão, cremoso 40g.
+- Por que: Seu objetivo é emagrecer com saúde: a meta é de 1.722 kcal por dia, 431 kcal abaixo do que você gasta, com 151 g de proteína (1,6 g por kg) divididos em 4 refeições. Você tem 3 dias por semana e treina na academia, com máquinas, polias e pesos livres, então a semana ficou assim: peito, ombros e tríceps, costas e bíceps e pernas e glúteos, sem repetir o mesmo músculo em dias seguidos. Como você está começando, o primeiro exercício de cada dia fica em 10-12 repetições, parando com 3 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. Você marcou joelho (sem salto, agachamento nem passada): os exercícios de risco para essa região ficaram de fora. As faixas de repetição, o descanso e a proteína para quem quer emagrecer com saúde seguem Aragon AA, Schoenfeld BJ, Wildman R, et al. International Society of Sports Nutrition position stand: diets and body composition. J Int Soc Sports Nutr. 2017;14:16.
+
+### Peso do corpo intermediário
+- Aviso no plano: Não achei exercício de bíceps para o seu equipamento e as suas restrições; o grupo ficou fora do treino.
+- Aviso no plano: Não achei exercício de tríceps para o seu equipamento e as suas restrições; o grupo ficou fora do treino.
+- Aviso no plano: Não achei exercício de glúteos para o seu equipamento e as suas restrições; o grupo ficou fora do treino.
+- Aviso no plano: Não achei exercício de panturrilha para o seu equipamento e as suas restrições; o grupo ficou fora do treino.
+- Exemplo de treino: Peito, costas e ombros A. Flexões 4x12-15, 60s, 2 na reserva; Barra Fixa 4x12-15, 60s, 2 na reserva; Prancha Lateral 3x15-20, 45s, 2 na reserva.
+- Exemplo de refeição: Jantar (20:00). Frango, sobrecoxa, sem pele, assada 84g (cerca de 1 sobrecoxa), troca: Frango, inteiro, sem pele, cozido 100g; Cará, cozido 325g (cerca de 3,5 pedaços), troca: Arroz, tipo 1, cozido 220g; Queijo, requeijão, cremoso 14g (cerca de 1/2 colher de sopa), troca: Abacate, cru 40g.
+- Por que: Seu objetivo é ganhar fôlego e disposição: a meta é de 1.967 kcal por dia, o mesmo que você gasta, com 123 g de proteína (2,1 g por kg) divididos em 4 refeições. Você tem 4 dias por semana e treina em casa, só com o peso do corpo, então a semana ficou assim: peito, costas e ombros A, pernas A, peito, costas e ombros B e pernas B, sem repetir o mesmo músculo em dias seguidos. Como você já tem uma base, o primeiro exercício de cada dia fica em 12-15 repetições, parando com 2 repetições sobrando, e a carga sobe só quando você bater o teto da faixa. As faixas de repetição, o descanso e a proteína para quem quer ganhar fôlego e disposição seguem Kerksick CM, Arent S, Schoenfeld BJ, et al. International Society of Sports Nutrition position stand: nutrient timing. J Int Soc Sports Nutr. 2017;14:33.

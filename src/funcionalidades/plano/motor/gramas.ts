@@ -11,12 +11,15 @@
 
 import type { AlimentoCandidato, MetaDia, NomeRefeicao, SlotAlimento } from './tipos';
 
-// PREMISSA: fração das calorias do dia em cada refeição.
+// PREMISSA: peso de cada refeição nas calorias do dia; a fração real é o peso dividido
+// pela soma das refeições que a pessoa faz (com 4 refeições: 25/35/15/25%).
 export const FRACAO_REFEICAO: Record<NomeRefeicao, number> = {
   cafe: 0.25,
+  lanche_manha: 0.1,
   almoco: 0.35,
   lanche: 0.15,
   jantar: 0.25,
+  ceia: 0.1,
 };
 
 // PREMISSA: porção mínima e máxima de um alimento numa refeição, por slot
@@ -84,8 +87,13 @@ export function conferirTolerancia(total: MetaDia, meta: MetaDia): string[] {
   );
 }
 
-export function metaDaRefeicao(meta: MetaDia, refeicao: NomeRefeicao): MetaDia {
-  const f = FRACAO_REFEICAO[refeicao];
+export function metaDaRefeicao(
+  meta: MetaDia,
+  refeicao: NomeRefeicao,
+  refeicoesDoDia: NomeRefeicao[] = ['cafe', 'almoco', 'lanche', 'jantar'],
+): MetaDia {
+  const soma = refeicoesDoDia.reduce((t, r) => t + FRACAO_REFEICAO[r], 0);
+  const f = FRACAO_REFEICAO[refeicao] / soma;
   return {
     calorias: meta.calorias * f,
     proteinas: meta.proteinas * f,

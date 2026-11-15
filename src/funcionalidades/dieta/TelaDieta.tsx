@@ -12,6 +12,7 @@ import { SymbolView } from 'expo-symbols';
 import { CardVidro, BotaoPrimario, AnelProgresso, TiraSemana } from '@/compartilhado/ui';
 import type { MarcaDia } from '@/compartilhado/ui';
 import { CardRefeicao } from './CardRefeicao';
+import { descreverAlimentoPlanejado, descreverSubstituicao } from './alimento-planejado';
 import { BuscaAlimentosModal } from './BuscaAlimentosModal';
 import {
   CoresTema,
@@ -503,15 +504,24 @@ export default function TelaDieta() {
                           <Text style={estilos.timelineTitulo}>{ref.nome}</Text>
                           <Text style={estilos.timelineSub}>
                             {ref.horario} • {ref.alimentos.length} itens
+                            {ref.momentoTreino
+                              ? ` • ${ref.momentoTreino === 'pre' ? 'Pré-treino' : 'Pós-treino'}`
+                              : ''}
                           </Text>
+                          {ref.orientacao ? (
+                            <Text style={estilos.timelineSub}>{ref.orientacao}</Text>
+                          ) : null}
                           {ref.alimentos.map((alimento, alimentoIndex) => (
-                            <Text
-                              key={`${alimento.nome}-${alimentoIndex}`}
-                              style={estilos.alimentoPlanejado}
-                            >
-                              {alimento.nome} • {alimento.porcao} • {Math.round(alimento.calorias)}{' '}
-                              kcal
-                            </Text>
+                            <View key={`${alimento.nome}-${alimentoIndex}`}>
+                              <Text style={estilos.alimentoPlanejado}>
+                                {descreverAlimentoPlanejado(alimento)}
+                              </Text>
+                              {alimento.substituicao ? (
+                                <Text style={estilos.timelineSub}>
+                                  {descreverSubstituicao(alimento.substituicao)}
+                                </Text>
+                              ) : null}
+                            </View>
                           ))}
                         </View>
                       </View>

@@ -9,6 +9,7 @@
 
 import type {
   EquipamentosDisponiveis,
+  PapelExercicio,
   GrupoMuscular,
   RestricaoAlimentar,
 } from '@/compartilhado/tipos';
@@ -19,6 +20,7 @@ import {
   somarMacros,
   TOLERANCIA,
 } from './gramas';
+import { ordenarSessao } from './prescricao';
 import { REFEICOES, SLOTS } from './schema-prompt';
 import type {
   AlimentoCandidato,
@@ -27,6 +29,7 @@ import type {
   MetaDia,
   NomeRefeicao,
   Prescricao,
+  PrescreverPorPapel,
   SlotAlimento,
   SlotDia,
 } from './tipos';
@@ -40,6 +43,8 @@ export const EQUIPAMENTOS_PERMITIDOS: Record<EquipamentosDisponiveis, Equipament
 export interface Restricoes {
   equipamentos: EquipamentosDisponiveis;
   restricoesAlimentares: RestricaoAlimentar[];
+  /** Refeições do dia (3 a 6); sem ele, as 4 padrão. */
+  refeicoes?: NomeRefeicao[];
 }
 
 function ehObjeto(v: unknown): v is Record<string, unknown> {
@@ -110,7 +115,7 @@ export function validarEscolha(
 
   const alimentoPorId = new Map(alimentos.map((a) => [a.id, a]));
   const exigidas = restricoes.restricoesAlimentares.filter((r) => r !== 'nenhuma');
-  for (const refeicao of REFEICOES) {
+  for (const refeicao of restricoes.refeicoes ?? REFEICOES) {
     const r: unknown = bruta.refeicoes[refeicao];
     for (const slot of SLOTS) {
       const id = ehObjeto(r) ? r[slot] : undefined;
@@ -127,7 +132,11 @@ export function validarEscolha(
 }
 
 export interface PlanoMontado {
-  dias: { nome: string; exercicios: (ExercicioCandidato & Prescricao)[] }[];
+  dias: {
+    nome: string;
+    exercicios: (ExercicioCandidato &
+      Prescricao & { papel: PapelExercicio; repeticoesReserva?: number })[];
+  }[];
   refeicoes: { refeicao: NomeRefeicao; itens: { alimento: AlimentoCandidato; gramas: number }[] }[];
   totalDia: MetaDia;
 }
@@ -185,8 +194,9 @@ export function montarPlano(
   slots: SlotDia[],
   exercicios: ExercicioCandidato[],
   alimentos: AlimentoCandidato[],
-  prescricao: Prescricao,
+  prescricao: Prescricao | PrescreverPorPapel,
   meta: MetaDia,
+  refeicoesDoDia: NomeRefeicao[] = REFEICOES,
 ): { erros: string[]; plano?: PlanoMontado } {
   const exercicioPorId = new Map(exercicios.map((e) => [e.id, e]));
   const alimentoPorId = new Map(alimentos.map((a) => [a.id, a]));
@@ -195,16 +205,21 @@ export function montarPlano(
     const lista = slot.porGrupo.flatMap(({ grupo }) =>
       (escolha.dias[d].exercicios[grupo] ?? []).flatMap((id) => exercicioPorId.get(id) ?? []),
     );
-    // Compostos primeiro; sort é estável, então a ordem dos grupos se mantém.
-    lista.sort((a, b) => Number(b.composto) - Number(a.composto));
-    return { nome: slot.nome, exercicios: lista.map((e) => ({ ...e, ...prescricao })) };
+    // Principais → acessórios → isolados (RN19); a prescrição sai do papel de cada um.
+    return {
+      nome: slot.nome,
+      exercicios: ordenarSessao(lista).map((e) => ({
+        ...e,
+        ...(typeof prescricao === 'function' ? prescricao(e.papel) : prescricao),
+      })),
+    };
   });
 
   const montarRefeicoes = (ajustar: boolean) =>
-    REFEICOES.map((refeicao) => {
-      const metaRefeicao = metaDaRefeicao(meta, refeicao);
+    refeicoesDoDia.map((refeicao) => {
+      const metaRefeicao = metaDaRefeicao(meta, refeicao, refeicoesDoDia);
       let escolhidos = SLOTS.map((s: SlotAlimento) =>
-        alimentoPorId.get(escolha.refeicoes[refeicao][s]),
+        alimentoPorId.get(escolha.refeicoes[refeicao]?.[s] ?? ''),
       ).filter((a): a is AlimentoCandidato => a !== undefined);
       if (ajustar) escolhidos = trocarParaFechar(escolhidos, alimentos, metaRefeicao);
       const gramas = calcularGramas(escolhidos, metaRefeicao);

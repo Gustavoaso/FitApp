@@ -24,11 +24,19 @@ import {
   type LinhaAlimento,
   type LinhaExercicio,
 } from './mapear-plano';
-import { montarDivisaoSemanal, montarSlotsDia, prescrever } from './motor/divisao-semanal';
+import {
+  diasDaSemana,
+  montarDivisaoSemanal,
+  montarSlotsDia,
+  nomearDias,
+} from './motor/divisao-semanal';
+import { nomearRefeicoes } from './motor/dieta-rotina';
+import { montarPorQue } from './motor/por-que';
+import { montarAquecimento, montarProgressao, prescreverPorPapel } from './motor/prescricao';
 import { selecionarExercicios } from './selecionar-exercicios';
-import { montarPrompt, montarSchemaEscolha } from './motor/schema-prompt';
+import { montarPrompt, montarSchemaEscolha, refeicoesDoDia } from './motor/schema-prompt';
 import { MENSAGEM_PROFISSIONAL, verificarTravasSaude } from './motor/travas-saude';
-import type { AlimentoCandidato, ExercicioCandidato } from './motor/tipos';
+import type { AlimentoCandidato, ExercicioCandidato, NomeRefeicao } from './motor/tipos';
 import { montarPlano, validarEscolha } from './motor/validador';
 import { ErroOllama, gerarComSchema, gerarEmbedding, MODELO_GERACAO } from './ollama-cliente';
 
@@ -97,7 +105,31 @@ async function buscarAlimentos(
       (a): a is AlimentoCandidato =>
         a !== null && entrada.restricoes.every((r) => a.restricoesAtendidas.includes(r)),
     );
-  return limitarPor(candidatos, (a) => a.slot, POR_SLOT);
+  return comPorcoes(limitarPor(candidatos, (a) => a.slot, POR_SLOT));
+}
+
+/** Porção típica da base (RN17) para a medida caseira; sem ela o plano só mostra gramas. */
+async function comPorcoes(alimentos: AlimentoCandidato[]): Promise<AlimentoCandidato[]> {
+  try {
+    const { data, error } = await supabase
+      .from('base_alimentos')
+      .select('id, porcao_descricao, porcao_gramas')
+      .in(
+        'id',
+        alimentos.map((a) => Number(a.id)),
+      );
+    if (error) throw error;
+    const porId = new Map((data ?? []).map((l) => [String(l.id), l]));
+    return alimentos.map((a) => {
+      const l = porId.get(a.id);
+      return l?.porcao_descricao && Number(l.porcao_gramas) > 0
+        ? { ...a, porcaoDescricao: l.porcao_descricao, porcaoGramas: Number(l.porcao_gramas) }
+        : a;
+    });
+  } catch (erro) {
+    console.warn('[geracao] porções caseiras indisponíveis:', erro);
+    return alimentos;
+  }
 }
 
 interface Trecho {
@@ -137,6 +169,7 @@ async function escolherComRetry(
   meta: ReturnType<typeof metaDe>,
   diretrizes: string[],
   embedding: string,
+  refeicoes: NomeRefeicao[],
 ) {
   const divisao = montarDivisaoSemanal(entrada.diasPorSemana);
   const [linhas, alimentos] = await Promise.all([
@@ -149,9 +182,11 @@ async function escolherComRetry(
     divisao.map((d) => montarSlotsDia(d, entrada.nivel)),
     POR_GRUPO,
   );
-  const { slots } = selecao;
+  // Nome de cada dia pelo foco que sobrou depois da seleção (RN19).
+  const nomes = nomearDias(selecao.slots.map((s) => s.porGrupo.map((p) => p.grupo)));
+  const slots = selecao.slots.map((s, i) => ({ ...s, nome: nomes[i] }));
   const { apelidados: exercicios, original } = apelidar(selecao.exercicios);
-  const schema = montarSchemaEscolha(slots, exercicios, alimentos);
+  const schema = montarSchemaEscolha(slots, exercicios, alimentos, refeicoes);
   const contexto = {
     objetivo: entrada.objetivo,
     nivel: entrada.nivel,
@@ -163,6 +198,7 @@ async function escolherComRetry(
   const restricoes = {
     equipamentos: entrada.equipamentos,
     restricoesAlimentares: entrada.restricoes,
+    refeicoes,
   };
 
   let erros: string[] = [];
@@ -181,15 +217,30 @@ async function escolherComRetry(
       slots,
       exercicios,
       alimentos,
-      prescrever(entrada.objetivo, entrada.nivel),
+      (papel) => prescreverPorPapel(entrada.objetivo, entrada.nivel, papel),
       meta,
+      refeicoes,
     );
     if (montagem.plano) {
       const dias = montagem.plano.dias.map((d) => ({
         ...d,
         exercicios: d.exercicios.map((e) => ({ ...e, id: original.get(e.id) ?? e.id })),
       }));
-      return { plano: { ...montagem.plano, dias }, divisao, avisos: selecao.avisos };
+      const aquecimentos = montagem.plano.dias.map((d, i) =>
+        montarAquecimento(
+          slots[i].porGrupo.map((p) => p.grupo),
+          d.exercicios[0],
+          entrada.equipamentos,
+          entrada.restricoesFisicas,
+        ),
+      );
+      return {
+        plano: { ...montagem.plano, dias },
+        divisao,
+        avisos: selecao.avisos,
+        aquecimentos,
+        alimentos,
+      };
     }
     erros = montagem.erros;
   }
@@ -232,19 +283,42 @@ export async function montarPlanoGerado(dados: DadosQuestionario): Promise<Plano
 
   const embedding = await embeddingDaConsulta(entrada);
   const trechos = await buscarDiretrizes(entrada, embedding);
-  const { plano, divisao, avisos } = await escolherComRetry(
+  const refeicoes = refeicoesDoDia(Number(dados.dieta?.refeicoes_por_dia));
+  const { plano, divisao, avisos, aquecimentos, alimentos } = await escolherComRetry(
     entrada,
     metaDe(calculo),
     trechos.map((t) => t.conteudo),
     embedding,
+    refeicoes,
   );
   const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
+  const principal = prescreverPorPapel(entrada.objetivo, entrada.nivel, 'principal');
+  const porQue = montarPorQue({
+    ...entrada,
+    caloriasAlvo: calculo.caloriasAlvo,
+    tdee: calculo.tdee,
+    proteinasG: calculo.macros.proteinas,
+    dias: plano.dias.map((d) => d.nome[0].toLowerCase() + d.nome.slice(1)),
+    repeticoesPrincipal: principal.repeticoes,
+    repeticoesReserva: principal.repeticoesReserva,
+    refeicoes: refeicoes.length,
+    fontes: trechos.map((t) => t.fonte),
+  });
   return {
     ...paraPlanoGerado(
       plano,
       calculo,
       nomeDivisao,
       trechos.map((t) => `${t.titulo} (${t.fonte})`),
+      {
+        diasDaSemana: diasDaSemana(plano.dias.length),
+        aquecimentos,
+        refeicoesNomeadas: nomearRefeicoes(refeicoes, entrada.nivelAtividade),
+        alimentos,
+        progressao: montarProgressao(entrada.nivel, entrada.equipamentos),
+        inicioEm: new Date().toISOString(),
+        porQue,
+      },
     ),
     fundamentos: trechos.map(({ titulo, fonte, conteudo }) => ({ titulo, fonte, conteudo })),
     ...(avisos.length > 0 ? { avisos } : {}),
