@@ -32,7 +32,23 @@
           "imageWidth": 240
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "O TreinaAI usa a foto que você escolher para montar a imagem do treino. A foto fica só no seu celular.",
+          "cameraPermission": "O TreinaAI usa a câmera para você tirar a foto do treino. A foto fica só no seu celular.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "O TreinaAI precisa de acesso às Fotos para salvar a imagem do treino.",
+          "savePhotosPermission": "O TreinaAI salva a imagem do treino nas suas Fotos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

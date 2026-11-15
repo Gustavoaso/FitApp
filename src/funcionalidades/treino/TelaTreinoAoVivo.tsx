@@ -56,6 +56,7 @@ import {
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
 import { salvarHistoricoTreino } from '@/compartilhado/servicos/historico-servico';
+import { FimDoTreino } from './FimDoTreino';
 import {
   obterPlanoTreinoCustomizado,
   obterTreinoDeHoje,
@@ -102,6 +103,9 @@ export default function TelaTreinoAoVivo() {
   // Séries feitas de verdade (carga e reps): base da estimativa de kcal da RN20.
   const [seriesExecutadas, setSeriesExecutadas] = useState<SerieExecutada[]>([]);
   const [kcalEstimadas, setKcalEstimadas] = useState<number | null>(null);
+  // RN21: depois do momento de conquista, o resumo com "Registrar com foto".
+  const [duracaoFinal, setDuracaoFinal] = useState(0);
+  const [mostrarFim, setMostrarFim] = useState(false);
 
   // Com séries registradas, sair por engano perderia o treino: pede confirmação.
   const sairDoTreino = () => {
@@ -224,6 +228,7 @@ export default function TelaTreinoAoVivo() {
           series: executadas,
         });
         setKcalEstimadas(kcal);
+        setDuracaoFinal(duracaoMinutos);
         await salvarHistoricoTreino(hoje, {
           idSessao: `sessao-${inicioMs}`,
           data: hoje,
@@ -347,7 +352,17 @@ export default function TelaTreinoAoVivo() {
           />
         </View>
 
-        {concluido ? (
+        {mostrarFim ? (
+          <FimDoTreino
+            resumo={{
+              nomeTreino: tituloTreino,
+              duracaoMinutos: duracaoFinal,
+              series: seriesExecutadas,
+              kcalEstimadas,
+            }}
+            aoConcluir={fecharTreino}
+          />
+        ) : concluido ? (
           <MomentoConquista
             titulo="Treino concluído"
             subtitulo={
@@ -355,7 +370,7 @@ export default function TelaTreinoAoVivo() {
                 ? tituloTreino
                 : `${tituloTreino} · ${formatarKcalEstimada(kcalEstimadas)}`
             }
-            aoTerminar={fecharTreino}
+            aoTerminar={() => setMostrarFim(true)}
           />
         ) : null}
       </KeyboardAvoidingView>

@@ -45,6 +45,7 @@ Fluxo: novo-projeto
 | 20. Validação e correções de funcionamento | Implementada, aguardando o testador | 1 | ver git log |
 | 21. Plano com cara de profissional (RN19) | Implementada, aguardando o testador | 1 | ver git log |
 | 22. Gasto calórico do treino (RN20) | Implementada, aguardando o testador | 1 | ver git log |
+| 23. Foto do treino para compartilhar (RN21) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -183,10 +184,17 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 22 (PREMISSA): MET pela densidade = volume (carga × reps) ÷ minutos ÷ peso. Volume 0 → 3,0; densidade ≥ 4 → 6,0; densidade ≥ 2 com ≥ 50% das séries em compostos → 5,0; senão 3,5. Duração limitada a 180 min; peso fora de 30–300 kg ou ausente → não calcula. Peso = última pesagem registrada (`obterHistoricoPeso`).
 - Etapa 22 (PREMISSA): composto reconhecido pelo nome do exercício (agachamento, terra, supino, remada, desenvolvimento, leg press, puxada, barra fixa, avanço/afundo, stiff, paralela...), porque o tipo `Exercicio` não tem a marca. Alternativa: levar o `composto` do motor para o plano salvo.
 - Etapa 22: duração = tempo total da sessão (com descansos), como a RN20 pede "horas ativas" sem defini-las; texto único `~N kcal (estimativa)` em `formatarKcalEstimada`. Aparece no fim do treino, no card do dia da aba Treino e no cartão "Próxima Sessão" do Início.
+- Etapa 23: depois do `MomentoConquista`, o treino ao vivo abre `FimDoTreino` (modal tela cheia) com o resumo e "Registrar com foto" (câmera), "Escolher da galeria", "Usar cartão sem foto" e "Concluir". Antes o fim saía direto do treino. Câmera negada → aviso e as outras duas opções ficam na tela.
+- Etapa 23: selo em `SeloTreino.tsx` (cores fixas, iguais no claro e no escuro, porque vira imagem); modelos "Coluna" (números grandes empilhados, estilo Strava) e "Faixa" (barra inferior com borda lima). Logo = `assets/images/icon.png` + "TREINA" branco/"AI" lima em Sora (sem ativo novo). Padrão: coluna, 9:16.
+- Etapa 23: exportação por `react-native-view-shot` em 1080×1920 (9:16) ou 1080×1350 (4:5), JPG em arquivo temporário; salvar usa `expo-media-library` (API nova, `Asset.create`) com permissão só de escrita; galeria pelo seletor do iOS (sem permissão de leitura). Nada vai ao servidor.
+- Etapa 23 (PREMISSA): números do selo = duração, volume (carga × reps, some quando 0) e kcal estimada (some quando a RN20 não calcula). A "sequência" da RN21 fica para a etapa 24 (gamificação ainda não existe).
+- Etapa 23: dependências por `npx expo install ... -- --force` (o npm reclamava de `react-dom` × `react` 19.3.0, conflito antigo): expo-image-picker ~58.0.10, expo-media-library ~58.0.14, expo-sharing ~58.0.23, react-native-view-shot 6.1.1. Textos de permissão em português no `app.json`; microfone desligado.
 
 ## Pendências
 
 - Etapa 22: a exibição na aba Treino e no Início não tem teste de tela (só o resumo do fim do treino e o histórico gravado).
+- Etapa 23: câmera, salvar nas Fotos e a folha de compartilhar não foram vistas no simulador (o simulador não tem câmera; conferir em aparelho). Incluir a sequência no selo quando a etapa 24 existir.
+- `expo-doctor`: `expo` 58.0.21 (pede ~58.0.25) e `react-native-safe-area-context` 5.10.1 (pede ~5.11.1), já antes da etapa 23.
 
 - 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.
 - Não verificado: excluir conta e cadastro novo ponta a ponta (Edge Functions e e-mail não rodam no local); momento de conquista visto no simulador; teclado da carga e texto XXL depois de ab8de6d; erro de rede; VoiceOver real.
