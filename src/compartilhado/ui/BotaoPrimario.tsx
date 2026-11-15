@@ -7,9 +7,13 @@
 
 import React from 'react';
 import { Pressable, Text, StyleSheet, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
+import Animated from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { usePressao } from '@/compartilhado/movimento';
 import { Raio, Espacamento, FamiliaFonte, PesoFonte, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+
+const PressableAnimado = Animated.createAnimatedComponent(Pressable);
 
 interface BotaoPrimarioProps {
   texto: string;
@@ -31,6 +35,7 @@ export function BotaoPrimario({
   variante = 'primario',
 }: BotaoPrimarioProps) {
   const { cores, escuro } = useTema();
+  const pressao = usePressao();
   const estaDesabilitado = desabilitado || carregando;
   const primario = variante === 'primario';
   const corTexto = primario ? cores.textoSobreDestaque : cores.texto;
@@ -42,22 +47,24 @@ export function BotaoPrimario({
   };
 
   return (
-    <Pressable
+    <PressableAnimado
       onPress={lidarComPressionar}
+      onPressIn={pressao.aoPressionarDentro}
+      onPressOut={pressao.aoPressionarFora}
       disabled={estaDesabilitado}
       accessibilityRole="button"
       accessibilityLabel={texto}
       accessibilityState={{ disabled: estaDesabilitado, busy: carregando }}
-      style={({ pressed }) => [
+      style={[
         estilos.container,
         primario && { backgroundColor: cores.destaque },
         primario && !estaDesabilitado && escuro && estilos.brilho,
         primario && !estaDesabilitado && escuro && { shadowColor: cores.destaque },
         variante === 'ghost' && { backgroundColor: cores.destaqueSuave },
         variante === 'outline' && { borderWidth: 1, borderColor: cores.separador },
-        pressed && !estaDesabilitado && estilos.pressionado,
         estaDesabilitado && estilos.desabilitado,
         estilo,
+        pressao.estilo,
       ]}
     >
       {carregando ? (
@@ -65,7 +72,7 @@ export function BotaoPrimario({
       ) : (
         <Text style={[estilos.texto, { color: corTexto }, estiloTexto]}>{texto}</Text>
       )}
-    </Pressable>
+    </PressableAnimado>
   );
 }
 
@@ -89,10 +96,6 @@ const estilos = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: Espacamento.lg,
     shadowOffset: { width: 0, height: Espacamento.xs },
-  },
-  pressionado: {
-    transform: [{ scale: 0.97 }],
-    opacity: 0.85,
   },
   desabilitado: {
     opacity: 0.4,

@@ -20,6 +20,7 @@ import {
   type CoresTema,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { Entrada } from '@/compartilhado/movimento';
 import {
   MODOS,
   normalizarCodigo,
@@ -235,27 +236,28 @@ export default function TelaGrupos() {
             />
           ) : null}
 
-          {grupos.map((g) => (
-            <Pressable
-              key={g.id}
-              accessibilityRole="button"
-              accessibilityLabel={`${g.nome}, ${g.membros} ${g.membros === 1 ? 'membro' : 'membros'}${g.encerrado ? ', encerrado' : ''}`}
-              onPress={() => router.push(`/grupos/${g.id}`)}
-            >
-              <CardVidro>
-                <View style={estilos.linha}>
-                  <View style={estilos.flex}>
-                    <Text style={estilos.titulo}>{g.nome}</Text>
-                    <Text style={estilos.texto}>
-                      {g.membros} {g.membros === 1 ? 'membro' : 'membros'} ·{' '}
-                      {MODOS.find((m) => m.valor === g.modo)?.rotulo}
-                      {g.encerrado ? ' · Encerrado' : ''}
-                    </Text>
+          {grupos.map((g, i) => (
+            <Entrada key={g.id} indice={i}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${g.nome}, ${g.membros} ${g.membros === 1 ? 'membro' : 'membros'}${g.encerrado ? ', encerrado' : ''}`}
+                onPress={() => router.push(`/grupos/${g.id}`)}
+              >
+                <CardVidro>
+                  <View style={estilos.linha}>
+                    <View style={estilos.flex}>
+                      <Text style={estilos.titulo}>{g.nome}</Text>
+                      <Text style={estilos.texto}>
+                        {g.membros} {g.membros === 1 ? 'membro' : 'membros'} ·{' '}
+                        {MODOS.find((m) => m.valor === g.modo)?.rotulo}
+                        {g.encerrado ? ' · Encerrado' : ''}
+                      </Text>
+                    </View>
+                    <SymbolView name="chevron.right" size={16} tintColor={cores.textoSecundario} />
                   </View>
-                  <SymbolView name="chevron.right" size={16} tintColor={cores.textoSecundario} />
-                </View>
-              </CardVidro>
-            </Pressable>
+                </CardVidro>
+              </Pressable>
+            </Entrada>
           ))}
         </>
       )}

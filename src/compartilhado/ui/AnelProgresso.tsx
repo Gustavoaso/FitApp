@@ -8,8 +8,12 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import Animated, { useAnimatedProps } from 'react-native-reanimated';
+import { NumeroContado, useValorMola } from '@/compartilhado/movimento';
 import { FamiliaFonte, PesoFonte, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+
+const CirculoAnimado = Animated.createAnimatedComponent(Circle);
 
 export interface PropsAnelProgresso {
   titulo?: string;
@@ -39,7 +43,10 @@ export function AnelProgresso({
   const raio = (tamanho - espessura) / 2;
   const circunferencia = 2 * Math.PI * raio;
   const porcentagem = Math.min(Math.max(atual / (meta || 1), 0), 1);
-  const strokeDashoffset = circunferencia * (1 - porcentagem);
+  const progresso = useValorMola(porcentagem);
+  const propsAnimadas = useAnimatedProps(() => ({
+    strokeDashoffset: circunferencia * (1 - progresso.value),
+  }));
 
   const { cores } = useTema();
   const corStroke = cor || cores.destaque;
@@ -76,14 +83,14 @@ export function AnelProgresso({
           />
 
           {/* Progresso ativo */}
-          <Circle
+          <CirculoAnimado
+            animatedProps={propsAnimadas}
             cx={tamanho / 2}
             cy={tamanho / 2}
             r={raio}
             stroke={corStroke}
             strokeWidth={espessura}
             strokeDasharray={circunferencia}
-            strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
             fill="transparent"
             transform={`rotate(-90 ${tamanho / 2} ${tamanho / 2})`}
@@ -93,19 +100,16 @@ export function AnelProgresso({
         {/* Valor Central */}
         {mostrarValor && (
           <View style={[estilos.valorCentralContainer, { width: tamanho - 2 * espessura - 4 }]}>
-            <Text
-              style={[
+            <NumeroContado
+              valor={atual}
+              estilo={[
                 estilos.valorTexto,
                 {
                   fontSize: tamanho > 80 ? Tipografia.titulo3 : Tipografia.legenda,
                   color: cores.texto,
                 },
               ]}
-              numberOfLines={1}
-              adjustsFontSizeToFit
-            >
-              {atual}
-            </Text>
+            />
           </View>
         )}
       </View>

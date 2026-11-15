@@ -35,6 +35,7 @@ import {
   Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { Entrada, NumeroContado, PreenchimentoMola } from '@/compartilhado/movimento';
 import {
   obterHistoricoPeso,
   adicionarEntradaPeso,
@@ -261,7 +262,7 @@ export default function TelaInicio() {
         </View>
 
         {/* ── Card Principal: Calorias (Rodada 5 — Ajuste 3: Somente visualização) ── */}
-        <View>
+        <Entrada indice={0}>
           <CardVidro semBorda estilo={estilos.cardCalorias}>
             <View style={estilos.rowCalorias}>
               {/* Não encolhe com a coluna ao lado; com texto grande, o "restam" quebra linha. */}
@@ -277,17 +278,24 @@ export default function TelaInicio() {
 
               <View style={estilos.colInfoCalorias}>
                 <Text style={estilos.labelCalorias}>Calorias hoje</Text>
-                <Text style={estilos.valorCalorias}>{caloriasConsumidas.toLocaleString()}</Text>
+                <NumeroContado
+                  valor={caloriasConsumidas}
+                  formatar={(n) => n.toLocaleString()}
+                  estilo={estilos.valorCalorias}
+                />
                 <Text style={estilos.metaCalorias}>meta {caloriasMeta.toLocaleString()} kcal</Text>
 
                 <View style={estilos.barraFundo}>
-                  <View style={[estilos.barraProgresso, { width: `${porcentagemCalorias}%` }]} />
+                  <PreenchimentoMola
+                    estilo={estilos.barraProgresso}
+                    percentual={Math.min(porcentagemCalorias, 100)}
+                  />
                 </View>
                 <Text style={estilos.textoPorcentagem}>{porcentagemCalorias}% concluído</Text>
               </View>
             </View>
           </CardVidro>
-        </View>
+        </Entrada>
 
         {/* ── Macronutrientes (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <Text style={estilos.secaoTitulo}>Macronutrientes</Text>
@@ -319,18 +327,16 @@ export default function TelaInicio() {
                   <Text style={estilos.macroNome}>{macro.nome}</Text>
                 </View>
                 <Text style={estilos.macroValor}>
-                  {macro.atual}
+                  <NumeroContado valor={macro.atual} />
                   <Text style={estilos.macroUnidade}>g</Text>
                 </Text>
                 <View style={estilos.barraFundoMacro}>
-                  <View
-                    style={[
-                      estilos.barraProgressoMacro,
-                      // Sem meta, barra vazia (antes x/0 = Infinity enchia a barra).
-                      {
-                        width: `${macro.meta > 0 ? Math.min((macro.atual / macro.meta) * 100, 100) : 0}%`,
-                      },
-                    ]}
+                  {/* Sem meta, barra vazia (antes x/0 = Infinity enchia a barra). */}
+                  <PreenchimentoMola
+                    estilo={estilos.barraProgressoMacro}
+                    percentual={
+                      macro.meta > 0 ? Math.min((macro.atual / macro.meta) * 100, 100) : 0
+                    }
                   />
                 </View>
                 <Text style={estilos.macroMeta}>/{macro.meta}g</Text>

@@ -26,6 +26,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
+import Animated from 'react-native-reanimated';
+import { useQuique } from '@/compartilhado/movimento';
 import {
   CardVidro,
   BotaoPrimario,
@@ -99,6 +101,7 @@ export default function TelaTreinoAoVivo() {
   const [inicioMs] = useState(() => Date.now());
   const [exerciciosFeitos, setExerciciosFeitos] = useState(0);
   const [indexExercicio, setIndexExercicio] = useState(0);
+  const quiqueSerie = useQuique(1.06);
   const [serieAtual, setSerieAtual] = useState(1);
   const [cargaUsada, setCargaUsada] = useState('');
   const [tempoRestante, setTempoRestante] = useState(90);
@@ -200,6 +203,7 @@ export default function TelaTreinoAoVivo() {
   // Rodada 3 — Ajuste 1: Conclui a série e registra automaticamente no progressoServico
   const concluirSerie = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    quiqueSerie.quicar();
 
     const cargaFinal = parseFloat(cargaUsada) || exAtual.cargaSugerida;
     const repeticoes = repeticoesAlvo(exAtual.reps);
@@ -309,12 +313,14 @@ export default function TelaTreinoAoVivo() {
         </View>
 
         {/* Card da Série Atual */}
-        <CardVidro semBorda estilo={estilos.cardSerie}>
-          <Text style={estilos.serieDetalhes}>
-            Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
-            {descreverSerie(exAtual.cargaSugerida, exAtual.reps)}
-          </Text>
-        </CardVidro>
+        <Animated.View style={quiqueSerie.estilo}>
+          <CardVidro semBorda estilo={estilos.cardSerie}>
+            <Text style={estilos.serieDetalhes}>
+              Série <Text style={estilos.destaque}>{serieAtual}</Text> de {exAtual.series} ·{' '}
+              {descreverSerie(exAtual.cargaSugerida, exAtual.reps)}
+            </Text>
+          </CardVidro>
+        </Animated.View>
 
         {/* Timer de Descanso Circular */}
         <View style={estilos.timerContainer}>

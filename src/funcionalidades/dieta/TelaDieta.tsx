@@ -24,6 +24,7 @@ import {
   Tipografia,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { Entrada } from '@/compartilhado/movimento';
 import { gerarSemana } from '@/compartilhado/utilidades/semana';
 import {
   obterHistoricoDieta,
@@ -547,20 +548,21 @@ export default function TelaDieta() {
               </Text>
             </View>
 
-            {refeicoes.map((ref) => (
-              <CardRefeicao
-                key={ref.id}
-                nome={ref.nome}
-                horario={ref.horario}
-                alimentos={ref.alimentos}
-                expandido={refeicaoExpandidaId === ref.id}
-                onAdicionar={() => abrirBuscaNaRefeicao(ref.nome)}
-                onAlternarExpandir={() =>
-                  setRefeicaoExpandidaId((prev) => (prev === ref.id ? null : ref.id))
-                }
-                onCopiarDe={() => lidarComCopiarRefeicao(ref.nome)}
-                onEditar={() => abrirBuscaNaRefeicao(ref.nome)}
-              />
+            {refeicoes.map((ref, i) => (
+              <Entrada key={ref.id} indice={i}>
+                <CardRefeicao
+                  nome={ref.nome}
+                  horario={ref.horario}
+                  alimentos={ref.alimentos}
+                  expandido={refeicaoExpandidaId === ref.id}
+                  onAdicionar={() => abrirBuscaNaRefeicao(ref.nome)}
+                  onAlternarExpandir={() =>
+                    setRefeicaoExpandidaId((prev) => (prev === ref.id ? null : ref.id))
+                  }
+                  onCopiarDe={() => lidarComCopiarRefeicao(ref.nome)}
+                  onEditar={() => abrirBuscaNaRefeicao(ref.nome)}
+                />
+              </Entrada>
             ))}
           </View>
         )}

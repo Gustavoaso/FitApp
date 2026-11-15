@@ -19,6 +19,7 @@ import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import { Espacamento, FamiliaFonte, PesoFonte, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { MOLAS } from '@/compartilhado/movimento';
 
 /** Tempo na tela antes de seguir (ms): o bastante para ler o título. */
 export const DURACAO_CONQUISTA = 1500;
@@ -51,7 +52,7 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    if (!reduzirMovimento) escala.value = withSpring(1, { damping: 12, stiffness: 180 });
+    if (!reduzirMovimento) escala.value = withSpring(1, MOLAS.celebracao);
     const espera = setTimeout(() => terminarRef.current(), DURACAO_CONQUISTA);
     return () => clearTimeout(espera);
   }, [reduzirMovimento, escala]);

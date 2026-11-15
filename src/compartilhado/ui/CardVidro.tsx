@@ -9,6 +9,7 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Espacamento, Raio, RAIO_CARTAO } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { Entrada } from '@/compartilhado/movimento';
 
 interface CardVidroProps {
   children: React.ReactNode;
@@ -20,6 +21,8 @@ interface CardVidroProps {
   semBorda?: boolean;
   /** Resumo lido pelo VoiceOver; agrupa o card num elemento só. */
   rotuloAcessibilidade?: string;
+  /** Posição na lista: se informada, o card entra em cascata (RN25). */
+  entrada?: number;
 }
 
 export function CardVidro({
@@ -29,10 +32,11 @@ export function CardVidro({
   raio,
   semBorda = false,
   rotuloAcessibilidade,
+  entrada,
 }: CardVidroProps) {
   const { cores } = useTema();
 
-  return (
+  const card = (
     <View
       accessible={rotuloAcessibilidade ? true : undefined}
       accessibilityLabel={rotuloAcessibilidade}
@@ -51,6 +55,7 @@ export function CardVidro({
       {children}
     </View>
   );
+  return entrada === undefined ? card : <Entrada indice={entrada}>{card}</Entrada>;
 }
 
 const estilos = StyleSheet.create({

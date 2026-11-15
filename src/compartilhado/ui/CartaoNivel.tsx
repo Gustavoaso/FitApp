@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Espacamento, FamiliaFonte, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { NumeroContado } from '@/compartilhado/movimento';
 import {
   formatarSemanas,
   progressoNivel,
@@ -28,7 +29,9 @@ export function CartaoNivel({ resumo }: { resumo: ResumoGamificacao }) {
           <Text style={[estilos.nivel, { color: cores.texto }]}>Nível {resumo.nivel}</Text>
           <Text style={[estilos.nome, { color: cores.destaqueTexto }]}>{resumo.nomeNivel}</Text>
         </View>
-        <Text style={[estilos.xp, { color: cores.texto }]}>{resumo.xp} XP</Text>
+        <Text style={[estilos.xp, { color: cores.texto }]}>
+          <NumeroContado valor={resumo.xp} formatar={(n) => `${n} XP`} />
+        </Text>
       </View>
       <View style={[estilos.trilho, { backgroundColor: cores.separador }]}>
         <View style={[estilos.preenchido, { width: `${pct}%`, backgroundColor: cores.destaque }]} />

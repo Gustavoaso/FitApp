@@ -1,6 +1,17 @@
 // Detalhe do grupo (RN23): ranking com pódio, feed de check-ins, convite e gestão.
-import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, ScrollView, Share, StyleSheet, Switch, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+  type StyleProp,
+  type TextStyle,
+} from 'react-native';
+import Animated from 'react-native-reanimated';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { BotaoPrimario, CardVidro, EstadoErro, Skeleton } from '@/compartilhado/ui';
 import {
@@ -11,6 +22,7 @@ import {
   type CoresTema,
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+import { Entrada, useQuique } from '@/compartilhado/movimento';
 import {
   mensagemConvite,
   valorDoModo,
@@ -28,7 +40,28 @@ import {
   sairDoGrupo,
 } from './grupos-servico';
 
-const MEDALHAS = ['1º', '2º', '3º'];
+/** Posição no ranking; o pódio (1º ao 3º) dá um quique leve ao entrar (celebração). */
+function PosicaoRanking({
+  posicao,
+  estilo,
+  cor,
+}: {
+  posicao: number;
+  estilo: StyleProp<TextStyle>;
+  cor: string;
+}) {
+  const { estilo: animado, quicar } = useQuique(1.25);
+  useEffect(() => {
+    if (posicao <= 3) quicar();
+    // quicar só na entrada.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return (
+    <Animated.Text style={[estilo, posicao <= 3 && { color: cor }, animado]}>
+      {posicao}º
+    </Animated.Text>
+  );
+}
 
 export default function TelaGrupo() {
   const { cores } = useTema();
@@ -110,10 +143,12 @@ export default function TelaGrupo() {
       </Text>
       <CardVidro padding="md">
         {ranking.map((l) => (
-          <View key={l.membroId} style={estilos.linha}>
-            <Text style={[estilos.posicao, l.posicao <= 3 && { color: cores.destaqueTexto }]}>
-              {MEDALHAS[l.posicao - 1] ?? `${l.posicao}º`}
-            </Text>
+          <Entrada key={l.membroId} indice={l.posicao - 1} estilo={estilos.linha}>
+            <PosicaoRanking
+              posicao={l.posicao}
+              estilo={estilos.posicao}
+              cor={cores.destaqueTexto}
+            />
             <Text style={[estilos.apelido, l.ehVoce && { color: cores.destaqueTexto }]}>
               {l.apelido}
               {l.ehVoce ? ' (você)' : ''}
@@ -136,7 +171,7 @@ export default function TelaGrupo() {
                 Remover
               </Text>
             ) : null}
-          </View>
+          </Entrada>
         ))}
       </CardVidro>
 

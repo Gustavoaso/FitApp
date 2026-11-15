@@ -1,9 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { usePressao } from '@/compartilhado/movimento';
 import { SymbolView, type SFSymbol } from 'expo-symbols';
 import { Espacamento, FamiliaFonte, RAIO_CARTAO, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
+
+const PressableAnimado = Animated.createAnimatedComponent(Pressable);
 
 interface Props {
   titulo: string;
@@ -25,8 +29,11 @@ export function CartaoOpcao({
   aoPressionar,
 }: Props) {
   const { cores } = useTema();
+  const pressao = usePressao();
   return (
-    <Pressable
+    <PressableAnimado
+      onPressIn={pressao.aoPressionarDentro}
+      onPressOut={pressao.aoPressionarFora}
       accessibilityRole="radio"
       accessibilityLabel={titulo}
       accessibilityHint={descricao}
@@ -35,14 +42,14 @@ export function CartaoOpcao({
         Haptics.selectionAsync();
         aoPressionar();
       }}
-      style={({ pressed }) => [
+      style={[
         estilos.cartao,
         {
           backgroundColor: cores.superficie,
           borderColor: selecionado ? cores.destaque : cores.separador,
         },
         selecionado && { backgroundColor: cores.destaqueSuave },
-        pressed && estilos.pressionado,
+        pressao.estilo,
       ]}
     >
       <View style={[estilos.marca, { backgroundColor: cores.elevada }]}>
@@ -61,7 +68,7 @@ export function CartaoOpcao({
       {selecionado ? (
         <SymbolView name="checkmark.circle.fill" size={24} tintColor={cores.destaqueTexto} />
       ) : null}
-    </Pressable>
+    </PressableAnimado>
   );
 }
 
@@ -76,7 +83,6 @@ const estilos = StyleSheet.create({
     borderRadius: RAIO_CARTAO,
     borderWidth: 2,
   },
-  pressionado: { opacity: 0.85 },
   marca: {
     width: 44,
     height: 44,

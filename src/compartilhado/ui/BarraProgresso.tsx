@@ -1,12 +1,18 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { FamiliaFonte, Tipografia } from '@/compartilhado/tema';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import { useTema } from '@/compartilhado/useTema';
+import { NumeroContado, useValorMola } from '@/compartilhado/movimento';
 
 /** Percentual grande + barra fina. `valor` de 0 a 100. */
 export function BarraProgresso({ valor, cor }: { valor: number; cor: string }) {
   const { cores } = useTema();
   const v = Math.max(0, Math.min(100, valor));
+  const largura = useValorMola(v);
+  const estiloPreenchido = useAnimatedStyle(() => ({
+    width: `${Math.min(Math.max(largura.value, 0), 100)}%`,
+  }));
   return (
     <View
       accessible
@@ -15,9 +21,13 @@ export function BarraProgresso({ valor, cor }: { valor: number; cor: string }) {
       accessibilityValue={{ min: 0, max: 100, now: v }}
       style={estilos.caixa}
     >
-      <Text style={[estilos.pct, { color: cores.texto }]}>{v}%</Text>
+      <NumeroContado
+        valor={v}
+        formatar={(n) => `${n}%`}
+        estilo={[estilos.pct, { color: cores.texto }]}
+      />
       <View style={[estilos.trilho, { backgroundColor: cores.separador }]}>
-        <View style={[estilos.preenchido, { width: `${v}%`, backgroundColor: cor }]} />
+        <Animated.View style={[estilos.preenchido, { backgroundColor: cor }, estiloPreenchido]} />
       </View>
     </View>
   );
