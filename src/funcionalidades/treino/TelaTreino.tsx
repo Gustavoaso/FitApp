@@ -26,7 +26,11 @@ import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
 import { CardVidro, BotaoPrimario, TiraSemana } from '@/compartilhado/ui';
 import type { MarcaDia } from '@/compartilhado/ui';
-import { obterHistoricoTreinoCompleto } from '@/compartilhado/servicos/historico-servico';
+import {
+  obterHistoricoTreinoCompleto,
+  type RegistroTreinoDiario,
+} from '@/compartilhado/servicos/historico-servico';
+import { formatarKcalEstimada } from '@/compartilhado/utilidades/gasto-calorico';
 import { gerarSemana } from '@/compartilhado/utilidades/semana';
 import { CardResumoPlano } from './CardResumoPlano';
 import { GradeTreinos } from './GradeTreinos';
@@ -75,7 +79,7 @@ export default function TelaTreino() {
     () => new Date().toISOString().split('T')[0],
   );
   const [planos, setPlanos] = useState<DiaTreinoCustomizado[]>([]);
-  const [historicoTreinos, setHistoricoTreinos] = useState<Record<string, { concluido: boolean }>>(
+  const [historicoTreinos, setHistoricoTreinos] = useState<Record<string, RegistroTreinoDiario>>(
     {},
   );
   const [mapeamentoSemanal, setMapeamentoSemanal] = useState<Record<string, string>>({});
@@ -194,6 +198,7 @@ export default function TelaTreino() {
 
   const semanaAtual = useMemo(() => gerarSemana(diaSelecionado), [diaSelecionado]);
   const abrevDia = semanaAtual.find((d) => d.data === diaSelecionado)?.abrev ?? 'seg';
+  const registroDoDia = historicoTreinos[diaSelecionado];
 
   // Ponto por dia: verde = treino concluído; lima = hoje ou futuro com treino no cronograma.
   const marcasSemana = useMemo(() => {
@@ -524,6 +529,11 @@ export default function TelaTreino() {
                       ? `${diaAtual.exercicios.length} exercícios programados`
                       : 'Descanso ativo'}
                   </Text>
+                  {registroDoDia?.concluido && registroDoDia.kcalEstimadas != null ? (
+                    <Text style={estilos.diaDetalhes}>
+                      {`Feito em ${registroDoDia.duracaoMinutos} min · ${formatarKcalEstimada(registroDoDia.kcalEstimadas)}`}
+                    </Text>
+                  ) : null}
                 </View>
 
                 {/* Botão de Trocar Treino */}

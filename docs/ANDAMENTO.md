@@ -44,6 +44,7 @@ Fluxo: novo-projeto
 | 19. Questionário V1 (10 passos) | Implementada, aguardando o testador | 1 | ver git log |
 | 20. Validação e correções de funcionamento | Implementada, aguardando o testador | 1 | ver git log |
 | 21. Plano com cara de profissional (RN19) | Implementada, aguardando o testador | 1 | ver git log |
+| 22. Gasto calórico do treino (RN20) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -178,8 +179,14 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 21: a avaliação mostrou o perfil vegano com camarão e pintado: a lista de termos do vegetariano não pegava a categoria TACO "Pescados e frutos do mar". Acrescentei `pescado`, `frutos do mar` e `camarao` (vale também para a RPC, que recebe os mesmos termos). A reconferência do script usa a mesma lista, por isso não reprovou antes.
 - Etapa 21: o script de avaliação passou a reprovar plano sem "Por que", sem progressão, sem aquecimento, sem reserva, com dia "Treino X" ou com número de refeições diferente do pedido, e grava um exemplo de treino e refeição por perfil.
 - Etapa 21: banco local repopulado para a avaliação sem o `preparar-bases-locais.sh` (ele trunca `base_alimentos` e perderia os básicos da TACO da migration): `db reset`, importação de exercícios, curadoria da migration 20261103, ingestão de conhecimento e embeddings.
+- Etapa 22: sem migration. O app não grava `sessoes_treino`; a sessão concluída vive no histórico local (`historico-servico`), que ganhou `kcalEstimadas` (opcional). Alternativa: coluna em `sessoes_treino` quando o app passar a gravar a sessão no banco.
+- Etapa 22 (PREMISSA): MET pela densidade = volume (carga × reps) ÷ minutos ÷ peso. Volume 0 → 3,0; densidade ≥ 4 → 6,0; densidade ≥ 2 com ≥ 50% das séries em compostos → 5,0; senão 3,5. Duração limitada a 180 min; peso fora de 30–300 kg ou ausente → não calcula. Peso = última pesagem registrada (`obterHistoricoPeso`).
+- Etapa 22 (PREMISSA): composto reconhecido pelo nome do exercício (agachamento, terra, supino, remada, desenvolvimento, leg press, puxada, barra fixa, avanço/afundo, stiff, paralela...), porque o tipo `Exercicio` não tem a marca. Alternativa: levar o `composto` do motor para o plano salvo.
+- Etapa 22: duração = tempo total da sessão (com descansos), como a RN20 pede "horas ativas" sem defini-las; texto único `~N kcal (estimativa)` em `formatarKcalEstimada`. Aparece no fim do treino, no card do dia da aba Treino e no cartão "Próxima Sessão" do Início.
 
 ## Pendências
+
+- Etapa 22: a exibição na aba Treino e no Início não tem teste de tela (só o resumo do fim do treino e o histórico gravado).
 
 - 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.
 - Não verificado: excluir conta e cadastro novo ponta a ponta (Edge Functions e e-mail não rodam no local); momento de conquista visto no simulador; teclado da carga e texto XXL depois de ab8de6d; erro de rede; VoiceOver real.

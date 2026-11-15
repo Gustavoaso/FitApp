@@ -31,6 +31,8 @@ export interface RegistroTreinoDiario {
   exerciciosConcluidos: number;
   totalExercicios: number;
   concluido: boolean;
+  /** Estimativa da RN20; ausente quando não havia peso registrado. */
+  kcalEstimadas?: number | null;
 }
 
 const CHAVE_HISTORICO_DIETA = '@fitapp_historico_dieta_v1';

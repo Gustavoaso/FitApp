@@ -10,6 +10,7 @@ import {
   type DiaTreinoCustomizado,
 } from '@/compartilhado/servicos/plano-gestao-servico';
 import {
+  adicionarEntradaPeso,
   calcularAderenciaSemanal,
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
@@ -230,5 +231,30 @@ describe('treino ao vivo', () => {
       totalExercicios: 1,
     });
     expect((await calcularAderenciaSemanal()).diasTreinados).toBe(1);
+  });
+});
+
+describe('gasto calórico estimado (RN20)', () => {
+  it('com peso registrado, o resumo e o histórico mostram a estimativa', async () => {
+    await adicionarEntradaPeso(70);
+    mockParametros = { treinoId: 'treino-a' };
+    await render(<TelaTreinoAoVivo />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Finalizar Exercício' }));
+
+    // Sem carga e 1 minuto: MET 3,0 × 70 kg × 1/60 h = 3,5 → 4.
+    expect(await screen.findByText('Peito e tríceps · ~4 kcal (estimativa)')).toBeTruthy();
+    const hoje = new Date().toISOString().split('T')[0];
+    expect((await obterHistoricoTreinoCompleto())[hoje].kcalEstimadas).toBe(4);
+  });
+
+  it('sem peso registrado, não calcula nem mostra kcal', async () => {
+    mockParametros = { treinoId: 'treino-a' };
+    await render(<TelaTreinoAoVivo />);
+    await fireEvent.press(await screen.findByRole('button', { name: 'Finalizar Exercício' }));
+
+    expect(await screen.findByText('Treino concluído')).toBeTruthy();
+    expect(screen.queryByText(/kcal/)).toBeNull();
+    const hoje = new Date().toISOString().split('T')[0];
+    expect((await obterHistoricoTreinoCompleto())[hoje].kcalEstimadas).toBeNull();
   });
 });

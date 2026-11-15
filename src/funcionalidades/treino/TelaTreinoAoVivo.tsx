@@ -45,7 +45,14 @@ import {
 import { useTema } from '@/compartilhado/useTema';
 import { formatarTempo } from '@/compartilhado/utilidades';
 import {
+  ehComposto,
+  estimarKcalTreino,
+  formatarKcalEstimada,
+  type SerieExecutada,
+} from '@/compartilhado/utilidades/gasto-calorico';
+import {
   incrementarTreinoRealizado,
+  obterHistoricoPeso,
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
 import { salvarHistoricoTreino } from '@/compartilhado/servicos/historico-servico';
@@ -92,6 +99,9 @@ export default function TelaTreinoAoVivo() {
   const [emDescanso, setEmDescanso] = useState(false);
   const [concluido, setConcluido] = useState(false);
   const [seriesFeitas, setSeriesFeitas] = useState(0);
+  // Séries feitas de verdade (carga e reps): base da estimativa de kcal da RN20.
+  const [seriesExecutadas, setSeriesExecutadas] = useState<SerieExecutada[]>([]);
+  const [kcalEstimadas, setKcalEstimadas] = useState<number | null>(null);
 
   // Com séries registradas, sair por engano perderia o treino: pede confirmação.
   const sairDoTreino = () => {
@@ -179,16 +189,16 @@ export default function TelaTreinoAoVivo() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     const cargaFinal = parseFloat(cargaUsada) || exAtual.cargaSugerida;
+    const repeticoes = repeticoesAlvo(exAtual.reps);
 
     // Registra no histórico por série do exercício
-    await registrarExecucaoSerie(
-      exAtual.id,
-      exAtual.nome,
-      serieAtual,
-      cargaFinal,
-      repeticoesAlvo(exAtual.reps),
-    );
+    await registrarExecucaoSerie(exAtual.id, exAtual.nome, serieAtual, cargaFinal, repeticoes);
     setSeriesFeitas((n) => n + 1);
+    const executadas = [
+      ...seriesExecutadas,
+      { cargaKg: cargaFinal, repeticoes, composto: ehComposto(exAtual.nome) },
+    ];
+    setSeriesExecutadas(executadas);
 
     if (serieAtual < exAtual.series) {
       setSerieAtual(serieAtual + 1);
@@ -205,11 +215,21 @@ export default function TelaTreinoAoVivo() {
         await incrementarTreinoRealizado();
         // Marca o dia como treinado: é o que a tira da semana da aba Treino lê.
         const hoje = new Date().toISOString().split('T')[0];
+        const duracaoMinutos = Math.max(1, Math.round((Date.now() - inicioMs) / 60000));
+        // Peso mais recente registrado; sem ele, a RN20 manda não calcular.
+        const pesagens = await obterHistoricoPeso();
+        const kcal = estimarKcalTreino({
+          pesoKg: pesagens[pesagens.length - 1]?.pesoKg,
+          duracaoMinutos,
+          series: executadas,
+        });
+        setKcalEstimadas(kcal);
         await salvarHistoricoTreino(hoje, {
           idSessao: `sessao-${inicioMs}`,
           data: hoje,
           foco: tituloTreino,
-          duracaoMinutos: Math.max(1, Math.round((Date.now() - inicioMs) / 60000)),
+          duracaoMinutos,
+          kcalEstimadas: kcal,
           // Este exercício acabou de terminar e ainda não entrou no estado.
           exerciciosConcluidos: exerciciosFeitos + 1,
           totalExercicios: listaExercicios.length,
@@ -330,7 +350,11 @@ export default function TelaTreinoAoVivo() {
         {concluido ? (
           <MomentoConquista
             titulo="Treino concluído"
-            subtitulo={tituloTreino}
+            subtitulo={
+              kcalEstimadas === null
+                ? tituloTreino
+                : `${tituloTreino} · ${formatarKcalEstimada(kcalEstimadas)}`
+            }
             aoTerminar={fecharTreino}
           />
         ) : null}

@@ -43,6 +43,7 @@ import {
   EstatisticasAderencia,
 } from '@/compartilhado/servicos/progresso-servico';
 import { calcularSequenciaDias } from './calcular-sequencia';
+import { formatarKcalEstimada } from '@/compartilhado/utilidades/gasto-calorico';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
 import { somarConsumoDoDia } from './consumo-do-dia';
 import {
@@ -77,6 +78,7 @@ export default function TelaInicio() {
   const [treinoHojeTitulo, setTreinoHojeTitulo] = useState('Treino do Dia');
   const [treinoHojeSub, setTreinoHojeSub] = useState('Carregando treino...');
   const [treinoHojeId, setTreinoHojeId] = useState<string | null>(null);
+  const [kcalTreinoHoje, setKcalTreinoHoje] = useState<number | null>(null);
 
   // Estados de progresso
   const [dadosGraficoPeso, setDadosGraficoPeso] = useState<PontoGrafico[]>([]);
@@ -124,8 +126,12 @@ export default function TelaInicio() {
 
     // Calcula macronutrientes consumidos hoje a partir das refeições concluídas
     const hojeStr = new Date().toISOString().split('T')[0];
-    const { obterHistoricoDieta } = await import('@/compartilhado/servicos/historico-servico');
+    const { obterHistoricoDieta, obterHistoricoTreino } =
+      await import('@/compartilhado/servicos/historico-servico');
     const salvoRefeicoes = await obterHistoricoDieta(hojeStr);
+    // Gasto do treino de hoje (RN20): só mostra, nunca soma às calorias da dieta.
+    const treinoFeito = await obterHistoricoTreino(hojeStr);
+    setKcalTreinoHoje(treinoFeito?.concluido ? (treinoFeito.kcalEstimadas ?? null) : null);
 
     // Tudo o que a aba Dieta registrou hoje (ver consumo-do-dia.ts).
     const consumo = somarConsumoDoDia(salvoRefeicoes);
@@ -420,6 +426,11 @@ export default function TelaInicio() {
                 <Text style={estilos.badgeTreino}>HOJE</Text>
                 <Text style={estilos.treinoTitulo}>{treinoHojeTitulo}</Text>
                 <Text style={estilos.treinoSub}>{treinoHojeSub}</Text>
+                {kcalTreinoHoje !== null ? (
+                  <Text style={estilos.treinoSub}>
+                    {`Concluído · ${formatarKcalEstimada(kcalTreinoHoje)}`}
+                  </Text>
+                ) : null}
               </View>
               <View style={estilos.iconeTreinoContainer}>
                 <SymbolView name="bolt.fill" size={20} tintColor={cores.destaque} />
