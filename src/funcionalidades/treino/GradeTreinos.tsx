@@ -117,7 +117,7 @@ const criarEstilos = (cores: CoresTema) =>
       right: 12,
       top: 4,
       fontFamily: FamiliaFonte.bold,
-      fontSize: 64,
+      fontSize: 44,
       lineHeight: 72,
       opacity: 0.22,
     },

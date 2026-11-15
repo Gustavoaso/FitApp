@@ -119,7 +119,7 @@ const estilos = StyleSheet.create({
   iconePequeno: { width: 22, height: 22, borderRadius: 5 },
   textoMarca: {
     color: BRANCO,
-    fontFamily: FamiliaFonte.bold,
+    fontFamily: 'Sora-Bold',
     fontSize: 18,
     letterSpacing: 1,
     ...sombraTexto,
@@ -143,7 +143,7 @@ const estilos = StyleSheet.create({
   },
   valorColuna: {
     color: BRANCO,
-    fontFamily: FamiliaFonte.bold,
+    fontFamily: 'Sora-Bold',
     fontSize: 38,
     fontVariant: ['tabular-nums'],
     ...sombraTexto,
@@ -172,7 +172,7 @@ const estilos = StyleSheet.create({
   itemFaixa: { flex: 1 },
   valorFaixa: {
     color: BRANCO,
-    fontFamily: FamiliaFonte.bold,
+    fontFamily: 'Sora-Bold',
     fontSize: 20,
     fontVariant: ['tabular-nums'],
   },

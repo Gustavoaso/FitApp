@@ -245,7 +245,12 @@ export default function TelaPerfil() {
             onPress={lidarComRecalcularPlano}
             activeOpacity={0.7}
           >
-            <SymbolView name="bolt.fill" size={16} tintColor={cores.destaqueTexto} weight="bold" />
+            <SymbolView
+              name="bolt.fill"
+              size={16}
+              tintColor={cores.destaqueTexto}
+              weight="regular"
+            />
             <Text style={estilos.textoRecalcular}>Recalcular Plano com IA</Text>
           </TouchableOpacity>
         </CardVidro>

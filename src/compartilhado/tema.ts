@@ -77,18 +77,19 @@ export const Fonte = {
   micro: 13,
   label: 14,
   corpo: 16,
-  subtitulo: 18,
-  titulo: 20,
-  display: 28,
+  subtitulo: 17,
+  titulo: 18,
+  display: 24,
 } as const;
 
 /** Família de fonte do app: Sora (assets/fonts). */
 export const FamiliaFonte = {
   regular: 'Sora-Regular',
   medio: 'Sora-Medium',
-  semibold: 'Sora-Semibold',
-  bold: 'Sora-Bold',
-  extrabold: 'Sora-Bold',
+  // Pesos um degrau mais leves (pedido do dono em 2026-11-15: visual mais suave).
+  semibold: 'Sora-Medium',
+  bold: 'Sora-Semibold',
+  extrabold: 'Sora-Semibold',
 } as const;
 
 export const PesoFonte = {
@@ -114,10 +115,10 @@ export const Glass = {
 
 /** Escala tipográfica da HIG (Dynamic Type padrão), com mínimo de 13 pt. */
 export const Tipografia = {
-  tituloGrande: 34,
-  titulo1: 28,
-  titulo2: 22,
-  titulo3: 20,
+  tituloGrande: 30,
+  titulo1: 24,
+  titulo2: 20,
+  titulo3: 18,
   destaque: 17,
   corpo: 17,
   chamada: 16,

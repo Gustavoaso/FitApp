@@ -32,7 +32,7 @@ export function EstadoVazio({
     <View style={estilos.container}>
       <SymbolView
         name={simbolo}
-        size={40}
+        size={32}
         tintColor={cores.textoSecundario}
         accessibilityElementsHidden
         importantForAccessibility="no"

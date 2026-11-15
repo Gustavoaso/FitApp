@@ -70,7 +70,7 @@ export function MomentoConquista({ titulo, subtitulo, aoTerminar }: PropsMomento
       accessibilityLiveRegion="assertive"
     >
       <Animated.View style={[estilos.circulo, { backgroundColor: cores.sucesso }, estiloAnimado]}>
-        <SymbolView name="checkmark" size={56} tintColor={cores.fundo} weight="bold" />
+        <SymbolView name="checkmark" size={44} tintColor={cores.fundo} weight="regular" />
       </Animated.View>
       <Text style={[estilos.titulo, { color: cores.texto }]}>{titulo}</Text>
       {subtitulo ? (

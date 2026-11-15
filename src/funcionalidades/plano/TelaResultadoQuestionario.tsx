@@ -579,7 +579,7 @@ const criarEstilos = (cores: CoresTema) =>
     kcal: {
       fontFamily: FamiliaFonte.bold,
       fontWeight: PesoFonte.bold,
-      fontSize: 46,
+      fontSize: 38,
       color: cores.texto,
       fontVariant: ['tabular-nums'],
       letterSpacing: -1,

@@ -87,7 +87,7 @@ export default function TelaLogin() {
       <ScrollView contentContainerStyle={estilos.scrollContent}>
         {/* Cabeçalho / Branding */}
         <View style={estilos.cabecalho}>
-          <SymbolView name="bolt.fill" size={36} tintColor={cores.destaque} weight="bold" />
+          <SymbolView name="bolt.fill" size={28} tintColor={cores.destaque} weight="regular" />
           <Text style={estilos.titulo}>TreinaAI</Text>
           <Text style={estilos.subtitulo}>Seu treino e dieta sob medida</Text>
         </View>
@@ -182,7 +182,7 @@ const criarEstilos = (cores: CoresTema) =>
       marginBottom: Espacamento.xxxl,
     },
     logoEmoji: {
-      fontSize: 48,
+      fontSize: 38,
       marginBottom: Espacamento.sm,
     },
     titulo: {

@@ -54,7 +54,7 @@ export function CartaoOpcao({
     >
       <View style={[estilos.marca, { backgroundColor: cores.elevada }]}>
         {icone ? (
-          <SymbolView name={icone} size={22} tintColor={cores.destaqueTexto} />
+          <SymbolView name={icone} size={20} tintColor={cores.destaqueTexto} />
         ) : (
           <Text style={[estilos.numero, { color: cores.destaqueTexto }]}>{numero}</Text>
         )}
@@ -66,7 +66,7 @@ export function CartaoOpcao({
         ) : null}
       </View>
       {selecionado ? (
-        <SymbolView name="checkmark.circle.fill" size={24} tintColor={cores.destaqueTexto} />
+        <SymbolView name="checkmark.circle.fill" size={22} tintColor={cores.destaqueTexto} />
       ) : null}
     </PressableAnimado>
   );

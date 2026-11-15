@@ -146,7 +146,7 @@ export function VisualizadorJSONModal({
               </View>
 
               <TouchableOpacity onPress={aoFechar} style={estilos.btnFechar}>
-                <SymbolView name="xmark.circle.fill" size={24} tintColor={cores.textoSecundario} />
+                <SymbolView name="xmark.circle.fill" size={22} tintColor={cores.textoSecundario} />
               </TouchableOpacity>
             </View>
 

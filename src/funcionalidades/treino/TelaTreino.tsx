@@ -340,7 +340,7 @@ export default function TelaTreino() {
                 name="bolt.fill"
                 size={14}
                 tintColor={cores.destaqueTexto}
-                weight="bold"
+                weight="regular"
               />
               <Text style={estilos.streakTexto}>1</Text>
             </View>
@@ -398,7 +398,7 @@ export default function TelaTreino() {
                 name="arrow.triangle.2.circlepath"
                 size={16}
                 tintColor={cores.textoSobreDestaque}
-                weight="bold"
+                weight="regular"
               />
               <Text style={estilos.txtReformularSemana}>Reformular Semana Completa</Text>
             </TouchableOpacity>
@@ -545,7 +545,7 @@ export default function TelaTreino() {
                     name="arrow.triangle.2.circlepath"
                     size={14}
                     tintColor={cores.destaque}
-                    weight="bold"
+                    weight="regular"
                   />
                   <Text style={estilos.txtTrocarTreino}>Trocar</Text>
                 </TouchableOpacity>
@@ -635,7 +635,7 @@ export default function TelaTreino() {
         activeOpacity={0.85}
       >
         <View style={estilos.fabInnerAmarelo}>
-          <SymbolView name="plus" size={26} tintColor={cores.texto} weight="bold" />
+          <SymbolView name="plus" size={26} tintColor={cores.texto} weight="regular" />
         </View>
       </TouchableOpacity>
 
@@ -663,7 +663,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="plus.circle.fill" size={22} tintColor={cores.destaque} />
+              <SymbolView name="plus.circle.fill" size={20} tintColor={cores.destaque} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Criar novo treino</Text>
@@ -682,7 +682,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="dumbbell.fill" size={22} tintColor={cores.destaqueTexto} />
+              <SymbolView name="dumbbell.fill" size={20} tintColor={cores.destaqueTexto} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Meus treinos</Text>
@@ -699,7 +699,7 @@ export default function TelaTreino() {
             activeOpacity={0.7}
           >
             <View style={estilos.iconeMenuOpcao}>
-              <SymbolView name="calendar" size={22} tintColor={cores.destaqueTexto} />
+              <SymbolView name="calendar" size={20} tintColor={cores.destaqueTexto} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={estilos.tituloMenuOpcao}>Definir treino da semana</Text>
@@ -950,7 +950,7 @@ export default function TelaTreino() {
                 name="plus"
                 size={14}
                 tintColor={cores.textoSobreDestaque}
-                weight="bold"
+                weight="regular"
               />
               <Text style={estilos.txtAddExTemp}>Incluir Exercício</Text>
             </TouchableOpacity>

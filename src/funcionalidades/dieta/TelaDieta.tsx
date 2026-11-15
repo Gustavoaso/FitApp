@@ -391,7 +391,7 @@ export default function TelaDieta() {
         {/* ── Top Bar de Navegação de Datas (< Hoje >) ───────────────────────────── */}
         <View style={estilos.topBarData}>
           <TouchableOpacity onPress={() => mudarData(-1)} style={estilos.btnSetaData}>
-            <SymbolView name="chevron.left" size={16} tintColor={cores.texto} weight="bold" />
+            <SymbolView name="chevron.left" size={16} tintColor={cores.texto} weight="regular" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -403,7 +403,7 @@ export default function TelaDieta() {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => mudarData(1)} style={estilos.btnSetaData}>
-            <SymbolView name="chevron.right" size={16} tintColor={cores.texto} weight="bold" />
+            <SymbolView name="chevron.right" size={16} tintColor={cores.texto} weight="regular" />
           </TouchableOpacity>
         </View>
 
@@ -574,7 +574,7 @@ export default function TelaDieta() {
         onPress={() => setModalBuscaVisivel(true)}
         activeOpacity={0.9}
       >
-        <SymbolView name="plus" size={28} tintColor={cores.textoSobreDestaque} weight="bold" />
+        <SymbolView name="plus" size={28} tintColor={cores.textoSobreDestaque} weight="regular" />
       </TouchableOpacity>
 
       <BuscaAlimentosModal

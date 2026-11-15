@@ -181,7 +181,7 @@ export function CardRefeicao({
 
           {/* Botão Inferior "Log mais" / Adicionar */}
           <TouchableOpacity style={estilos.btnLogMais} onPress={onAdicionar} activeOpacity={0.8}>
-            <SymbolView name="plus" size={14} tintColor={cores.destaqueTexto} weight="bold" />
+            <SymbolView name="plus" size={14} tintColor={cores.destaqueTexto} weight="regular" />
             <Text style={estilos.txtLogMais}>
               {alimentos.length > 0 ? 'Log mais alimentos' : 'Adicionar alimento'}
             </Text>

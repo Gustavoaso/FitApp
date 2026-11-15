@@ -295,7 +295,7 @@ export default function TelaTreinoAoVivo() {
             onPress={sairDoTreino}
             activeOpacity={0.8}
           >
-            <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
+            <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="regular" />
             <Text style={estilos.txtSairAmarelo}>Sair</Text>
           </TouchableOpacity>
 

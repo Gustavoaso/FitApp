@@ -198,7 +198,7 @@ export function BuscaAlimentosModal({
                 activeOpacity={0.7}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <SymbolView name="xmark" size={18} tintColor={cores.texto} weight="bold" />
+                <SymbolView name="xmark" size={18} tintColor={cores.texto} weight="regular" />
               </TouchableOpacity>
               <View style={estilos.headerCentro}>
                 <Text style={estilos.headerTitulo}>{refeicaoAtual}</Text>
@@ -413,7 +413,7 @@ export function BuscaAlimentosModal({
                                 name="plus"
                                 size={16}
                                 tintColor={cores.textoSobreDestaque}
-                                weight="bold"
+                                weight="regular"
                               />
                             </TouchableOpacity>
                           </View>

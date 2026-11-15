@@ -41,7 +41,7 @@ export function CardAderencia({ estatisticas }: PropsCardAderencia) {
     <CardVidro semBorda estilo={estilos.card}>
       <View style={estilos.header}>
         <View style={estilos.rowTitulo}>
-          <SymbolView name="chart.bar.fill" size={16} tintColor={cores.destaque} weight="bold" />
+          <SymbolView name="chart.bar.fill" size={16} tintColor={cores.destaque} weight="regular" />
           <Text style={estilos.titulo}>Aderência Semanal</Text>
         </View>
         <Text style={estilos.porcentagemBadge}>{estatisticas.porcentagemAderenciaGeral}%</Text>

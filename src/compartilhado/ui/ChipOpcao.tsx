@@ -40,7 +40,7 @@ export function ChipOpcao({ rotulo, legenda, selecionado, multipla, alto, aoPres
       ]}
     >
       {selecionado ? (
-        <SymbolView name="checkmark" size={14} weight="bold" tintColor={cores.destaqueTexto} />
+        <SymbolView name="checkmark" size={14} weight="regular" tintColor={cores.destaqueTexto} />
       ) : null}
       <Text style={[estilos.rotulo, { color: cores.texto }]}>{rotulo}</Text>
       {legenda ? (

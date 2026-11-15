@@ -31,7 +31,7 @@ export function Stepper({ valor, min, max, aoMudar, rotulo }: Props) {
       onPress={() => mudar(novo)}
       style={[estilos.botao, { backgroundColor: cores.elevada }, bloqueado && { opacity: 0.4 }]}
     >
-      <SymbolView name={nome} size={24} weight="bold" tintColor={cores.texto} />
+      <SymbolView name={nome} size={22} weight="regular" tintColor={cores.texto} />
     </Pressable>
   );
   return (
@@ -69,7 +69,7 @@ const estilos = StyleSheet.create({
   },
   numero: {
     fontFamily: FamiliaFonte.bold,
-    fontSize: 72,
+    fontSize: 56,
     minWidth: 96,
     textAlign: 'center',
     fontVariant: ['tabular-nums'],

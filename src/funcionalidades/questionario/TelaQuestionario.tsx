@@ -331,7 +331,7 @@ export default function TelaQuestionario() {
             hitSlop={8}
             style={estilos.btnTopo}
           >
-            <SymbolView name="chevron.left" size={18} weight="bold" tintColor={cores.texto} />
+            <SymbolView name="chevron.left" size={18} weight="regular" tintColor={cores.texto} />
           </Pressable>
         ) : (
           <View style={estilos.btnTopo} />
@@ -350,7 +350,7 @@ export default function TelaQuestionario() {
             { backgroundColor: cores.elevada, borderColor: cores.separador },
           ]}
         >
-          <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="bold" />
+          <SymbolView name="xmark" size={14} tintColor={cores.texto} weight="regular" />
           <Text style={[estilos.txtSair, { color: cores.texto }]}>Sair</Text>
         </Pressable>
       </View>

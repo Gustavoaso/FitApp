@@ -110,7 +110,7 @@ export function Regua({ valor, min, max, unidade, rotulo, aoMudar }: Props) {
 const estilos = StyleSheet.create({
   caixa: { gap: Espacamento.xs },
   rotulo: { fontFamily: FamiliaFonte.semibold, fontSize: Tipografia.rodape, letterSpacing: 1 },
-  valor: { fontFamily: FamiliaFonte.bold, fontSize: 48, fontVariant: ['tabular-nums'] },
+  valor: { fontFamily: FamiliaFonte.bold, fontSize: 40, fontVariant: ['tabular-nums'] },
   unidade: { fontFamily: FamiliaFonte.medio, fontSize: Tipografia.titulo3 },
   marca: { width: PASSO, height: 64, alignItems: 'center' },
   traco: { width: 2, height: 20, borderRadius: 1 },

@@ -86,7 +86,12 @@ export default function TelaCadastro() {
     >
       <ScrollView contentContainerStyle={estilos.scrollContent}>
         <View style={estilos.cabecalho}>
-          <SymbolView name="paperplane.fill" size={36} tintColor={cores.destaque} weight="bold" />
+          <SymbolView
+            name="paperplane.fill"
+            size={28}
+            tintColor={cores.destaque}
+            weight="regular"
+          />
           <Text style={estilos.titulo}>Crie sua conta</Text>
           <Text style={estilos.subtitulo}>Comece sua jornada de evolução</Text>
         </View>
@@ -175,7 +180,7 @@ const criarEstilos = (cores: CoresTema) =>
       marginBottom: Espacamento.xxxl,
     },
     logoEmoji: {
-      fontSize: 48,
+      fontSize: 38,
       marginBottom: Espacamento.sm,
     },
     titulo: {

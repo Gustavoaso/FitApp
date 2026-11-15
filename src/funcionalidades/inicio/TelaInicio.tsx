@@ -254,7 +254,7 @@ export default function TelaInicio() {
                 name="bolt.fill"
                 size={14}
                 tintColor={cores.destaqueTexto}
-                weight="bold"
+                weight="regular"
               />
               <Text style={estilos.streakTexto}>{sequenciaDias}</Text>
             </View>
@@ -357,7 +357,7 @@ export default function TelaInicio() {
           <View style={estilos.headerEvolucao}>
             <Text style={estilos.tituloEvolucao}>Evolução de Peso</Text>
             <TouchableOpacity style={estilos.btnNovoPeso} onPress={() => setModalPesoVisivel(true)}>
-              <SymbolView name="plus" size={12} tintColor={cores.destaque} weight="bold" />
+              <SymbolView name="plus" size={12} tintColor={cores.destaque} weight="regular" />
               <Text style={estilos.txtNovoPeso}>Registrar</Text>
             </TouchableOpacity>
           </View>

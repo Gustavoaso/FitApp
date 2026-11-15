@@ -31,7 +31,7 @@ export function EstanteConquistas({ conquistadas }: { conquistadas: string[] }) 
               >
                 <SymbolView
                   name={(ganha ? c.simbolo : 'lock') as SFSymbol}
-                  size={22}
+                  size={20}
                   tintColor={ganha ? cores.textoSobreDestaque : cores.textoSecundario}
                 />
               </View>
