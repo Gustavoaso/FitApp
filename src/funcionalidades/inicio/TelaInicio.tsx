@@ -21,7 +21,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, AnelProgresso, BotaoPrimario } from '@/compartilhado/ui';
+import { CardVidro, AnelProgresso, BotaoPrimario, CartaoNivel } from '@/compartilhado/ui';
 import { IconeCookie } from '@/compartilhado/ui/IconesFitApp';
 import { CardAderencia } from './CardAderencia';
 import { GraficoEvolucao, PontoGrafico } from './GraficoEvolucao';
@@ -45,6 +45,8 @@ import {
 import { calcularSequenciaDias } from './calcular-sequencia';
 import { formatarKcalEstimada } from '@/compartilhado/utilidades/gasto-calorico';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
+import { buscarResumoGamificacao } from '@/compartilhado/servicos/gamificacao-servico';
+import type { ResumoGamificacao } from '@/compartilhado/utilidades/gamificacao';
 import { somarConsumoDoDia } from './consumo-do-dia';
 import {
   obterPlanoTreinoCustomizado,
@@ -56,6 +58,7 @@ export default function TelaInicio() {
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
 
+  const [gamificacao, setGamificacao] = useState<ResumoGamificacao | null>(null);
   const [caloriasConsumidas, setCaloriasConsumidas] = useState(0);
   const [caloriasMeta, setCaloriasMeta] = useState(0);
 
@@ -178,6 +181,7 @@ export default function TelaInicio() {
 
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
+    setGamificacao(await buscarResumoGamificacao(new Date().toISOString().split('T')[0]));
   };
 
   useFocusEffect(
@@ -334,6 +338,8 @@ export default function TelaInicio() {
             ))}
           </View>
         </View>
+
+        {gamificacao ? <CartaoNivel resumo={gamificacao} /> : null}
 
         {/* ── Painel de Aderência Semanal (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <View>

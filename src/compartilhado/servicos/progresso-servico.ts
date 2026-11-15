@@ -306,9 +306,10 @@ export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia>
     const meta = await obterOuGerarMetaSemanal(inicioSemana);
     const progresso = await obterProgressoSemanal(inicioSemana);
 
-    // O app ainda não grava sessoes_treino: as do servidor (outro aparelho, seed) somam às locais.
+    // O treino concluído vai para o local e para o servidor: somar contaria em dobro.
+    // O maior dos dois cobre outro aparelho e o treino feito offline.
     const sessoesServidor = await repositorioTreino.contarSessoesConcluidas(inicioSemana);
-    const treinosRealizados = (progresso.treinosRealizados || 0) + sessoesServidor;
+    const treinosRealizados = Math.max(progresso.treinosRealizados || 0, sessoesServidor);
     const metaTreinos = meta.treinosPlanejados;
 
     const exerciciosRealizados = progresso.exerciciosRealizados || 0;

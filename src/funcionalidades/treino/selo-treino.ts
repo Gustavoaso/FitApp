@@ -1,5 +1,6 @@
 // Selo da foto do treino (RN21): números da sessão já formatados para ficar por
 // cima da foto. Regra pura: a tela só desenha o que sai daqui.
+import { formatarSemanas } from '@/compartilhado/utilidades/gamificacao';
 import type { SerieExecutada } from '@/compartilhado/utilidades/gasto-calorico';
 
 export type ModeloSelo = 'coluna' | 'faixa';
@@ -16,6 +17,8 @@ export interface ResumoSessao {
   duracaoMinutos: number;
   series: SerieExecutada[];
   kcalEstimadas: number | null;
+  /** Semanas seguidas cumprindo o plano (RN22); ausente offline. */
+  semanasSeguidas?: number | null;
 }
 
 export interface NumeroSelo {
@@ -55,6 +58,9 @@ export function montarNumerosSelo(resumo: ResumoSessao | null | undefined): Nume
   if (volume > 0) numeros.push({ rotulo: 'Volume', valor: `${formatoMil.format(volume)} kg` });
   if (typeof resumo.kcalEstimadas === 'number' && resumo.kcalEstimadas > 0) {
     numeros.push({ rotulo: 'Gasto estimado', valor: `${Math.round(resumo.kcalEstimadas)} kcal` });
+  }
+  if (typeof resumo.semanasSeguidas === 'number' && resumo.semanasSeguidas > 0) {
+    numeros.push({ rotulo: 'Sequência', valor: formatarSemanas(resumo.semanasSeguidas) });
   }
   return numeros;
 }

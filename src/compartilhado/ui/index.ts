@@ -21,3 +21,5 @@ export { ChipOpcao } from './ChipOpcao';
 export { Stepper } from './Stepper';
 export { Roda } from './Roda';
 export { Regua } from './Regua';
+export { CartaoNivel } from './CartaoNivel';
+export { EstanteConquistas } from './EstanteConquistas';

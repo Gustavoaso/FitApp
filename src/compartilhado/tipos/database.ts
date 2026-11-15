@@ -25,7 +25,7 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: 'alimentos_favoritos_alimento_fk';
+            foreignKeyName: 'alimentos_favoritos_alimento_id_fkey';
             columns: ['alimento_id'];
             isOneToOne: false;
             referencedRelation: 'base_alimentos';
@@ -811,33 +811,42 @@ export type Database = {
       sessoes_treino: {
         Row: {
           data: string;
-          dia_treino_id: string;
+          dia_treino_id: string | null;
+          duracao_minutos: number | null;
           exercicios_executados: NonNullable<Json>;
           finalizado_em: string | null;
           id: string;
           iniciado_em: string;
-          plano_treino_id: string;
+          kcal_estimadas: number | null;
+          nome_treino: string | null;
+          plano_treino_id: string | null;
           usuario_id: string;
         };
         ComputedFields: never;
         Insert: {
           data?: string;
-          dia_treino_id: string;
+          dia_treino_id?: string | null;
+          duracao_minutos?: number | null;
           exercicios_executados?: NonNullable<Json>;
           finalizado_em?: string | null;
           id?: string;
           iniciado_em?: string;
-          plano_treino_id: string;
+          kcal_estimadas?: number | null;
+          nome_treino?: string | null;
+          plano_treino_id?: string | null;
           usuario_id: string;
         };
         Update: {
           data?: string;
-          dia_treino_id?: string;
+          dia_treino_id?: string | null;
+          duracao_minutos?: number | null;
           exercicios_executados?: NonNullable<Json>;
           finalizado_em?: string | null;
           id?: string;
           iniciado_em?: string;
-          plano_treino_id?: string;
+          kcal_estimadas?: number | null;
+          nome_treino?: string | null;
+          plano_treino_id?: string | null;
           usuario_id?: string;
         };
         Relationships: [
@@ -913,6 +922,7 @@ export type Database = {
       };
       e_dono_plano_dieta: { Args: { plano: string }; Returns: boolean };
       e_dono_plano_treino: { Args: { plano: string }; Returns: boolean };
+      resumo_gamificacao: { Args: { p_hoje?: string }; Returns: Json };
       salvar_plano_gerado: { Args: { p_dados: Json }; Returns: string };
       show_limit: { Args: Record<PropertyKey, never>; Returns: number };
       show_trgm: { Args: { '': string }; Returns: string[] };

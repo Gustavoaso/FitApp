@@ -56,6 +56,11 @@ import {
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
 import { salvarHistoricoTreino } from '@/compartilhado/servicos/historico-servico';
+import {
+  buscarResumoGamificacao,
+  gravarSessaoTreino,
+} from '@/compartilhado/servicos/gamificacao-servico';
+import { novidadesDoTreino } from '@/compartilhado/utilidades/gamificacao';
 import { FimDoTreino } from './FimDoTreino';
 import {
   obterPlanoTreinoCustomizado,
@@ -106,6 +111,10 @@ export default function TelaTreinoAoVivo() {
   // RN21: depois do momento de conquista, o resumo com "Registrar com foto".
   const [duracaoFinal, setDuracaoFinal] = useState(0);
   const [mostrarFim, setMostrarFim] = useState(false);
+  // Nível e medalhas novas, mostrados um a um depois do "Treino concluído" (RN22).
+  const [novidades, setNovidades] = useState<{ titulo: string; subtitulo?: string }[]>([]);
+  const [indiceNovidade, setIndiceNovidade] = useState(-1);
+  const [semanasSeguidas, setSemanasSeguidas] = useState<number | null>(null);
 
   // Com séries registradas, sair por engano perderia o treino: pede confirmação.
   const sairDoTreino = () => {
@@ -241,6 +250,17 @@ export default function TelaTreinoAoVivo() {
           concluido: true,
         });
         // O MomentoConquista dá o haptic Success e sai do treino ao terminar.
+        // Servidor: grava a sessão e compara o nível e as medalhas de antes e depois (RN22).
+        const antes = await buscarResumoGamificacao(hoje);
+        await gravarSessaoTreino({
+          data: hoje,
+          nomeTreino: tituloTreino,
+          duracaoMinutos,
+          kcalEstimadas: kcal,
+        });
+        const depois = await buscarResumoGamificacao(hoje);
+        setNovidades(novidadesDoTreino(antes, depois));
+        setSemanasSeguidas(depois?.semanasSeguidas ?? null);
         setConcluido(true);
       }
     }
@@ -359,8 +379,20 @@ export default function TelaTreinoAoVivo() {
               duracaoMinutos: duracaoFinal,
               series: seriesExecutadas,
               kcalEstimadas,
+              semanasSeguidas,
             }}
             aoConcluir={fecharTreino}
+          />
+        ) : indiceNovidade >= 0 ? (
+          <MomentoConquista
+            key={indiceNovidade}
+            titulo={novidades[indiceNovidade].titulo}
+            subtitulo={novidades[indiceNovidade].subtitulo}
+            aoTerminar={() =>
+              indiceNovidade + 1 < novidades.length
+                ? setIndiceNovidade(indiceNovidade + 1)
+                : setMostrarFim(true)
+            }
           />
         ) : concluido ? (
           <MomentoConquista
@@ -370,7 +402,7 @@ export default function TelaTreinoAoVivo() {
                 ? tituloTreino
                 : `${tituloTreino} · ${formatarKcalEstimada(kcalEstimadas)}`
             }
-            aoTerminar={() => setMostrarFim(true)}
+            aoTerminar={() => (novidades.length > 0 ? setIndiceNovidade(0) : setMostrarFim(true))}
           />
         ) : null}
       </KeyboardAvoidingView>

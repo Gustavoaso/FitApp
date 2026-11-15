@@ -53,6 +53,19 @@ describe('formatarDuracao', () => {
 });
 
 describe('montarNumerosSelo', () => {
+  it('mostra a sequência semanal só quando há sequência', () => {
+    expect(montarNumerosSelo({ ...resumoBase, semanasSeguidas: 3 }).at(-1)).toEqual({
+      rotulo: 'Sequência',
+      valor: '3 semanas',
+    });
+    expect(
+      montarNumerosSelo({ ...resumoBase, semanasSeguidas: 0 }).map((n) => n.rotulo),
+    ).not.toContain('Sequência');
+    expect(
+      montarNumerosSelo({ ...resumoBase, semanasSeguidas: null }).map((n) => n.rotulo),
+    ).not.toContain('Sequência');
+  });
+
   it('duração, volume com milhar pt-BR e kcal arredondada', () => {
     expect(
       montarNumerosSelo({

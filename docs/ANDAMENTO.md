@@ -46,6 +46,7 @@ Fluxo: novo-projeto
 | 21. Plano com cara de profissional (RN19) | Implementada, aguardando o testador | 1 | ver git log |
 | 22. Gasto calórico do treino (RN20) | Implementada, aguardando o testador | 1 | ver git log |
 | 23. Foto do treino para compartilhar (RN21) | Implementada, aguardando o testador | 1 | ver git log |
+| 24. Gamificação (RN22) | Implementada, aguardando o testador | 1 | ver git log |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -189,11 +190,15 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 23: exportação por `react-native-view-shot` em 1080×1920 (9:16) ou 1080×1350 (4:5), JPG em arquivo temporário; salvar usa `expo-media-library` (API nova, `Asset.create`) com permissão só de escrita; galeria pelo seletor do iOS (sem permissão de leitura). Nada vai ao servidor.
 - Etapa 23 (PREMISSA): números do selo = duração, volume (carga × reps, some quando 0) e kcal estimada (some quando a RN20 não calcula). A "sequência" da RN21 fica para a etapa 24 (gamificação ainda não existe).
 - Etapa 23: dependências por `npx expo install ... -- --force` (o npm reclamava de `react-dom` × `react` 19.3.0, conflito antigo): expo-image-picker ~58.0.10, expo-media-library ~58.0.14, expo-sharing ~58.0.23, react-native-view-shot 6.1.1. Textos de permissão em português no `app.json`; microfone desligado.
+- Etapa 24: sem tabela de XP. `public.resumo_gamificacao(p_hoje)` (security invoker, RLS vale) calcula XP, nível, sequência e medalhas a cada chamada; o app só grava a sessão em `sessoes_treino` (migration aditiva: vínculos com plano viram opcionais, novas colunas `nome_treino`, `duracao_minutos`, `kcal_estimadas`). Alternativa descartada: tabela de eventos com gatilho (mais peças, sem ganho agora).
+- Etapa 24 (PREMISSA): treino vale 100 por **dia** distinto; água 20 quando total >= meta; refeições 40 no dia com >= 3 registradas e todas concluídas (o servidor não sabe quantas o plano previa); peso 20 por semana; bônus 150 por semana com dias treinados >= `dias_por_semana` do plano ativo (usa o plano de hoje para todas as semanas passadas). Semana começa na segunda. Níveis: 0, 150, 400, 800, 1400, 2200, 3300, 4800, 6800, 9500 (Iniciante a Lenda). Recorde de carga = carga máxima de um dia maior que todas as anteriores do mesmo exercício.
+- Etapa 24: `calcularAderenciaSemanal` passou de somar treinos locais + servidor para o maior dos dois (agora o mesmo treino existe nos dois lugares). Comemoração: "Treino concluído", depois um `MomentoConquista` por nível novo ou medalha nova, depois o fim do treino (selo com "Sequência: N semanas").
 
 ## Pendências
 
 - Etapa 22: a exibição na aba Treino e no Início não tem teste de tela (só o resumo do fim do treino e o histórico gravado).
-- Etapa 23: câmera, salvar nas Fotos e a folha de compartilhar não foram vistas no simulador (o simulador não tem câmera; conferir em aparelho). Incluir a sequência no selo quando a etapa 24 existir.
+- Etapa 23: câmera, salvar nas Fotos e a folha de compartilhar não foram vistas no simulador (o simulador não tem câmera; conferir em aparelho). Sequência no selo feita na etapa 24.
+- Etapa 24: treino concluído offline fica só no histórico local (a sessão não é reenviada depois, então não conta XP); `p_hoje` vem do aparelho. Sem teste de tela do cartão de nível e da estante.
 - `expo-doctor`: `expo` 58.0.21 (pede ~58.0.25) e `react-native-safe-area-context` 5.10.1 (pede ~5.11.1), já antes da etapa 23.
 
 - 2026-10-28: app conferido com o `.env` real (`npx expo start --port 8083`), bundle iOS compila (1692 módulos) e aponta para o Supabase de produção.
