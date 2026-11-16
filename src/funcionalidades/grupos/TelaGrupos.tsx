@@ -21,12 +21,8 @@ import {
 } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { Entrada } from '@/compartilhado/movimento';
-import {
-  normalizarCodigo,
-  validarApelido,
-  validarNomeGrupo,
-  type Grupo,
-} from './grupos';
+import { BannerGrupo } from './BannerGrupo';
+import { normalizarCodigo, validarApelido, validarNomeGrupo, type Grupo } from './grupos';
 import {
   buscarApelido,
   criarGrupo,
@@ -230,18 +226,13 @@ export default function TelaGrupos() {
                 accessibilityLabel={`${g.nome}, ${g.membros} ${g.membros === 1 ? 'membro' : 'membros'}${g.encerrado ? ', encerrado' : ''}`}
                 onPress={() => router.push(`/grupos/${g.id}`)}
               >
-                <CardVidro>
-                  <View style={estilos.linha}>
-                    <View style={estilos.flex}>
-                      <Text style={estilos.titulo}>{g.nome}</Text>
-                      <Text style={estilos.texto}>
-                        {g.membros} {g.membros === 1 ? 'membro' : 'membros'}
-                        {g.encerrado ? ' · Encerrado' : ''}
-                      </Text>
-                    </View>
-                    <SymbolView name="chevron.right" size={16} tintColor={cores.textoSecundario} />
-                  </View>
-                </CardVidro>
+                <BannerGrupo banner={g.banner} altura={110}>
+                  <Text style={[estilos.titulo, { color: '#FFFFFF' }]}>{g.nome}</Text>
+                  <Text style={[estilos.texto, { color: '#FFFFFF' }]}>
+                    {g.membros} {g.membros === 1 ? 'membro' : 'membros'}
+                    {g.encerrado ? ' · Encerrado' : ''}
+                  </Text>
+                </BannerGrupo>
               </Pressable>
             </Entrada>
           ))}

@@ -15,6 +15,9 @@ jest.mock('expo-haptics', () => ({
   ImpactFeedbackStyle: { Light: 'light' },
   NotificationFeedbackType: { Success: 'success' },
 }));
+jest.mock('@/compartilhado/servicos/foto-servico', () => ({
+  urlDaFoto: jest.fn().mockResolvedValue(null),
+}));
 jest.mock('./grupos-servico', () => ({
   listarGrupos: jest.fn(),
   buscarApelido: jest.fn(),

@@ -2,12 +2,7 @@
 // resposta traz id de autenticação, e-mail ou dado de saúde de outra pessoa.
 import { supabase } from '@/compartilhado/supabase';
 import type { Database } from '@/compartilhado/tipos/database';
-import {
-  mensagemDeErro,
-  type Checkin,
-  type Grupo,
-  type LinhaRanking,
-} from './grupos';
+import { mensagemDeErro, type Checkin, type Grupo, type LinhaRanking } from './grupos';
 
 type Retorno<F extends keyof Database['public']['Functions']> =
   Database['public']['Functions'][F]['Returns'];
@@ -163,3 +158,26 @@ export const registrarCheckinManual = (
       p_foto: dados.foto,
     }),
   );
+
+export interface Comentario {
+  id: string;
+  apelido: string;
+  texto: string;
+  ehVoce: boolean;
+}
+
+export async function listarComentarios(checkin: string): Promise<Resultado<Comentario[]>> {
+  const r = await chamar<Retorno<'comentarios_checkin'>>(() =>
+    supabase.rpc('comentarios_checkin', { p_checkin: checkin }),
+  );
+  if (!r.ok) return r;
+  return {
+    ok: true,
+    valor: (r.valor ?? []).map((c) => ({
+      id: c.id,
+      apelido: c.apelido,
+      texto: c.texto,
+      ehVoce: c.eh_voce,
+    })),
+  };
+}

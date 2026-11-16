@@ -13,7 +13,10 @@ import {
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { BotaoPrimario, CardVidro, EstadoErro, Skeleton } from '@/compartilhado/ui';
+import { BotaoPrimario, CardVidro, ChipOpcao, EstadoErro, Skeleton } from '@/compartilhado/ui';
+import { BannerGrupo } from './BannerGrupo';
+import { CardCheckin } from './CardCheckin';
+import { SheetCheckinManual } from './SheetCheckinManual';
 import {
   Espacamento,
   FamiliaFonte,
@@ -73,6 +76,8 @@ export default function TelaGrupo() {
   const [feed, setFeed] = useState<Checkin[]>([]);
   const [falhou, setFalhou] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [aba, setAba] = useState<'ranking' | 'feed' | 'membros'>('ranking');
+  const [manual, setManual] = useState(false);
 
   const carregar = useCallback(async () => {
     const [lista, r, f] = await Promise.all([listarGrupos(), buscarRanking(id), buscarFeed(id)]);
@@ -118,6 +123,24 @@ export default function TelaGrupo() {
   return (
     <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={estilos.conteudo}>
       <Stack.Screen options={{ title: grupo.nome }} />
+      <BannerGrupo banner={grupo.banner} altura={140}>
+        <Text style={estilos.tituloBanner}>{grupo.nome}</Text>
+        <Text style={estilos.subBanner}>
+          {grupo.membros} {grupo.membros === 1 ? 'membro' : 'membros'}
+          {grupo.encerrado ? ' · Encerrado' : ''}
+        </Text>
+      </BannerGrupo>
+      {grupo.descricao ? <Text style={estilos.rotulo}>{grupo.descricao}</Text> : null}
+      <View style={estilos.abas}>
+        {(['ranking', 'feed', 'membros'] as const).map((a) => (
+          <ChipOpcao
+            key={a}
+            rotulo={a === 'ranking' ? 'Ranking' : a === 'feed' ? 'Feed' : 'Membros'}
+            selecionado={aba === a}
+            aoPressionar={() => setAba(a)}
+          />
+        ))}
+      </View>
       {aviso ? <Text style={estilos.erro}>{aviso}</Text> : null}
 
       {grupo.codigo ? (
@@ -138,64 +161,89 @@ export default function TelaGrupo() {
         </CardVidro>
       ) : null}
 
-      <Text accessibilityRole="header" style={estilos.secao}>
-        Ranking
-      </Text>
-      <CardVidro padding="md">
-        {ranking.map((l) => (
-          <Entrada key={l.membroId} indice={l.posicao - 1} estilo={estilos.linha}>
-            <PosicaoRanking
-              posicao={l.posicao}
-              estilo={estilos.posicao}
-              cor={cores.destaqueTexto}
-            />
-            <Text style={[estilos.apelido, l.ehVoce && { color: cores.destaqueTexto }]}>
-              {l.apelido}
-              {l.ehVoce ? ' (você)' : ''}
-            </Text>
-            <Text style={estilos.valor}>{textoPontos(l.pontos)}</Text>
-            {grupo.ehCriador && !l.ehVoce && !grupo.encerrado ? (
-              <Text
-                accessibilityRole="button"
-                accessibilityLabel={`Remover ${l.apelido}`}
-                style={estilos.remover}
-                onPress={() =>
-                  confirmar(
-                    `Remover ${l.apelido}?`,
-                    'Os check-ins dessa pessoa no grupo serão apagados.',
-                    'Remover',
-                    () => executar(removerMembro(grupo.id, l.membroId)),
-                  )
-                }
+      {aba === 'ranking' ? (
+        <>
+          <View style={estilos.podio}>
+            {ranking.slice(0, 3).map((l) => (
+              <CardVidro
+                key={l.membroId}
+                padding="md"
+                rotuloAcessibilidade={`${l.posicao}º ${l.apelido}, ${textoPontos(l.pontos)}`}
               >
-                Remover
+                <PosicaoRanking
+                  posicao={l.posicao}
+                  estilo={estilos.posicao}
+                  cor={cores.destaqueTexto}
+                />
+                <Text style={[estilos.apelido, l.ehVoce && { color: cores.destaqueTexto }]}>
+                  {l.apelido}
+                </Text>
+                <Text style={estilos.valor}>{textoPontos(l.pontos)}</Text>
+              </CardVidro>
+            ))}
+          </View>
+          {ranking.slice(3).map((l) => (
+            <Entrada key={l.membroId} indice={l.posicao - 1} estilo={estilos.linha}>
+              <Text style={estilos.posicao}>{l.posicao}º</Text>
+              <Text style={[estilos.apelido, l.ehVoce && { color: cores.destaqueTexto }]}>
+                {l.apelido}
+                {l.ehVoce ? ' (você)' : ''}
               </Text>
-            ) : null}
-          </Entrada>
-        ))}
-      </CardVidro>
+              <Text style={estilos.valor}>{textoPontos(l.pontos)}</Text>
+            </Entrada>
+          ))}
+        </>
+      ) : null}
 
-      <Text accessibilityRole="header" style={estilos.secao}>
-        Check-ins
-      </Text>
-      {feed.length === 0 ? (
-        <Text style={estilos.rotulo}>
-          Ainda sem check-ins. Conclua um treino para abrir o placar.
-        </Text>
-      ) : (
-        feed.map((c) => (
-          <CardVidro
-            key={c.id}
-            padding="md"
-            rotuloAcessibilidade={`${c.apelido} treinou ${c.nomeTreino ?? ''}, ${c.minutos} minutos`}
-          >
-            <Text style={estilos.apelido}>{c.apelido}</Text>
+      {aba === 'membros' ? (
+        <CardVidro padding="md">
+          {ranking.map((l) => (
+            <Entrada key={l.membroId} indice={l.posicao - 1} estilo={estilos.linha}>
+              <Text style={[estilos.apelido, l.ehVoce && { color: cores.destaqueTexto }]}>
+                {l.apelido}
+                {l.ehVoce ? ' (você)' : ''}
+              </Text>
+              <Text style={estilos.valor}>{textoPontos(l.pontos)}</Text>
+              {grupo.ehCriador && !l.ehVoce && !grupo.encerrado ? (
+                <Text
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remover ${l.apelido}`}
+                  style={estilos.remover}
+                  onPress={() =>
+                    confirmar(
+                      `Remover ${l.apelido}?`,
+                      'Os check-ins dessa pessoa no grupo serão apagados.',
+                      'Remover',
+                      () => executar(removerMembro(grupo.id, l.membroId)),
+                    )
+                  }
+                >
+                  Remover
+                </Text>
+              ) : null}
+            </Entrada>
+          ))}
+        </CardVidro>
+      ) : null}
+
+      {aba === 'feed' ? (
+        <>
+          {!grupo.encerrado ? (
+            <BotaoPrimario
+              texto="Check-in manual"
+              variante="outline"
+              aoPresionar={() => setManual(true)}
+            />
+          ) : null}
+          {feed.length === 0 ? (
             <Text style={estilos.rotulo}>
-              {c.nomeTreino ?? c.atividade} · {c.minutos} min{c.kcal ? ` · ${c.kcal} kcal` : ''}
+              Ainda sem check-ins. Conclua um treino para abrir o placar.
             </Text>
-          </CardVidro>
-        ))
-      )}
+          ) : (
+            feed.map((c) => <CardCheckin key={c.id} checkin={c} aoMudar={carregar} />)
+          )}
+        </>
+      ) : null}
 
       {!grupo.encerrado ? (
         <CardVidro>
@@ -236,6 +284,15 @@ export default function TelaGrupo() {
           )}
         </CardVidro>
       ) : null}
+      <SheetCheckinManual
+        grupoId={grupo.id}
+        visivel={manual}
+        aoFechar={() => setManual(false)}
+        aoSalvar={() => {
+          setManual(false);
+          carregar();
+        }}
+      />
     </ScrollView>
   );
 }
@@ -245,6 +302,18 @@ function criarEstilos(cores: CoresTema) {
     conteudo: { padding: Espacamento.lg, gap: Espacamento.md },
     linha: { flexDirection: 'row', alignItems: 'center', gap: Espacamento.md, minHeight: 44 },
     flex: { flex: 1 },
+    abas: { flexDirection: 'row', gap: Espacamento.sm },
+    podio: { gap: Espacamento.sm },
+    tituloBanner: {
+      fontFamily: FamiliaFonte.semibold,
+      fontSize: Tipografia.titulo2,
+      color: '#FFFFFF',
+    },
+    subBanner: {
+      fontFamily: FamiliaFonte.regular,
+      fontSize: Tipografia.subtitulo,
+      color: '#FFFFFF',
+    },
     secao: {
       fontFamily: FamiliaFonte.semibold,
       fontWeight: PesoFonte.semibold,

@@ -107,3 +107,36 @@ export function mensagemDeErro(
 export function mensagemConvite(nome: string, codigo: string): string {
   return `Entre no meu grupo "${nome}" no TreinaAI com o código ${codigo}.`;
 }
+
+// Cores das 8 capas prontas ('capa:1'..'capa:8'); banner de foto usa o caminho no Storage.
+const CORES_CAPA = [
+  '#2F6FED',
+  '#0FA37F',
+  '#E8590C',
+  '#9C36B5',
+  '#D6336C',
+  '#1098AD',
+  '#5C7CFA',
+  '#74B816',
+];
+
+/** Cor da capa pronta; null se o banner não for uma capa (foto ou vazio). */
+export function corDaCapa(banner: unknown): string | null {
+  if (typeof banner !== 'string') return null;
+  const n = /^capa:([1-8])$/.exec(banner)?.[1];
+  return n ? CORES_CAPA[Number(n) - 1] : null;
+}
+
+/** Data local AAAA-MM-DD de hoje ou de ontem (o manual só vale para esses dois dias). */
+export function dataManual(quando: 'hoje' | 'ontem', agora: Date = new Date()): string {
+  const d = new Date(agora);
+  if (quando === 'ontem') d.setDate(d.getDate() - 1);
+  const dois = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}`;
+}
+
+/** Minutos do check-in manual: inteiro de 1 a 600. null se inválido. */
+export function validarMinutos(valor: unknown): number | null {
+  const n = typeof valor === 'string' ? Number(valor.trim()) : valor;
+  return typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= 600 ? n : null;
+}

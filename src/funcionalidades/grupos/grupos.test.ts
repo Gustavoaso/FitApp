@@ -5,6 +5,9 @@ import {
   validarApelido,
   validarNomeGrupo,
   textoPontos,
+  corDaCapa,
+  dataManual,
+  validarMinutos,
   type LinhaRanking,
 } from './grupos';
 
@@ -62,4 +65,28 @@ describe('mensagens', () => {
   });
   it('convite leva nome e código, nada pessoal', () =>
     expect(mensagemConvite('Galera', 'AB12CD')).toContain('AB12CD'));
+});
+
+describe('capa, data manual e minutos', () => {
+  it('corDaCapa só aceita capa:1 a capa:8', () => {
+    expect(corDaCapa('capa:1')).toMatch(/^#/);
+    expect(corDaCapa('capa:9')).toBeNull();
+    expect(corDaCapa('x/foto.jpg')).toBeNull();
+    expect(corDaCapa(null)).toBeNull();
+    expect(corDaCapa(3)).toBeNull();
+  });
+  it('dataManual dá hoje e ontem, inclusive na virada do mês', () => {
+    const agora = new Date(2026, 2, 1, 10);
+    expect(dataManual('hoje', agora)).toBe('2026-03-01');
+    expect(dataManual('ontem', agora)).toBe('2026-02-28');
+  });
+  it('validarMinutos recusa fora de 1 a 600 e tipos errados', () => {
+    expect(validarMinutos('45')).toBe(45);
+    expect(validarMinutos('0')).toBeNull();
+    expect(validarMinutos('601')).toBeNull();
+    expect(validarMinutos('1.5')).toBeNull();
+    expect(validarMinutos('')).toBeNull();
+    expect(validarMinutos(null)).toBeNull();
+    expect(validarMinutos(undefined)).toBeNull();
+  });
 });
