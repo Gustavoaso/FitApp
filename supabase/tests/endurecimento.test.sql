@@ -18,7 +18,7 @@ $$;
 
 set local role authenticated;
 select pg_temp.como(1);
-create temp table g as select public.criar_grupo('Grupo Teste', 'treinos') as r;
+create temp table g as select public.criar_grupo('Grupo Teste') as r;
 grant all on g to authenticated;
 
 -- Tentativas: 5 falhas, a 6ª já é bloqueada, até com o código certo.

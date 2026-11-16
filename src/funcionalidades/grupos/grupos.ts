@@ -1,17 +1,22 @@
 // Regras puras de grupos (RN23, RN24): validação de entrada, rótulos e mensagens de erro.
 
-export type ModoGrupo = 'treinos' | 'minutos' | 'xp';
-
-export const MODOS: { valor: ModoGrupo; rotulo: string }[] = [
-  { valor: 'treinos', rotulo: 'Treinos' },
-  { valor: 'minutos', rotulo: 'Minutos' },
-  { valor: 'xp', rotulo: 'XP' },
-];
+export const ATIVIDADES = [
+  'musculação',
+  'corrida',
+  'caminhada',
+  'bike',
+  'natação',
+  'esporte',
+  'outro',
+] as const;
+export type Atividade = (typeof ATIVIDADES)[number];
 
 export interface Grupo {
   id: string;
   nome: string;
-  modo: ModoGrupo;
+  descricao: string | null;
+  /** 'capa:1'..'capa:8' ou caminho no bucket banners. */
+  banner: string | null;
   duracaoSemanas: number | null;
   fim: string | null;
   encerrado: boolean;
@@ -25,8 +30,6 @@ export interface Grupo {
 export interface LinhaRanking {
   membroId: string;
   apelido: string;
-  treinos: number;
-  minutos: number;
   pontos: number;
   posicao: number;
   ehVoce: boolean;
@@ -35,11 +38,16 @@ export interface LinhaRanking {
 export interface Checkin {
   id: string;
   apelido: string;
+  atividade: string;
   nomeTreino: string | null;
+  descricao: string | null;
+  fotoCaminho: string | null;
   minutos: number;
   kcal: number | null;
-  pontos: number;
   data: string;
+  curtidas: number;
+  curtiu: boolean;
+  comentarios: number;
   ehVoce: boolean;
 }
 
@@ -66,24 +74,26 @@ export function validarNomeGrupo(valor: unknown): { nome: string } | { erro: str
   return { nome };
 }
 
-/** Valor mostrado ao lado do apelido no ranking, conforme o modo do grupo. */
-export function valorDoModo(linha: LinhaRanking, modo: ModoGrupo): string {
-  if (modo === 'minutos') return `${linha.minutos} min`;
-  if (modo === 'xp') return `${linha.pontos} XP`;
-  return linha.treinos === 1 ? '1 treino' : `${linha.treinos} treinos`;
+/** Pontuação do ranking: 1 ponto por dia com check-in. */
+export function textoPontos(pontos: number): string {
+  return pontos === 1 ? '1 ponto' : `${pontos} pontos`;
 }
 
 const MENSAGENS: Record<string, string> = {
   codigo_invalido: 'Código não encontrado. Confira com quem convidou.',
   muitas_tentativas: 'Muitas tentativas. Tente de novo mais tarde.',
   removido_do_grupo: 'Você não pode voltar a este grupo.',
-  grupo_cheio: 'Este grupo já tem 30 pessoas.',
-  limite_grupos: 'Você já está em 5 grupos. Saia de um para entrar em outro.',
+  grupo_cheio: 'Este grupo já tem 50 pessoas.',
+  limite_grupos: 'Você já está em 10 grupos. Saia de um para entrar em outro.',
   apelido_obrigatorio: 'Escolha um apelido antes.',
   apelido_em_uso: 'Esse apelido já está em uso.',
   criador_nao_sai: 'Quem criou o grupo encerra em vez de sair.',
   nao_membro: 'Você não participa deste grupo.',
   nao_criador: 'Só quem criou o grupo pode fazer isso.',
+  data_invalida: 'O check-in manual só vale para hoje ou ontem.',
+  fora_do_periodo: 'Essa data está fora do período do grupo.',
+  grupo_encerrado: 'Este grupo foi encerrado.',
+  comentario_invalido: 'O comentário tem de 1 a 280 caracteres.',
 };
 
 /** Traduz o erro do banco (a mensagem é o código) para português simples. */

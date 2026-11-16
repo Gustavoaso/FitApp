@@ -7,7 +7,6 @@ import {
   type Checkin,
   type Grupo,
   type LinhaRanking,
-  type ModoGrupo,
 } from './grupos';
 
 type Retorno<F extends keyof Database['public']['Functions']> =
@@ -62,7 +61,8 @@ export async function listarGrupos(): Promise<Resultado<Grupo[]>> {
     valor: (r.valor ?? []).map((g) => ({
       id: g.id,
       nome: g.nome,
-      modo: g.modo as ModoGrupo,
+      descricao: g.descricao,
+      banner: g.banner,
       duracaoSemanas: g.duracao_semanas,
       fim: g.fim,
       encerrado: g.encerrado,
@@ -76,11 +76,10 @@ export async function listarGrupos(): Promise<Resultado<Grupo[]>> {
 
 export async function criarGrupo(
   nome: string,
-  modo: ModoGrupo,
   semanas: number | null,
 ): Promise<Resultado<{ id: string; codigo: string } | null>> {
   const r = await chamar(() =>
-    supabase.rpc('criar_grupo', { p_nome: nome, p_modo: modo, p_semanas: semanas ?? undefined }),
+    supabase.rpc('criar_grupo', { p_nome: nome, p_semanas: semanas ?? undefined }),
   );
   if (!r.ok) return r;
   const v = r.valor as { id?: string; codigo?: string } | null;
@@ -114,8 +113,6 @@ export async function buscarRanking(grupo: string): Promise<Resultado<LinhaRanki
     valor: (r.valor ?? []).map((l) => ({
       membroId: l.membro_id,
       apelido: l.apelido,
-      treinos: l.treinos,
-      minutos: l.minutos,
       pontos: l.pontos,
       posicao: l.posicao,
       ehVoce: l.eh_voce,
@@ -133,12 +130,36 @@ export async function buscarFeed(grupo: string): Promise<Resultado<Checkin[]>> {
     valor: (r.valor ?? []).map((c) => ({
       id: c.id,
       apelido: c.apelido,
+      atividade: c.atividade,
       nomeTreino: c.nome_treino,
+      descricao: c.descricao,
+      fotoCaminho: c.foto_caminho,
       minutos: c.minutos,
       kcal: c.kcal,
-      pontos: c.pontos,
       data: c.data,
+      curtidas: c.curtidas,
+      curtiu: c.curtiu,
+      comentarios: c.comentarios,
       ehVoce: c.eh_voce,
     })),
   };
 }
+
+export const curtirCheckin = (checkin: string) =>
+  chamar(() => supabase.rpc('alternar_curtida_checkin', { p_checkin: checkin }));
+export const comentarCheckin = (checkin: string, texto: string) =>
+  chamar(() => supabase.rpc('comentar_checkin', { p_checkin: checkin, p_texto: texto }));
+export const registrarCheckinManual = (
+  grupo: string,
+  dados: { atividade: string; minutos: number; data: string; descricao?: string; foto?: string },
+) =>
+  chamar(() =>
+    supabase.rpc('registrar_checkin_manual', {
+      p_grupo: grupo,
+      p_atividade: dados.atividade,
+      p_minutos: dados.minutos,
+      p_data: dados.data,
+      p_descricao: dados.descricao,
+      p_foto: dados.foto,
+    }),
+  );

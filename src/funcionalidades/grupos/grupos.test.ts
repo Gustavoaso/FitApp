@@ -4,16 +4,14 @@ import {
   normalizarCodigo,
   validarApelido,
   validarNomeGrupo,
-  valorDoModo,
+  textoPontos,
   type LinhaRanking,
 } from './grupos';
 
 const linha: LinhaRanking = {
   membroId: 'm',
   apelido: 'Ana',
-  treinos: 3,
-  minutos: 150,
-  pontos: 300,
+  pontos: 3,
   posicao: 1,
   ehVoce: true,
 };
@@ -45,18 +43,17 @@ describe('validarNomeGrupo', () => {
   );
 });
 
-describe('valorDoModo', () => {
-  it('formata por modo', () => {
-    expect(valorDoModo(linha, 'treinos')).toBe('3 treinos');
-    expect(valorDoModo({ ...linha, treinos: 1 }, 'treinos')).toBe('1 treino');
-    expect(valorDoModo(linha, 'minutos')).toBe('150 min');
-    expect(valorDoModo(linha, 'xp')).toBe('300 XP');
+describe('textoPontos', () => {
+  it('formata a pontuação', () => {
+    expect(textoPontos(linha.pontos)).toBe('3 pontos');
+    expect(textoPontos(1)).toBe('1 ponto');
+    expect(textoPontos(0)).toBe('0 pontos');
   });
 });
 
 describe('mensagens', () => {
   it('traduz o código do banco', () => {
-    expect(mensagemDeErro({ message: 'grupo_cheio' })).toMatch('30 pessoas');
+    expect(mensagemDeErro({ message: 'grupo_cheio' })).toMatch('50 pessoas');
     expect(mensagemDeErro({ code: '23505' })).toMatch('em uso');
   });
   it('erro desconhecido ou nulo vira mensagem genérica', () => {

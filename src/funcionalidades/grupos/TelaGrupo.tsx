@@ -25,7 +25,7 @@ import { useTema } from '@/compartilhado/useTema';
 import { Entrada, useQuique } from '@/compartilhado/movimento';
 import {
   mensagemConvite,
-  valorDoModo,
+  textoPontos,
   type Checkin,
   type Grupo,
   type LinhaRanking,
@@ -153,7 +153,7 @@ export default function TelaGrupo() {
               {l.apelido}
               {l.ehVoce ? ' (você)' : ''}
             </Text>
-            <Text style={estilos.valor}>{valorDoModo(l, grupo.modo)}</Text>
+            <Text style={estilos.valor}>{textoPontos(l.pontos)}</Text>
             {grupo.ehCriador && !l.ehVoce && !grupo.encerrado ? (
               <Text
                 accessibilityRole="button"
@@ -191,8 +191,7 @@ export default function TelaGrupo() {
           >
             <Text style={estilos.apelido}>{c.apelido}</Text>
             <Text style={estilos.rotulo}>
-              {c.nomeTreino ?? 'Treino'} · {c.minutos} min{c.kcal ? ` · ${c.kcal} kcal` : ''} · +
-              {c.pontos} XP
+              {c.nomeTreino ?? c.atividade} · {c.minutos} min{c.kcal ? ` · ${c.kcal} kcal` : ''}
             </Text>
           </CardVidro>
         ))

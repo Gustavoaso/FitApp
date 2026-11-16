@@ -344,40 +344,49 @@ export type Database = {
       };
       grupo_checkins: {
         Row: {
+          atividade: string;
           criado_em: string;
           data: string;
+          descricao: string | null;
+          foto_caminho: string | null;
           grupo_id: string;
           id: string;
           kcal: number | null;
+          manual: boolean;
           minutos: number;
           nome_treino: string | null;
-          pontos: number;
-          sessao_id: string;
+          sessao_id: string | null;
           usuario_id: string;
         };
         ComputedFields: never;
         Insert: {
+          atividade?: string;
           criado_em?: string;
           data: string;
+          descricao?: string | null;
+          foto_caminho?: string | null;
           grupo_id: string;
           id?: string;
           kcal?: number | null;
+          manual?: boolean;
           minutos?: number;
           nome_treino?: string | null;
-          pontos?: number;
-          sessao_id: string;
+          sessao_id?: string | null;
           usuario_id: string;
         };
         Update: {
+          atividade?: string;
           criado_em?: string;
           data?: string;
+          descricao?: string | null;
+          foto_caminho?: string | null;
           grupo_id?: string;
           id?: string;
           kcal?: number | null;
+          manual?: boolean;
           minutos?: number;
           nome_treino?: string | null;
-          pontos?: number;
-          sessao_id?: string;
+          sessao_id?: string | null;
           usuario_id?: string;
         };
         Relationships: [
@@ -393,6 +402,83 @@ export type Database = {
             columns: ['sessao_id'];
             isOneToOne: false;
             referencedRelation: 'sessoes_treino';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      grupo_comentarios: {
+        Row: {
+          checkin_id: string;
+          criado_em: string;
+          grupo_id: string;
+          id: string;
+          texto: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          checkin_id: string;
+          criado_em?: string;
+          grupo_id: string;
+          id?: string;
+          texto: string;
+          usuario_id: string;
+        };
+        Update: {
+          checkin_id?: string;
+          criado_em?: string;
+          grupo_id?: string;
+          id?: string;
+          texto?: string;
+          usuario_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'grupo_comentarios_checkin_id_fkey';
+            columns: ['checkin_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupo_checkins';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'grupo_comentarios_grupo_id_fkey';
+            columns: ['grupo_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupos';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      grupo_curtidas: {
+        Row: {
+          checkin_id: string;
+          grupo_id: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          checkin_id: string;
+          grupo_id: string;
+          usuario_id: string;
+        };
+        Update: {
+          checkin_id?: string;
+          grupo_id?: string;
+          usuario_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'grupo_curtidas_checkin_id_fkey';
+            columns: ['checkin_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupo_checkins';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'grupo_curtidas_grupo_id_fkey';
+            columns: ['grupo_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupos';
             referencedColumns: ['id'];
           },
         ];
@@ -459,40 +545,43 @@ export type Database = {
       };
       grupos: {
         Row: {
+          banner: string | null;
           codigo: string;
           criado_em: string;
           criador_id: string;
+          descricao: string | null;
           duracao_semanas: number | null;
           encerrado_em: string | null;
           fim: string | null;
           id: string;
           inicio: string;
-          modo: string;
           nome: string;
         };
         ComputedFields: never;
         Insert: {
+          banner?: string | null;
           codigo: string;
           criado_em?: string;
           criador_id: string;
+          descricao?: string | null;
           duracao_semanas?: number | null;
           encerrado_em?: string | null;
           fim?: string | null;
           id?: string;
           inicio?: string;
-          modo: string;
           nome: string;
         };
         Update: {
+          banner?: string | null;
           codigo?: string;
           criado_em?: string;
           criador_id?: string;
+          descricao?: string | null;
           duracao_semanas?: number | null;
           encerrado_em?: string | null;
           fim?: string | null;
           id?: string;
           inicio?: string;
-          modo?: string;
           nome?: string;
         };
         Relationships: [];
@@ -1079,6 +1168,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      alternar_curtida_checkin: { Args: { p_checkin: string }; Returns: boolean };
       buscar_alimentos_rag: {
         Args: {
           limite_por_slot?: number;
@@ -1128,28 +1218,63 @@ export type Database = {
           tipo_movimento: string;
         }[];
       };
-      criar_grupo: { Args: { p_modo: string; p_nome: string; p_semanas?: number }; Returns: Json };
+      comentar_checkin: { Args: { p_checkin: string; p_texto: string }; Returns: string };
+      comentarios_checkin: {
+        Args: { p_checkin: string };
+        Returns: {
+          apelido: string;
+          criado_em: string;
+          eh_voce: boolean;
+          id: string;
+          texto: string;
+        }[];
+      };
+      criar_grupo: {
+        Args: {
+          p_banner?: string;
+          p_descricao?: string;
+          p_inicio?: string;
+          p_nome: string;
+          p_semanas?: number;
+        };
+        Returns: Json;
+      };
       definir_checkin_automatico: {
         Args: { p_ativo: boolean; p_grupo: string };
         Returns: undefined;
       };
       e_dono_plano_dieta: { Args: { plano: string }; Returns: boolean };
       e_dono_plano_treino: { Args: { plano: string }; Returns: boolean };
+      editar_grupo: {
+        Args: {
+          p_banner?: string;
+          p_descricao?: string;
+          p_fim?: string;
+          p_grupo: string;
+          p_nome: string;
+        };
+        Returns: undefined;
+      };
       encerrar_grupo: { Args: { p_grupo: string }; Returns: undefined };
       entrar_grupo: { Args: { p_codigo: string }; Returns: string };
       feed_grupo: {
         Args: { p_grupo: string; p_limite?: number };
         Returns: {
           apelido: string;
+          atividade: string;
+          comentarios: number;
           criado_em: string;
+          curtidas: number;
+          curtiu: boolean;
           data: string;
+          descricao: string;
           eh_voce: boolean;
+          foto_caminho: string;
           id: string;
           kcal: number;
           membro_id: string;
           minutos: number;
           nome_treino: string;
-          pontos: number;
         }[];
       };
       geracoes_hoje: { Args: Record<PropertyKey, never>; Returns: number };
@@ -1159,8 +1284,10 @@ export type Database = {
       meus_grupos: {
         Args: Record<PropertyKey, never>;
         Returns: {
+          banner: string;
           checkin_automatico: boolean;
           codigo: string;
+          descricao: string;
           duracao_semanas: number;
           eh_criador: boolean;
           encerrado: boolean;
@@ -1168,21 +1295,30 @@ export type Database = {
           id: string;
           inicio: string;
           membros: number;
-          modo: string;
           nome: string;
         }[];
       };
+      pode_ler_foto_de_grupo: { Args: { p_bucket: string; p_caminho: string }; Returns: boolean };
       ranking_grupo: {
         Args: { p_grupo: string };
         Returns: {
           apelido: string;
           eh_voce: boolean;
           membro_id: string;
-          minutos: number;
           pontos: number;
           posicao: number;
-          treinos: number;
         }[];
+      };
+      registrar_checkin_manual: {
+        Args: {
+          p_atividade: string;
+          p_data: string;
+          p_descricao?: string;
+          p_foto?: string;
+          p_grupo: string;
+          p_minutos: number;
+        };
+        Returns: string;
       };
       remover_membro: { Args: { p_grupo: string; p_membro: string }; Returns: undefined };
       sair_grupo: { Args: { p_grupo: string }; Returns: undefined };

@@ -22,12 +22,10 @@ import {
 import { useTema } from '@/compartilhado/useTema';
 import { Entrada } from '@/compartilhado/movimento';
 import {
-  MODOS,
   normalizarCodigo,
   validarApelido,
   validarNomeGrupo,
   type Grupo,
-  type ModoGrupo,
 } from './grupos';
 import {
   buscarApelido,
@@ -49,7 +47,6 @@ export default function TelaGrupos() {
   const [painel, setPainel] = useState<Painel>(null);
   const [textoApelido, setTextoApelido] = useState('');
   const [nome, setNome] = useState('');
-  const [modo, setModo] = useState<ModoGrupo>('treinos');
   const [semanas, setSemanas] = useState('');
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState<string | null>(null);
@@ -87,7 +84,7 @@ export default function TelaGrupos() {
       return setErro('A duração vai de 1 a 52 semanas (ou deixe em branco).');
     }
     setOcupado(true);
-    const r = await criarGrupo(v.nome, modo, n);
+    const r = await criarGrupo(v.nome, n);
     setOcupado(false);
     if (!r.ok || !r.valor) return setErro(r.ok ? 'Não deu certo. Tente de novo.' : r.erro);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -184,17 +181,7 @@ export default function TelaGrupos() {
                 placeholderTextColor={cores.textoSecundario}
                 maxLength={40}
               />
-              <Text style={estilos.texto}>O que conta no ranking</Text>
-              <View style={estilos.chips}>
-                {MODOS.map((m) => (
-                  <ChipOpcao
-                    key={m.valor}
-                    rotulo={m.rotulo}
-                    selecionado={modo === m.valor}
-                    aoPressionar={() => setModo(m.valor)}
-                  />
-                ))}
-              </View>
+              <Text style={estilos.texto}>Pontuação: 1 ponto por dia com check-in.</Text>
               <TextInput
                 accessibilityLabel="Duração em semanas"
                 style={estilos.campo}
@@ -248,8 +235,7 @@ export default function TelaGrupos() {
                     <View style={estilos.flex}>
                       <Text style={estilos.titulo}>{g.nome}</Text>
                       <Text style={estilos.texto}>
-                        {g.membros} {g.membros === 1 ? 'membro' : 'membros'} ·{' '}
-                        {MODOS.find((m) => m.valor === g.modo)?.rotulo}
+                        {g.membros} {g.membros === 1 ? 'membro' : 'membros'}
                         {g.encerrado ? ' · Encerrado' : ''}
                       </Text>
                     </View>
