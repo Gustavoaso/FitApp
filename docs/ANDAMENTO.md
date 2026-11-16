@@ -3,7 +3,7 @@
 Fluxo: novo-projeto
 **Modo:** adotado
 **Fase:** desenvolvimento (bloco 2026-11-16, etapas 30–38; 29 em espera)
-**Branch:** agente/fitapp (base: gustavo-branch)
+**Branch:** dev (única; sobe para main por PR)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
 ## Validações do dono
