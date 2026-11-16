@@ -2,7 +2,7 @@
 
 Fluxo: novo-projeto
 **Modo:** adotado
-**Fase:** concluído
+**Fase:** desenvolvimento (bloco 2026-11-16, etapas 30–38; 29 em espera)
 **Branch:** agente/fitapp (base: gustavo-branch)
 **Pasta:** /Users/gustavosoares/Documents/Projetos/FitApp
 
@@ -271,3 +271,10 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 27 (npm audit --omit=dev): depois do `expo install --fix` as 2 altas sumiram; restam 23 (22 moderadas, 1 baixa), todas transitivas das ferramentas do Expo/Jest: `expo`/`@expo/fingerprint`/`minimatch`/`glob` (moderada, vem do Expo), `jest` e filhos (`@jest/*`, `babel-jest`, `babel-plugin-istanbul`, `test-exclude`, `jest-*`; moderadas, só de desenvolvimento), `deepmerge` (baixa, via jest-config). `npm audit fix` sem `--force` falha com ERESOLVE; a correção exige `--force` (quebraria o SDK): fica à espera de nova versão do SDK.
 - Etapa 28: ponta a ponta com a Groq NÃO foi feito (sem chave no ambiente): a ação `escolher` só tem teste com fetch simulado. Fica para o dono depois do deploy (passo 6 em Ações do dono). Local: `buscar` testado de verdade.
 - Etapa 28: `ingestao-embeddings.py` e `scripts/benchmark-llm/` ainda falam de Ollama/mxbai (consulta histórica); `index.ts` das functions não roda no `deno test` (só os handlers). Mais de 3 conceitos novos (IA embutida do edge-runtime, `json_object` x `json_schema`, RPC com JWT dentro da function, reprocesso em lotes por limite de CPU).
+
+## Bloco 2026-11-16
+
+Plano aprovado em 2026-11-16 (etapas 30–38). Etapa 29 (visual) em espera por decisão do dono. Mockups: grupos A, comunidade A.
+
+| Etapa | Situação | Tentativas | Commit |
+|---|---|---|---|
