@@ -117,6 +117,20 @@ it('a aderência conta a frequência real do plano e as sessões do servidor', a
   expect(estatisticas.diasTreinados).toBe(1);
 });
 
+it('RN28: plano de 5 dias com 7 exercícios por dia soma 35 na semana', async () => {
+  const cinco = [1, 2, 3, 4, 5].map((d) => ({
+    ...PLANO_SERVIDOR[0],
+    id: `dia-${d}`,
+    diaSemanaIndice: d,
+    exercicios: [1, 2, 3, 4, 5, 6, 7].map((e) => exercicio(`ex-${d}-${e}`)),
+  }));
+  jest.spyOn(repositorioTreino, 'buscarPlanosTreino').mockResolvedValue(cinco);
+  const estatisticas = await calcularAderenciaSemanal();
+  expect(estatisticas.metaDiasTreino).toBe(5);
+  expect(estatisticas.metaExercicios).toBe(35);
+  expect(estatisticas.totalRefeicoesPrevistas).toBe(0);
+});
+
 describe('textos da série', () => {
   it('mostra a faixa do plano e só mostra carga quando existe', () => {
     expect(descreverSerie(0, '8-12')).toBe('8-12 reps');

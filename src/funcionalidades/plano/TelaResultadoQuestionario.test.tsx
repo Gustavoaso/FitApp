@@ -106,24 +106,22 @@ it('tocar na fonte abre o trecho no formSheet', async () => {
   });
 });
 
-it('aceitar salva e mostra o momento de conquista', async () => {
+it('aceitar salva e abre o Início', async () => {
   (repositorioPlano.salvarPlanoComoAtivo as jest.Mock).mockResolvedValue(undefined);
   await render(<TelaResultadoQuestionario />);
   await fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
-  expect(
-    await screen.findByLabelText('Plano ativado. Seu primeiro dia começa agora.'),
-  ).toBeTruthy();
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(tabs)/inicio'));
   expect(repositorioPlano.salvarPlanoComoAtivo).toHaveBeenCalledTimes(1);
   // O peso do questionário vai para o histórico que o Início e o Perfil leem.
   expect(adicionarEntradaPeso).toHaveBeenCalledWith(82);
 });
 
-it('erro ao salvar aparece na barra e não comemora', async () => {
+it('erro ao salvar aparece na barra e não abre o Início', async () => {
   (repositorioPlano.salvarPlanoComoAtivo as jest.Mock).mockRejectedValue(new Error('Sem conexão.'));
   await render(<TelaResultadoQuestionario />);
   await fireEvent.press(screen.getByRole('button', { name: 'Começar meu plano' }));
   await waitFor(() => expect(screen.getByText('Sem conexão.')).toBeTruthy());
-  expect(screen.queryByText('Plano ativado')).toBeNull();
+  expect(mockReplace).not.toHaveBeenCalled();
   expect(adicionarEntradaPeso).not.toHaveBeenCalled();
 });
 

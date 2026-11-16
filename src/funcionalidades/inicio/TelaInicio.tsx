@@ -21,7 +21,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, AnelProgresso, BotaoPrimario, CartaoNivel } from '@/compartilhado/ui';
+import { CardVidro, AnelProgresso, BotaoPrimario } from '@/compartilhado/ui';
 import { IconeCookie } from '@/compartilhado/ui/IconesFitApp';
 import { CardAderencia } from './CardAderencia';
 import { GraficoEvolucao, PontoGrafico } from './GraficoEvolucao';
@@ -43,11 +43,8 @@ import {
   obterEvolucaoCargas,
   EstatisticasAderencia,
 } from '@/compartilhado/servicos/progresso-servico';
-import { calcularSequenciaDias } from './calcular-sequencia';
 import { formatarKcalEstimada } from '@/compartilhado/utilidades/gasto-calorico';
 import { repositorioPlano, repositorioAgua } from '@/compartilhado/servicos/repositorio';
-import { buscarResumoGamificacao } from '@/compartilhado/servicos/gamificacao-servico';
-import type { ResumoGamificacao } from '@/compartilhado/utilidades/gamificacao';
 import { somarConsumoDoDia } from './consumo-do-dia';
 import {
   obterPlanoTreinoCustomizado,
@@ -59,7 +56,6 @@ export default function TelaInicio() {
   const estilos = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
 
-  const [gamificacao, setGamificacao] = useState<ResumoGamificacao | null>(null);
   const [caloriasConsumidas, setCaloriasConsumidas] = useState(0);
   const [caloriasMeta, setCaloriasMeta] = useState(0);
 
@@ -96,7 +92,6 @@ export default function TelaInicio() {
     porcentagemAderenciaGeral: 0,
   });
 
-  const [sequenciaDias, setSequenciaDias] = useState(0);
 
   // Modal registrar peso
   const [modalPesoVisivel, setModalPesoVisivel] = useState(false);
@@ -114,11 +109,6 @@ export default function TelaInicio() {
   const porcentagemCalorias = Math.round((caloriasConsumidas / (caloriasMeta || 1)) * 100);
 
   const carregarDadosProgresso = async () => {
-    const cargas = await obterEvolucaoCargas();
-    const datasTreino = cargas.flatMap((c) => c.historicoCargas.map((h) => h.data));
-    // Mesma referência de data (UTC) usada ao registrar a série.
-    setSequenciaDias(calcularSequenciaDias(datasTreino, new Date().toISOString().slice(0, 10)));
-
     const metas = await repositorioPlano.obterMetasAtivasUsuario();
     if (metas) {
       if (metas.caloriasMeta) setCaloriasMeta(metas.caloriasMeta);
@@ -182,7 +172,6 @@ export default function TelaInicio() {
 
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
-    setGamificacao(await buscarResumoGamificacao(new Date().toISOString().split('T')[0]));
   };
 
   useFocusEffect(
@@ -244,21 +233,6 @@ export default function TelaInicio() {
             <Text style={estilos.dataAtual}>{diasemana}</Text>
           </View>
 
-          <View style={estilos.topBarDireita}>
-            <View
-              style={estilos.streakBadge}
-              accessible
-              accessibilityLabel={`Sequência: ${sequenciaDias} ${sequenciaDias === 1 ? 'dia' : 'dias'}`}
-            >
-              <SymbolView
-                name="bolt.fill"
-                size={14}
-                tintColor={cores.destaqueTexto}
-                weight="regular"
-              />
-              <Text style={estilos.streakTexto}>{sequenciaDias}</Text>
-            </View>
-          </View>
         </View>
 
         {/* ── Card Principal: Calorias (Rodada 5 — Ajuste 3: Somente visualização) ── */}
@@ -345,7 +319,6 @@ export default function TelaInicio() {
           </View>
         </View>
 
-        {gamificacao ? <CartaoNivel resumo={gamificacao} /> : null}
 
         {/* ── Painel de Aderência Semanal (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <View>
@@ -575,28 +548,6 @@ const criarEstilos = (cores: CoresTema) =>
       fontSize: Fonte.label,
       color: cores.textoSecundario,
       marginTop: 3,
-    },
-    topBarDireita: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    streakBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: cores.superficie,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: Raio.full,
-      borderWidth: 1,
-      borderColor: cores.separador,
-    },
-    streakTexto: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Tipografia.rodape,
-      fontWeight: PesoFonte.bold,
-      color: cores.texto,
     },
 
     cardCalorias: {

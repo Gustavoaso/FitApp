@@ -329,24 +329,6 @@ export default function TelaTreino() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Top Bar Limpa ────────────────────────────────────── */}
-        <View style={estilos.topBar}>
-          {/* O título "Treino" agora é o título grande do header nativo. */}
-          <View />
-
-          <View style={estilos.topBarDireita}>
-            <View style={estilos.streakBadge}>
-              <SymbolView
-                name="bolt.fill"
-                size={14}
-                tintColor={cores.destaqueTexto}
-                weight="regular"
-              />
-              <Text style={estilos.streakTexto}>1</Text>
-            </View>
-          </View>
-        </View>
-
         {/* ── Segmented Control: Registrado x Planejado ── */}
         <View style={estilos.segmentControlContainer}>
           <TouchableOpacity
@@ -1314,28 +1296,6 @@ const criarEstilos = (cores: CoresTema) =>
     topBarTitulo: {
       fontFamily: FamiliaFonte.bold,
       fontSize: 20,
-      fontWeight: PesoFonte.bold,
-      color: cores.texto,
-    },
-    topBarDireita: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    streakBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-      backgroundColor: cores.superficie,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: Raio.full,
-      borderWidth: 1,
-      borderColor: cores.separador,
-    },
-    streakTexto: {
-      fontFamily: FamiliaFonte.bold,
-      fontSize: Tipografia.rodape,
       fontWeight: PesoFonte.bold,
       color: cores.texto,
     },

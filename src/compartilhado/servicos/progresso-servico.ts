@@ -113,7 +113,8 @@ export async function calcularMetaDoCronograma(inicioSemana: string): Promise<Me
     }
   }
 
-  let refeicoesPlanejadas = 20;
+  // RN28: sem cronograma de refeições não há meta (nunca um número fixo).
+  let refeicoesPlanejadas = 0;
   try {
     const jsonQtd = await AsyncStorage.getItem('@fitapp_cronograma_refeicoes_v1');
     if (jsonQtd) {
@@ -124,7 +125,7 @@ export async function calcularMetaDoCronograma(inicioSemana: string): Promise<Me
       );
     }
   } catch {
-    refeicoesPlanejadas = 20;
+    refeicoesPlanejadas = 0;
   }
 
   return {
@@ -316,7 +317,7 @@ export async function calcularAderenciaSemanal(): Promise<EstatisticasAderencia>
     const metaExercicios = meta.exerciciosPlanejados;
 
     const refeicoesRealizadas = progresso.refeicoesRealizadas || 0;
-    const metaRefeicoes = meta.refeicoesPlanejadas || 20;
+    const metaRefeicoes = meta.refeicoesPlanejadas;
 
     // Cálculo estrito das porcentagens (sem inflar números fictícios)
     const pct = (feito: number, meta: number) =>

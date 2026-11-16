@@ -1166,7 +1166,6 @@ export type Database = {
         }[];
       };
       remover_membro: { Args: { p_grupo: string; p_membro: string }; Returns: undefined };
-      resumo_gamificacao: { Args: { p_hoje?: string }; Returns: Json };
       sair_grupo: { Args: { p_grupo: string }; Returns: undefined };
       salvar_plano_gerado: { Args: { p_dados: Json }; Returns: string };
       show_limit: { Args: Record<PropertyKey, never>; Returns: number };

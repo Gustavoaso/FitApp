@@ -242,7 +242,7 @@ describe('gasto calórico estimado (RN20)', () => {
     await fireEvent.press(await screen.findByRole('button', { name: 'Finalizar Exercício' }));
 
     // Sem carga e 1 minuto: MET 3,0 × 70 kg × 1/60 h = 3,5 → 4.
-    expect(await screen.findByText('Peito e tríceps · ~4 kcal (estimativa)')).toBeTruthy();
+    expect(await screen.findByText('4 kcal')).toBeTruthy();
     const hoje = new Date().toISOString().split('T')[0];
     expect((await obterHistoricoTreinoCompleto())[hoje].kcalEstimadas).toBe(4);
   });

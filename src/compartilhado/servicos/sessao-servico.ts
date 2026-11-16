@@ -1,20 +1,5 @@
-// Gamificação (RN22): grava a sessão de treino no servidor e lê o resumo calculado no banco.
-// O app nunca envia XP: ele só registra o treino, e a função do banco faz a conta.
+// Grava a sessão de treino concluída no servidor (base da aderência RN28 e dos grupos).
 import { supabase } from '@/compartilhado/supabase';
-import {
-  lerResumoGamificacao,
-  type ResumoGamificacao,
-} from '@/compartilhado/utilidades/gamificacao';
-
-/** Resumo do usuário logado; null offline ou sem sessão. `hoje` em YYYY-MM-DD. */
-export async function buscarResumoGamificacao(hoje: string): Promise<ResumoGamificacao | null> {
-  try {
-    const { data, error } = await supabase.rpc('resumo_gamificacao', { p_hoje: hoje });
-    return error ? null : lerResumoGamificacao(data);
-  } catch {
-    return null;
-  }
-}
 
 export interface SessaoConcluida {
   data: string;

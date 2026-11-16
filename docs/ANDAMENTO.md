@@ -49,6 +49,7 @@ Fluxo: novo-projeto
 | 24. Gamificação (RN22) | Implementada, aguardando o testador | 1 | ver git log |
 | 25. Grupos e competição (RN23, RN24) | Implementada, aguardando o testador | 1 | ver git log |
 | 28. IA na nuvem: Groq + embedding gte-small (RN06, RN14) | Implementada, aguardando o testador | 1 | ver git log |
+| 30. Sem gamificação e aderência real (RN22 revogada, RN28) | Implementada, aguardando o testador | 1 | |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -265,6 +266,7 @@ Situações: Pendente · Implementada, aguardando o testador · Reprovada (tenta
 - Etapa 26: nada visto no simulador (papel do testador). Mais de 3 conceitos novos (spring por duração/quique, shared value, worklet, `scheduleOnRN`).
 - Etapa 27 (correção, rodada 1): migration `20261117000000_endurece_grupos_e_sessoes.sql`. `entrar_grupo` bloqueia após 5 falhas em 15 min (`muitas_tentativas`, tabela `tentativas_entrar_grupo`, sem acesso do cliente). Código errado agora devolve `null` em vez de exceção, porque a exceção desfaria o registro da falha; o app (`entrarNoGrupo`) converte `null` em "código não encontrado". Alternativa descartada: dblink/transação autônoma.
 - Etapa 27: `sessoes_treino` ganhou trigger de validação (data hoje ou ontem em America/Sao_Paulo, duração 1 a 240, kcal 0 a 3000 ou null) só para os papéis `authenticated`/`anon` (seed, testes e manutenção seguem livres). O padrão de `data` passou a ser a data de São Paulo (em UTC passaria um dia à frente à noite). O app limita duração e kcal antes de gravar (`gamificacao-servico.ts`).
+- Etapa 30: removidos XP, nível, conquistas, sequência, `MomentoConquista` e o selo de sequência (o fim do treino vai direto ao resumo; plano aceito vai direto ao Início). `gamificacao-servico.ts` virou `sessao-servico.ts` (só `gravarSessaoTreino`). Migration `20261119000000` só derruba `resumo_gamificacao`; o modo 'xp' do ranking de grupos fica para a etapa 33. Aderência (RN28) já vinha do plano e dos registros; tirei os dois 20 fixos de refeições (sem cronograma, meta 0). Teste: plano de 5 dias × 7 exercícios = 35.
 - Etapa 27: removido pelo criador não reentra (`grupo_removidos`, erro `removido_do_grupo`). Testes: `supabase/tests/endurecimento.test.sql`; `grupos.test.sql` ajustado ao retorno `null`.
 - Etapa 27: `expo install --fix -- --force` deixou o expo-doctor em 20/20. O comando acrescentou o plugin `expo-status-bar` ao `app.json`; revertido (não era da etapa).
 - Etapa 27 (RN25): "quique 0,65" lido como amortecimento da mola `celebracao`; subi para `dampingRatio: 0.7` (quique ~0,3). Se a intenção era outro valor, ajustar em `MOLAS`.

@@ -19,7 +19,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   BotaoPrimario,
   EstadoErro,
-  MomentoConquista,
   OrbeGeracao,
   BarraProgresso,
 } from '@/compartilhado/ui';
@@ -136,7 +135,6 @@ export default function TelaResultadoQuestionario() {
   const { plano, respostas } = useLocalSearchParams<{ plano?: string; respostas?: string }>();
   const [salvando, setSalvando] = useState(false);
   const [erroSalvar, setErroSalvar] = useState<string | null>(null);
-  const [conquista, setConquista] = useState(false);
 
   const dadosRespostas = useMemo(() => lerJson<DadosQuestionario>(respostas), [respostas]);
   // Sem plano pronto nos parâmetros, a tela gera a partir das respostas.
@@ -256,7 +254,7 @@ export default function TelaResultadoQuestionario() {
       // passam a mostrar o mesmo peso do plano novo (etapa 20).
       const pesoKg = Number(dadosRespostas?.perfil?.peso_atual);
       if (Number.isFinite(pesoKg) && pesoKg > 0) await adicionarEntradaPeso(pesoKg);
-      setConquista(true);
+      router.replace('/(tabs)/inicio');
     } catch (erro) {
       setErroSalvar(
         erro instanceof Error ? erro.message : 'Erro desconhecido ao salvar o planejamento.',
@@ -520,13 +518,6 @@ export default function TelaResultadoQuestionario() {
         </BlurView>
       )}
 
-      {conquista ? (
-        <MomentoConquista
-          titulo="Plano ativado"
-          subtitulo="Seu primeiro dia começa agora."
-          aoTerminar={() => router.replace('/(tabs)/inicio')}
-        />
-      ) : null}
     </View>
   );
 }

@@ -23,8 +23,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, EstanteConquistas } from '@/compartilhado/ui';
-import { buscarResumoGamificacao } from '@/compartilhado/servicos/gamificacao-servico';
+import { CardVidro } from '@/compartilhado/ui';
 import { VisualizadorJSONModal } from './VisualizadorJSONModal';
 import {
   CoresTema,
@@ -76,7 +75,6 @@ export default function TelaPerfil() {
   };
 
   // Estados do Perfil e Físicos
-  const [conquistas, setConquistas] = useState<string[] | null>(null);
   const [dadosFisicos, setDadosFisicos] = useState({
     peso: SEM_DADO,
     altura: SEM_DADO,
@@ -109,8 +107,6 @@ export default function TelaPerfil() {
     const ultimoPeso = pesagens[pesagens.length - 1]?.pesoKg;
 
     setDadosFisicos(montarDadosFisicos(perfilBanco, ultimasRespostas, sistemaUnidades, ultimoPeso));
-    const resumo = await buscarResumoGamificacao(new Date().toISOString().split('T')[0]);
-    setConquistas(resumo ? resumo.conquistas : null);
   };
 
   useFocusEffect(
@@ -217,8 +213,6 @@ export default function TelaPerfil() {
           <Text style={estilos.nome}>{nome}</Text>
           <Text style={estilos.email}>{email}</Text>
         </View>
-
-        {conquistas ? <EstanteConquistas conquistadas={conquistas} /> : null}
 
         {/* ── Dados físicos ─────────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Dados Físicos</Text>

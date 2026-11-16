@@ -33,7 +33,6 @@ import {
   BotaoPrimario,
   AnelProgresso,
   EstadoVazio,
-  MomentoConquista,
 } from '@/compartilhado/ui';
 import {
   CoresTema,
@@ -49,7 +48,6 @@ import { formatarTempo } from '@/compartilhado/utilidades';
 import {
   ehComposto,
   estimarKcalTreino,
-  formatarKcalEstimada,
   type SerieExecutada,
 } from '@/compartilhado/utilidades/gasto-calorico';
 import {
@@ -58,11 +56,7 @@ import {
   registrarExecucaoSerie,
 } from '@/compartilhado/servicos/progresso-servico';
 import { salvarHistoricoTreino } from '@/compartilhado/servicos/historico-servico';
-import {
-  buscarResumoGamificacao,
-  gravarSessaoTreino,
-} from '@/compartilhado/servicos/gamificacao-servico';
-import { novidadesDoTreino } from '@/compartilhado/utilidades/gamificacao';
+import { gravarSessaoTreino } from '@/compartilhado/servicos/sessao-servico';
 import { FimDoTreino } from './FimDoTreino';
 import {
   obterPlanoTreinoCustomizado,
@@ -106,7 +100,6 @@ export default function TelaTreinoAoVivo() {
   const [cargaUsada, setCargaUsada] = useState('');
   const [tempoRestante, setTempoRestante] = useState(90);
   const [emDescanso, setEmDescanso] = useState(false);
-  const [concluido, setConcluido] = useState(false);
   const [seriesFeitas, setSeriesFeitas] = useState(0);
   // Séries feitas de verdade (carga e reps): base da estimativa de kcal da RN20.
   const [seriesExecutadas, setSeriesExecutadas] = useState<SerieExecutada[]>([]);
@@ -115,9 +108,6 @@ export default function TelaTreinoAoVivo() {
   const [duracaoFinal, setDuracaoFinal] = useState(0);
   const [mostrarFim, setMostrarFim] = useState(false);
   // Nível e medalhas novas, mostrados um a um depois do "Treino concluído" (RN22).
-  const [novidades, setNovidades] = useState<{ titulo: string; subtitulo?: string }[]>([]);
-  const [indiceNovidade, setIndiceNovidade] = useState(-1);
-  const [semanasSeguidas, setSemanasSeguidas] = useState<number | null>(null);
 
   // Com séries registradas, sair por engano perderia o treino: pede confirmação.
   const sairDoTreino = () => {
@@ -253,19 +243,14 @@ export default function TelaTreinoAoVivo() {
           totalExercicios: listaExercicios.length,
           concluido: true,
         });
-        // O MomentoConquista dá o haptic Success e sai do treino ao terminar.
-        // Servidor: grava a sessão e compara o nível e as medalhas de antes e depois (RN22).
-        const antes = await buscarResumoGamificacao(hoje);
+        // Servidor: grava a sessão (aderência RN28 e grupos leem dela).
         await gravarSessaoTreino({
           data: hoje,
           nomeTreino: tituloTreino,
           duracaoMinutos,
           kcalEstimadas: kcal,
         });
-        const depois = await buscarResumoGamificacao(hoje);
-        setNovidades(novidadesDoTreino(antes, depois));
-        setSemanasSeguidas(depois?.semanasSeguidas ?? null);
-        setConcluido(true);
+        setMostrarFim(true);
       }
     }
   };
@@ -385,30 +370,8 @@ export default function TelaTreinoAoVivo() {
               duracaoMinutos: duracaoFinal,
               series: seriesExecutadas,
               kcalEstimadas,
-              semanasSeguidas,
             }}
             aoConcluir={fecharTreino}
-          />
-        ) : indiceNovidade >= 0 ? (
-          <MomentoConquista
-            key={indiceNovidade}
-            titulo={novidades[indiceNovidade].titulo}
-            subtitulo={novidades[indiceNovidade].subtitulo}
-            aoTerminar={() =>
-              indiceNovidade + 1 < novidades.length
-                ? setIndiceNovidade(indiceNovidade + 1)
-                : setMostrarFim(true)
-            }
-          />
-        ) : concluido ? (
-          <MomentoConquista
-            titulo="Treino concluído"
-            subtitulo={
-              kcalEstimadas === null
-                ? tituloTreino
-                : `${tituloTreino} · ${formatarKcalEstimada(kcalEstimadas)}`
-            }
-            aoTerminar={() => (novidades.length > 0 ? setIndiceNovidade(0) : setMostrarFim(true))}
           />
         ) : null}
       </KeyboardAvoidingView>
