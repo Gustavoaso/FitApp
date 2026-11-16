@@ -1,0 +1,81 @@
+<!doctype html><html lang=pt-BR><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Comunidade — feed estilo Twitter e perfil público (modo escuro)</title><style>*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:#18181b;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;color:#fff;padding:28px;-webkit-font-smoothing:antialiased}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}.lead{color:#A8A8B0;font-size:14px;margin-bottom:24px;max-width:900px}
+.row{display:flex;gap:36px;align-items:flex-start;overflow-x:auto;padding:10px 10px 30px}.col{width:393px;flex:none}
+.ph{width:393px;height:852px;border-radius:55px;background:#0B0B0D;position:relative;overflow:hidden;box-shadow:0 0 0 9px #000,0 0 0 10px #2f2f34}
+.di{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:34px;border-radius:20px;background:#000;z-index:30}
+.st{position:absolute;top:0;left:0;right:0;height:54px;z-index:20;display:flex;justify-content:space-between;padding:18px 34px 0;font-size:15px;font-weight:600;background:linear-gradient(#0B0B0D 40%,transparent)}
+.hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#fff;opacity:.9;z-index:40}
+.scr{position:absolute;inset:0;overflow-y:auto;padding:58px 16px 110px;scrollbar-width:none}.scr::-webkit-scrollbar{display:none}
+.tab{position:absolute;left:12px;right:12px;bottom:22px;height:62px;border-radius:31px;z-index:25;display:flex;justify-content:space-around;align-items:center;background:rgba(30,30,34,.62);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);border:.5px solid rgba(255,255,255,.18)}
+.tab div{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#8e8e96;width:68px;cursor:pointer}.tab div.on{color:#D6FF00}.tab svg{width:22px;height:22px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}svg.f{fill:currentColor}
+.top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
+.lt{font-size:28px;font-weight:600;letter-spacing:-.4px}.t2{font-size:22px;font-weight:600}.t3{font-size:18px;font-weight:600}.hd{font-size:16px;font-weight:500}.b{font-size:15px}.sub{font-size:13px;color:#A8A8B0}.cap{font-size:12px;color:#A8A8B0}.lima{color:#D6FF00}.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.card{background:#151518;border-radius:24px;padding:16px}.line{border:1px solid #2A2A2E}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#0B0B0D;flex:none}
+.avt{width:36px;height:36px;border:1px solid #2A2A2E;background:#1E1E22;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn{height:50px;border-radius:25px;background:#D6FF00;color:#0B0B0D;font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(214,255,0,.18);width:100%}.btn2{height:44px;border-radius:22px;background:rgba(214,255,0,.14);color:#D6FF00;font-size:15px;font-weight:500;display:flex;gap:6px;align-items:center;justify-content:center;cursor:pointer;padding:0 16px}
+.seg{display:flex;background:#1E1E22;border-radius:12px;padding:3px}.seg span{flex:1;text-align:center;font-size:14px;padding:7px 0;border-radius:9px;color:#A8A8B0;cursor:pointer}.seg span.on{background:#2f2f35;color:#fff;font-weight:500}
+.ph-img{background:linear-gradient(135deg,#2a3340,#14171c);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#5c6670}
+.act{display:flex;gap:22px;color:#A8A8B0;font-size:13px;margin-top:10px}.act span{display:flex;gap:6px;align-items:center;cursor:pointer;min-height:32px}.act span.on{color:#D6FF00}.act span.rp.on{color:#30D158}
+.note{font-size:13px;color:#A8A8B0;margin-top:22px;line-height:1.4;width:393px}.note b{color:#fff;font-weight:500}
+.fab{position:absolute;right:20px;bottom:100px;width:56px;height:56px;border-radius:28px;background:#D6FF00;color:#0B0B0D;display:flex;align-items:center;justify-content:center;z-index:26;box-shadow:0 8px 24px rgba(214,255,0,.25);cursor:pointer}.fab svg{width:24px;height:24px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#1a1a1e;border-radius:32px 32px 0 0;padding:14px 20px 40px;z-index:50;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.3,1);box-shadow:0 -10px 40px rgba(0,0,0,.6)}.sheet.open{transform:none}.sheet:before{content:"";display:block;width:36px;height:5px;border-radius:3px;background:#3a3a40;margin:0 auto 16px}
+.toast{position:absolute;top:62px;left:50%;transform:translate(-50%,-90px);background:#D6FF00;color:#0B0B0D;padding:10px 18px;border-radius:22px;font-size:14px;font-weight:500;z-index:60;transition:.35s}.toast.show{transform:translate(-50%,0)}
+.flash{animation:fl 1s}@keyframes fl{50%{box-shadow:0 0 0 9px #D6FF00,0 0 0 10px #D6FF00}}
+.gap{display:flex;flex-direction:column;gap:12px}.r{display:flex;align-items:center;gap:10px}.sp{flex:1}.tabs{display:flex;border-bottom:1px solid #2A2A2E;margin:0 -16px 0}.tabs span{flex:1;text-align:center;padding:12px 0;font-size:15px;color:#A8A8B0;cursor:pointer;position:relative}.tabs span.on{color:#fff;font-weight:500}.tabs span.on:after{content:"";position:absolute;left:30%;right:30%;bottom:-1px;height:2px;border-radius:1px;background:#D6FF00}
+.post{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #2A2A2E}.post .bd{flex:1;min-width:0}.post .ph-img{height:190px;margin-top:10px}.nm{font-size:15px;font-weight:500}.hn{font-size:14px;color:#A8A8B0}.tx{font-size:15px;line-height:1.4;margin-top:2px}
+.pc{background:#151518;border-radius:24px;padding:14px;margin-bottom:12px;display:block}.pc .post{border:0;padding:0}
+.cmp{display:flex;gap:12px;align-items:center;background:#151518;border-radius:24px;padding:12px 16px;margin-bottom:14px;color:#A8A8B0;font-size:15px;cursor:pointer}
+.pill2{position:absolute;left:50%;transform:translateX(-50%);bottom:98px;z-index:26;height:46px;padding:0 20px;border-radius:23px;display:flex;gap:8px;align-items:center;font-size:15px;font-weight:500;background:rgba(214,255,0,.92);color:#0B0B0D;cursor:pointer;box-shadow:0 8px 24px rgba(214,255,0,.22)}
+.stats{display:flex;gap:24px;margin:12px 0}.stats b{font-weight:600;font-variant-numeric:tabular-nums}.ta{background:#26262b;border-radius:16px;padding:14px;min-height:96px;font-size:16px;color:#A8A8B0}</style><body><h1>Comunidade — feed estilo Twitter e perfil público (modo escuro)</h1><p class=lead>RN30/RN24/RN32. Abas Seguindo / Para você funcionam; curtir, repostar e seguir também. A: tabs com sublinhado e botão flutuante circular. B: composer na lista e posts em cartões. Avatar do Perfil sempre no canto superior direito.</p>
+<div class=row>
+<div class=col><div class=ph><div class=di></div><div class=toast id=t1></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr>
+<div class=top><div class=lt>Comunidade</div><div class=avt onclick="hl('pf')"><i data-i=user></i></div></div>
+<div class=tabs id=ta><span class=on data-k=0>Seguindo</span><span data-k=1>Para você</span></div><div id=fa></div>
+</div><div class=fab onclick="sh('s1',1)"><i data-i=plus></i></div><div class=tab data-tab=4></div>
+<div class=sheet id=s1><div class=r style="margin-bottom:14px"><div onclick="sh('s1',0)" class=hd style="color:#A8A8B0">Cancelar</div><div class=sp></div><div class=btn2 style="height:36px" onclick="sh('s1',0);toast('t1','Post publicado')">Postar</div></div>
+<div class=r style="align-items:flex-start;gap:12px"><div data-av="Ana Souza:36"></div><div class=ta style="flex:1">O que você treinou hoje?</div></div>
+<div class=r style="margin-top:14px;color:#A8A8B0"><i data-i=image></i><div class=sp></div><span class=cap>0/280 · 1 foto</span></div></div><div class=hi></div></div>
+<div class=note><b>A · Clássico.</b> Mais próximo do Twitter: lista contínua separada por linhas finas, abas com sublinhado lima, botão "+" flutuante. Densidade alta, custo P (FlatList + abas).</div></div>
+
+<div class=col><div class=ph><div class=di></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr>
+<div class=top><div class=lt>Comunidade</div><div class=avt><i data-i=user></i></div></div>
+<div class=seg id=tb style="margin-bottom:14px"><span class=on data-k=0>Seguindo</span><span data-k=1>Para você</span></div>
+<div class=cmp><div data-av="Ana Souza:32"></div><span>O que você treinou hoje?</span><div class=sp></div><i data-i=image></i></div><div id=fb></div>
+</div><div class=pill2><i data-i=plus></i> Novo post</div><div class=tab data-tab=4></div><div class=hi></div></div>
+<div class=note><b>B · Cartões.</b> Controle segmentado nativo, composer sempre visível e cartões com respiro (raio 24). Mais "app de fitness", menos feed de texto. Custo M.</div></div>
+
+<div class=col><div class=ph id=pf><div class=di></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr style="padding-top:0">
+<div style="height:130px;background:linear-gradient(135deg,#12395a,#0B0B0D)"></div>
+<div style="padding:0 16px"><div class=r style="margin-top:-34px;align-items:flex-end"><div data-av="Camila Rocha:76" style="border:4px solid #0B0B0D;border-radius:50%"></div><div class=sp></div><div class=btn2 id=fl onclick="this.innerHTML=this.dataset.f?'Seguir':'<i data-i=check></i> Seguindo';this.dataset.f=this.dataset.f?'':1;ic()">Seguir</div></div>
+<div class=t2 style="margin-top:10px">Camila Rocha</div><div class=hn>@camila_r</div>
+<div class=b style="margin-top:8px;line-height:1.4">Musculação às 6h, corrida aos domingos. Bio até 160 caracteres.</div>
+<div class=stats><span><b>128</b> <span class=sub>seguindo</span></span><span><b>342</b> <span class=sub>seguidores</span></span><span><b>57</b> <span class=sub>posts</span></span></div>
+<div class=tabs><span class=on>Posts</span><span>Respostas</span><span>Fotos</span></div><div id=fc></div></div>
+</div><div class=tab data-tab=4></div><div class=hi></div></div>
+<div class=note><b>Perfil público.</b> Banner, avatar, @usuario, bio, contadores e posts. Menu "..." leva a denunciar e bloquear (exigência da App Store). Custo M.</div></div>
+</div>
+<script>const P={home:"M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",dumbbell:"M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11",fork:"M7 3v8a2 2 0 0 0 4 0V3M9 3v18M17 3c-2 2-3 5-3 8h3v10",people:"M9 5a3.2 3.2 0 1 0 0 6.4A3.2 3.2 0 0 0 9 5M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5a3 3 0 0 1 0 6M18 14c2 .7 3 3 3 6",bubble:"M4 5h16v11H9l-5 4z",heart:"M12 20s-8-5-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z",comment:"M4 5h16v11H10l-4 4v-4H4z",repost:"M5 9V8a2 2 0 0 1 2-2h11l-3-3M19 15v1a2 2 0 0 1-2 2H6l3 3",plus:"M12 5v14M5 12h14",camera:"M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7",check:"M5 12.5l4.5 4.5L19 7",clock:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2",chev:"M9 5l7 7-7 7",back:"M15 5l-7 7 7 7",share:"M12 15V3M8 7l4-4 4 4M5 12v8h14v-8",lock:"M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3",cal:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",image:"M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4",more:"M6 12h.01M12 12h.01M18 12h.01",trophy:"M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8",flame:"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z",user:"M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8M5 20c0-4 3-6 7-6s7 2 7 6",chart:"M4 20V4M4 20h16M8 15l4-4 3 3 5-6",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",x:"M6 6l12 12M18 6L6 18",ring:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18",globe:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"};
+function ic(r){(r||document).querySelectorAll('i[data-i]').forEach(e=>{if(e.firstChild)return;const f=e.dataset.f?' f':'';e.style.display='contents';e.innerHTML=`<svg class="i${f}" viewBox="0 0 24 24"><path d="${P[e.dataset.i]}"/></svg>`})}
+const COL=['#D6FF00','#3DA5FF','#FF8A1F','#B57BFF','#30D158','#FFD60A'];
+function av(n,s){const h=[...n].reduce((a,c)=>a+c.charCodeAt(0),0);const z=s||36;return `<div class="av" style="background:${COL[h%6]};width:${z}px;height:${z}px;font-size:${z*.36}px">${n.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>`}
+function seg(el){el.querySelectorAll('span').forEach(s=>s.onclick=()=>{el.querySelectorAll('span').forEach(x=>x.classList.remove('on'));s.classList.add('on');el.dispatchEvent(new CustomEvent('pick',{detail:s.dataset.k}))})}
+function tg(e,n){e.classList.toggle('on');const c=e.querySelector('b');if(c&&n!==undefined)c.textContent=+c.textContent+(e.classList.contains('on')?1:-1)}
+function toast(id,t){const e=document.getElementById(id);e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
+function sh(id,o){document.getElementById(id).classList.toggle('open',o)}
+function hl(id){const e=document.getElementById(id);e.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}
+function tabbar(a){return ['home:Início','dumbbell:Treino','fork:Dieta','people:Grupos','bubble:Comunidade'].map((x,i)=>{const[k,l]=x.split(':');return `<div class="${i==a?'on':''}"><i data-i="${k}"></i>${l}</div>`}).join('')}
+document.querySelectorAll('[data-tab]').forEach(e=>e.innerHTML=tabbar(+e.dataset.tab));
+document.querySelectorAll('.seg').forEach(seg);
+document.querySelectorAll('div[data-av]').forEach(u=>{const[n,z]=u.dataset.av.split(':');const s=u.getAttribute('style')||'';u.outerHTML=s?'<div style="'+s+'">'+av(n,+z)+'</div>':av(n,+z)});
+const D=[[['Bruno Lima','bruno_l','2 h','Perna pesada hoje. Agachamento 5x5 e minha pior série foi a última.',1,12,3,41],['Marina Costa','marina_c','4 h','Primeiro 10 km sem parar! Obrigada a quem incentivou no grupo.',0,31,9,128],['Diego Alves','diego_a','1 d','Dica: dormir 8 h rendeu mais do que qualquer suplemento.',0,5,1,17]],[['Fernanda Dias','fer_dias','35 min','Check-in número 30 no desafio. Hábito pega quando vira rotina.',1,64,18,203],['Lucas Prado','lucasp','3 h','Montei marmitas para a semana: frango, arroz e legumes. Receita na resposta.',0,22,6,57],['Camila Rocha','camila_r','6 h','Costas e bíceps. Foco na descida controlada.',1,48,11,152]]];
+function px(p,i){return '<div class=post>'+av(p[0],40)+'<div class=bd><div class=r style="gap:6px"><span class=nm>'+p[0]+'</span><span class=hn>@'+p[1]+' · '+p[2]+'</span><div class=sp></div><i data-i=more></i></div><div class=tx>'+p[3]+'</div>'+(p[4]?'<div class=ph-img><i data-i=image></i></div>':'')+'<div class=act style="justify-content:space-between;padding-right:18px"><span onclick="toast(\'t1\',\'Responder a @'+p[1]+'\')"><i data-i=comment></i><b style="font-weight:400">'+p[5]+'</b></span><span class=rp onclick="tg(this,1)"><i data-i=repost></i><b style="font-weight:400">'+p[6]+'</b></span><span onclick="tg(this,1)"><i data-i=heart></i><b style="font-weight:400">'+p[7]+'</b></span><span><i data-i=share></i></span></div></div></div>'}
+function rd(id,card){const e=document.getElementById(id);e.innerHTML=(card?D[0]:D[0]).map(p=>card?'<div class=pc>'+px(p)+'</div>':px(p)).join('');ic(e)}
+function bind(sel,id,card,k){const s=document.getElementById(sel);s.addEventListener('pick',e=>{document.getElementById(id).innerHTML=D[+e.detail].map(p=>card?'<div class=pc>'+px(p)+'</div>':px(p)).join('');ic(document.getElementById(id))});}
+const mk=(id,card)=>{document.getElementById(id).innerHTML=D[0].map(p=>card?'<div class=pc>'+px(p)+'</div>':px(p)).join('')};
+mk('fa',0);mk('fb',1);document.getElementById('fc').innerHTML=D[1].slice(2).concat(D[0].slice(1,2)).map(p=>px(['Camila Rocha','camila_r',p[2],p[3],p[4],p[5],p[6],p[7]])).join('');
+document.querySelectorAll('#ta span').forEach(s=>s.onclick=()=>{document.querySelectorAll('#ta span').forEach(x=>x.classList.remove('on'));s.classList.add('on');document.getElementById('fa').innerHTML=D[+s.dataset.k].map(p=>px(p)).join('');ic()});
+bind('tb','fb',1);ic();
+;ic()</script>

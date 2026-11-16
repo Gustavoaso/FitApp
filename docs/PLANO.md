@@ -375,3 +375,68 @@ Ordem fixa, uma etapa por vez, um commit por etapa. Regras novas: RN19 a RN25 do
   - Scripts de avaliação passam a poder usar a function local.
 - **Pronto quando:** `deno test supabase/functions/` cobre a function (Groq e embedding simulados, sem JWT = 401, prompt sem dados pessoais); jest, typecheck, lint, format:check, expo export e `supabase test db` passam; teste ponta a ponta no banco local com `COM_EDGE=1` se houver chave Groq disponível no ambiente (senão, registrar como pendente).
 - **Dependências permitidas:** nenhuma no app; na function, só `jsr:@supabase/supabase-js` e fetch nativo.
+
+---
+
+# Bloco 2026-11-16 (pedido do dono: treino, histórico, sem gamificação, grupos, comunidade, visual suave)
+
+Fotos no servidor: `expo-image-manipulator` (redimensionar antes de enviar, RN31) é a única dependência nova, sem custo. Storage do Supabase no plano gratuito (1 GB).
+
+## Etapa 29: visual mais suave (RN33)
+
+- **Situação (2026-11-16):** mockup de visual suave **reprovado** pelo dono ("mudou o app todo e não deixou suave"). Etapa em espera até ele definir a direção.
+
+- **Escopo:** escala tipográfica e pesos novos no tema (conforme o `VISUAL.md` atualizado com o mockup escolhido), ícones finos, contornos de 1 px, menos maiúsculas; ajustar os componentes base e as telas que usam pesos/tamanhos fixos fora do tema.
+- **Pronto quando:** nenhum `fontWeight` 700+ fora do tema (Grep); teste do tema cobre a escala; verificações padrão passam.
+
+## Etapa 30: sem gamificação e aderência real (RN22 revogada, RN28)
+
+- **Escopo:** remover XP, níveis, conquistas, sequência e `MomentoConquista` (app, selo da foto, resultado); migration que tira as funções/tabelas de XP. Aderência semanal calculada pela RN28 a partir do plano e dos registros.
+- **Pronto quando:** Grep sem "XP"/"nível"/"sequência" nas telas; teste da RN28 (plano de 5 dias × 7 exercícios = 35); verificações padrão passam.
+
+## Etapa 31: aba Treino em pastas e histórico (RN26, RN27)
+
+- **Escopo:** aba Treino só com a grade de pastas e a entrada "Histórico"; tela de histórico (resumo semana/mês, lista por mês), detalhe da sessão e evolução de carga por exercício.
+- **Pronto quando:** testes das contas do resumo e da kcal (RN20); testes das telas; verificações padrão passam.
+
+## Etapa 32: perfil público, Storage e navegação (RN24, RN31, RN32)
+
+- **Escopo:** @usuario, avatar e bio; buckets privados com políticas; utilitário único de envio de foto (redimensiona, envia, URL assinada); exclusão de conta apaga as fotos; Perfil abre pelo avatar no topo; aba Comunidade (vazia até a etapa 36).
+- **Pronto quando:** pgTAP do Storage (ninguém lê foto de quem não pode); teste do utilitário; verificações padrão passam.
+- **Sem premissa** (permissões e exclusão).
+
+## Etapa 33: grupos, regras novas no banco (RN23 revista)
+
+- **Escopo:** banner, descrição, datas, limites 50/10; pontuação só check-in (1 por dia); check-in manual (atividade, duração, descrição, foto; só hoje/ontem); curtidas e comentários no check-in; migration remove a pontuação por minutos/XP.
+- **Pronto quando:** pgTAP (não membro não lê nada; 2 check-ins no dia = 1 ponto; manual de anteontem recusado; limites); verificações padrão passam.
+- **Sem premissa** (RLS).
+
+## Etapa 34: grupos, telas novas (RN23 revista)
+
+- **Mockup escolhido (2026-11-16):** lista A (cards com banner) de `docs/mockups/grupos-2026-11-16.html`.
+
+- **Escopo:** lista de grupos e tela do grupo conforme o mockup escolhido (banner, pódio e ranking, feed de check-ins com foto, curtir e comentar, check-in manual, membros, editar/encerrar).
+- **Pronto quando:** testes das telas; verificações padrão passam.
+
+## Etapa 35: fotos de evolução (RN29)
+
+- **Escopo:** tabela e bucket de fotos de evolução; frequência semanal/mensal; registro com até 3 ângulos; visibilidade "só eu" ou grupos escolhidos; comparação lado a lado; aba "Evolução" no grupo mostrando só o que foi compartilhado com ele.
+- **Pronto quando:** pgTAP (privada nunca aparece para outro; compartilhada só com os grupos escolhidos); testes das telas; verificações padrão passam.
+- **Sem premissa** (RLS, dado sensível).
+
+## Etapa 36: Comunidade, posts e seguidores (RN30)
+
+- **Mockup escolhido (2026-11-16):** feed A (clássico) de `docs/mockups/comunidade-2026-11-16.html`.
+
+- **Escopo:** posts (texto e 1 foto), apagar, curtir, seguir; feeds Seguindo e Para você; perfil público com posts e contadores; termos de uso antes do primeiro post.
+- **Pronto quando:** pgTAP (só o autor apaga; curtida única por pessoa); teste da ordenação do Para você; testes das telas; verificações padrão passam.
+
+## Etapa 37: Comunidade, respostas, reposts e moderação (RN30)
+
+- **Escopo:** responder em sequência, repostar e citar; denunciar, bloquear (some dos dois lados), filtro de palavras, ocultar com 3 denúncias; limites diários.
+- **Pronto quando:** pgTAP (bloqueado não vê nem responde; limites; ocultação); testes das telas; verificações padrão passam.
+- **Sem premissa** (moderação).
+
+## Etapa 38: testes finais do bloco e envio das migrations
+
+- Testador (completo), segurança (modo etapa, base = commit anterior à etapa 29, testes práticos no banco local) e testador-usuario (iOS). Correções dos CORRIGIR. Migrations e buckets no remoto só com aprovação do dono.

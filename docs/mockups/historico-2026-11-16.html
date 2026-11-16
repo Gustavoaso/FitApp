@@ -1,0 +1,91 @@
+<!doctype html><html lang=pt-BR><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><title>Treino, histórico e fotos de evolução (modo escuro)</title><style>*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+body{background:#18181b;font-family:-apple-system,"SF Pro Text",system-ui,sans-serif;color:#fff;padding:28px;-webkit-font-smoothing:antialiased}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}.lead{color:#A8A8B0;font-size:14px;margin-bottom:24px;max-width:900px}
+.row{display:flex;gap:36px;align-items:flex-start;overflow-x:auto;padding:10px 10px 30px}.col{width:393px;flex:none}
+.ph{width:393px;height:852px;border-radius:55px;background:#0B0B0D;position:relative;overflow:hidden;box-shadow:0 0 0 9px #000,0 0 0 10px #2f2f34}
+.di{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:34px;border-radius:20px;background:#000;z-index:30}
+.st{position:absolute;top:0;left:0;right:0;height:54px;z-index:20;display:flex;justify-content:space-between;padding:18px 34px 0;font-size:15px;font-weight:600;background:linear-gradient(#0B0B0D 40%,transparent)}
+.hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:#fff;opacity:.9;z-index:40}
+.scr{position:absolute;inset:0;overflow-y:auto;padding:58px 16px 110px;scrollbar-width:none}.scr::-webkit-scrollbar{display:none}
+.tab{position:absolute;left:12px;right:12px;bottom:22px;height:62px;border-radius:31px;z-index:25;display:flex;justify-content:space-around;align-items:center;background:rgba(30,30,34,.62);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);border:.5px solid rgba(255,255,255,.18)}
+.tab div{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#8e8e96;width:68px;cursor:pointer}.tab div.on{color:#D6FF00}.tab svg{width:22px;height:22px}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}svg.f{fill:currentColor}
+.top{display:flex;justify-content:space-between;align-items:center;margin:4px 0 14px}
+.lt{font-size:28px;font-weight:600;letter-spacing:-.4px}.t2{font-size:22px;font-weight:600}.t3{font-size:18px;font-weight:600}.hd{font-size:16px;font-weight:500}.b{font-size:15px}.sub{font-size:13px;color:#A8A8B0}.cap{font-size:12px;color:#A8A8B0}.lima{color:#D6FF00}.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.card{background:#151518;border-radius:24px;padding:16px}.line{border:1px solid #2A2A2E}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#0B0B0D;flex:none}
+.avt{width:36px;height:36px;border:1px solid #2A2A2E;background:#1E1E22;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.btn{height:50px;border-radius:25px;background:#D6FF00;color:#0B0B0D;font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(214,255,0,.18);width:100%}.btn2{height:44px;border-radius:22px;background:rgba(214,255,0,.14);color:#D6FF00;font-size:15px;font-weight:500;display:flex;gap:6px;align-items:center;justify-content:center;cursor:pointer;padding:0 16px}
+.seg{display:flex;background:#1E1E22;border-radius:12px;padding:3px}.seg span{flex:1;text-align:center;font-size:14px;padding:7px 0;border-radius:9px;color:#A8A8B0;cursor:pointer}.seg span.on{background:#2f2f35;color:#fff;font-weight:500}
+.ph-img{background:linear-gradient(135deg,#2a3340,#14171c);border-radius:16px;display:flex;align-items:center;justify-content:center;color:#5c6670}
+.act{display:flex;gap:22px;color:#A8A8B0;font-size:13px;margin-top:10px}.act span{display:flex;gap:6px;align-items:center;cursor:pointer;min-height:32px}.act span.on{color:#D6FF00}.act span.rp.on{color:#30D158}
+.note{font-size:13px;color:#A8A8B0;margin-top:22px;line-height:1.4;width:393px}.note b{color:#fff;font-weight:500}
+.fab{position:absolute;right:20px;bottom:100px;width:56px;height:56px;border-radius:28px;background:#D6FF00;color:#0B0B0D;display:flex;align-items:center;justify-content:center;z-index:26;box-shadow:0 8px 24px rgba(214,255,0,.25);cursor:pointer}.fab svg{width:24px;height:24px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:#1a1a1e;border-radius:32px 32px 0 0;padding:14px 20px 40px;z-index:50;transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.9,.3,1);box-shadow:0 -10px 40px rgba(0,0,0,.6)}.sheet.open{transform:none}.sheet:before{content:"";display:block;width:36px;height:5px;border-radius:3px;background:#3a3a40;margin:0 auto 16px}
+.toast{position:absolute;top:62px;left:50%;transform:translate(-50%,-90px);background:#D6FF00;color:#0B0B0D;padding:10px 18px;border-radius:22px;font-size:14px;font-weight:500;z-index:60;transition:.35s}.toast.show{transform:translate(-50%,0)}
+.flash{animation:fl 1s}@keyframes fl{50%{box-shadow:0 0 0 9px #D6FF00,0 0 0 10px #D6FF00}}
+.gap{display:flex;flex-direction:column;gap:12px}.r{display:flex;align-items:center;gap:10px}.sp{flex:1}.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fo{background:#151518;border-radius:24px;padding:16px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .2s}.fo:active{transform:scale(.97)}.fo .ic{width:40px;height:40px;border-radius:12px;background:rgba(214,255,0,.12);color:#D6FF00;display:flex;align-items:center;justify-content:center}
+.ent{display:flex;align-items:center;gap:12px;background:#151518;border-radius:24px;padding:16px;margin-top:16px;cursor:pointer}
+.sm{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:#151518;border-radius:24px;padding:16px;margin:14px 0}.sm div{text-align:center}.sm b{display:block;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.mh{font-size:13px;color:#A8A8B0;margin:18px 0 8px;letter-spacing:.2px}.ss{background:#151518;border-radius:20px;padding:14px 16px;margin-bottom:8px;cursor:pointer}.ss .dt{display:none;border-top:1px solid #2A2A2E;margin-top:12px;padding-top:10px}.ss.open .dt{display:block}.ss.open .chv{transform:rotate(90deg)}.chv{transition:.2s;color:#6c6c74}
+.ex{display:flex;justify-content:space-between;font-size:14px;padding:5px 0}.ex span:last-child{color:#A8A8B0;font-variant-numeric:tabular-nums}
+.cmpw{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cmpw .ph-img{height:250px;flex-direction:column;gap:6px;position:relative}.cmpw .ph-img span{position:absolute;bottom:10px;left:12px;font-size:13px;color:#fff;background:rgba(0,0,0,.5);padding:3px 10px;border-radius:10px}
+.vs{display:flex;align-items:center;gap:12px;padding:12px 16px}.sw{width:46px;height:28px;border-radius:14px;background:#3a3a40;position:relative;cursor:pointer;transition:.2s}.sw:after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}.sw.on{background:#D6FF00}.sw.on:after{left:20px;background:#0B0B0D}</style><body><h1>Treino, histórico e fotos de evolução (modo escuro)</h1><p class=lead>RN26/RN27/RN29. 1) aba Treino só com a grade de pastas e a entrada do histórico; 2) histórico com resumo semana/mês e lista por mês (toque numa sessão abre o detalhe com kcal); 3) fotos de evolução com comparação lado a lado e visibilidade 'só eu' / grupos. Dados fictícios.</p>
+<div class=row>
+<div class=col><div class=ph><div class=di></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr>
+<div class=top><div class=lt>Treino</div><div class=avt><i data-i=user></i></div></div>
+<div class=fg>
+<div class=fo><div class=ic><i data-i=folder></i></div><div><div class=hd>Treino A</div><div class=sub>Peito e tríceps · 6 exercícios</div></div></div>
+<div class=fo><div class=ic><i data-i=folder></i></div><div><div class=hd>Treino B</div><div class=sub>Costas e bíceps · 7 exercícios</div></div></div>
+<div class=fo><div class=ic><i data-i=folder></i></div><div><div class=hd>Treino C</div><div class=sub>Pernas · 7 exercícios</div></div></div>
+<div class=fo><div class=ic><i data-i=folder></i></div><div><div class=hd>Treino D</div><div class=sub>Ombros e abdômen · 6 exercícios</div></div></div></div>
+<div class=ent onclick="hl('h')"><div class=ic style="width:40px;height:40px;border-radius:12px;background:#26262b;display:flex;align-items:center;justify-content:center"><i data-i=clock></i></div><div class=sp><div class=hd>Histórico de treinos</div><div class=sub>38 sessões · última ontem</div></div><span class=chv><i data-i=chev></i></span></div>
+</div><div class=tab data-tab=1></div><div class=hi></div></div>
+<div class=note><b>Aba Treino (RN26).</b> Só a grade de pastas do plano e a entrada do histórico. Sem card do dia, sem "Trocar". Toque numa pasta abre os exercícios e o botão Iniciar. Custo P.</div></div>
+
+<div class=col><div class=ph id=h><div class=di></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr>
+<div class=top><div class=r><i data-i=back></i><span class=hd style="color:#A8A8B0">Treino</span></div></div><div class=lt style="margin-bottom:12px">Histórico</div>
+<div class=seg id=hs><span class=on data-k=0>Semana</span><span data-k=1>Mês</span></div>
+<div class=sm id=sm></div>
+<div class=mh>Novembro</div>
+<div class=ss onclick="this.classList.toggle('open')"><div class=r><div class=sp><div class=hd>Treino B · Costas e bíceps</div><div class=sub>Ontem, 18:30 · 52 min · 24 séries</div></div><span class=chv><i data-i=chev></i></span></div><div class=dt><div class=ex><span>Puxada frontal</span><span>4 × 10 · 55 kg</span></div><div class=ex><span>Remada curvada</span><span>4 × 10 · 40 kg</span></div><div class=ex><span>Rosca direta</span><span>3 × 12 · 16 kg</span></div><div class=r style="margin-top:8px;gap:16px"><span class=pill><i data-i=flame></i> 410 kcal</span><span class=pill>Volume 6.240 kg</span></div></div></div>
+<div class=ss onclick="this.classList.toggle('open')"><div class=r><div class=sp><div class=hd>Treino A · Peito e tríceps</div><div class=sub>Seg, 10 nov · 58 min · 22 séries</div></div><span class=chv><i data-i=chev></i></span></div><div class=dt><div class=ex><span>Supino reto</span><span>4 × 8 · 60 kg</span></div><div class=ex><span>Crucifixo</span><span>3 × 12 · 14 kg</span></div><div class=r style="margin-top:8px;gap:16px"><span class=pill><i data-i=flame></i> 455 kcal</span><span class=pill>Volume 7.180 kg</span></div></div></div>
+<div class=ss onclick="this.classList.toggle('open')"><div class=r><div class=sp><div class=hd>Treino C · Pernas</div><div class=sub>Sex, 7 nov · 61 min · 21 séries</div></div><span class=chv><i data-i=chev></i></span></div><div class=dt><div class=ex><span>Agachamento</span><span>5 × 5 · 70 kg</span></div><div class=r style="margin-top:8px;gap:16px"><span class=pill><i data-i=flame></i> 520 kcal</span><span class=pill>Volume 9.450 kg</span></div></div></div>
+<div class=mh>Outubro</div>
+<div class=ss><div class=r><div class=sp><div class=hd>Treino D · Ombros e abdômen</div><div class=sub>31 out · 44 min · 18 séries</div></div><span class=chv><i data-i=chev></i></span></div></div>
+</div><div class=tab data-tab=1></div><div class=hi></div></div>
+<div class=note><b>Histórico (RN27).</b> Resumo da semana/mês (treinos, minutos, volume, kcal), lista por mês; toque expande o detalhe com séries e kcal. Gráfico de evolução por exercício fica no detalhe da pasta. Custo M.</div></div>
+
+<div class=col><div class=ph><div class=di></div><div class=toast id=t1></div><div class=st><span>9:41</span><span>5G</span></div><div class=scr>
+<div class=top><div class=lt>Evolução</div><div class=avt><i data-i=plus></i></div></div>
+<div class=cap style="margin-bottom:8px">Comparar</div>
+<div class=cmpw><div class=ph-img style="background:linear-gradient(160deg,#3a3f48,#15171b)"><i data-i=user></i><span>3 out · 82,4 kg</span></div><div class=ph-img style="background:linear-gradient(160deg,#41504a,#15171b)"><i data-i=user></i><span>7 nov · 79,1 kg</span></div></div>
+<div class=seg id=pv style="margin:12px 0"><span class=on data-k=0>Frente</span><span data-k=1>Lado</span><span data-k=2>Costas</span></div>
+<div class="card" style="padding:4px 0;margin-bottom:12px"><div class="vs"><i data-i=lock></i><div class=sp><div class=hd>Quem pode ver</div><div class=sub id=vt>Só eu (privada por padrão)</div></div></div>
+<div style="padding:0 16px 14px"><div class=seg id=vis><span class=on data-k="Só eu (privada por padrão)">Só eu</span><span data-k="Visível em 2 grupos">Grupos</span></div></div>
+<div class="vs" id=gl style="display:none;border-top:1px solid #2A2A2E"><div class=sp><div class=b>Desafio 30 dias</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+<div class="vs" id=gl2 style="display:none;border-top:1px solid #2A2A2E"><div class=sp><div class=b>Turma da Manhã</div></div><div class="sw on" onclick="this.classList.toggle('on')"></div></div>
+<div class="vs" style="border-top:1px solid #2A2A2E"><div class=sp><div class=b>Mostrar meu peso</div><div class=cap>Outros só veem se você marcar</div></div><div class=sw onclick="this.classList.toggle('on')"></div></div></div>
+<div class=hd style="margin:6px 0 8px">Registros</div>
+<div class=r style="gap:8px;overflow:hidden"><div class=ph-img style="width:76px;height:96px;flex:none;border-radius:14px"></div><div class=ph-img style="width:76px;height:96px;flex:none;border-radius:14px"></div><div class=ph-img style="width:76px;height:96px;flex:none;border-radius:14px"></div><div class="ph-img" style="width:76px;height:96px;flex:none;border-radius:14px;border:1px dashed #3a3a40;background:none"><i data-i=plus></i></div></div>
+<div class=btn style="margin-top:16px" onclick="toast('t1','Registro salvo')"><i data-i=camera></i> Novo registro</div>
+</div><div class=tab data-tab=0></div><div class=hi></div></div>
+<div class=note><b>Fotos de evolução (RN29).</b> Comparação lado a lado, seletor Só eu / Grupos (padrão privado) e peso opcional. Foto é dado sensível: sem foto no feed por padrão. Custo M (Storage + URL assinada).</div></div>
+</div>
+<script>const P={home:"M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",dumbbell:"M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11",fork:"M7 3v8a2 2 0 0 0 4 0V3M9 3v18M17 3c-2 2-3 5-3 8h3v10",people:"M9 5a3.2 3.2 0 1 0 0 6.4A3.2 3.2 0 0 0 9 5M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5a3 3 0 0 1 0 6M18 14c2 .7 3 3 3 6",bubble:"M4 5h16v11H9l-5 4z",heart:"M12 20s-8-5-8-10.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8 2.5C20 15 12 20 12 20z",comment:"M4 5h16v11H10l-4 4v-4H4z",repost:"M5 9V8a2 2 0 0 1 2-2h11l-3-3M19 15v1a2 2 0 0 1-2 2H6l3 3",plus:"M12 5v14M5 12h14",camera:"M4 8h3l2-3h6l2 3h3v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7",check:"M5 12.5l4.5 4.5L19 7",clock:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M12 7v5l3 2",chev:"M9 5l7 7-7 7",back:"M15 5l-7 7 7 7",share:"M12 15V3M8 7l4-4 4 4M5 12v8h14v-8",lock:"M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3",cal:"M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",image:"M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4",more:"M6 12h.01M12 12h.01M18 12h.01",trophy:"M8 4h8v5a4 4 0 0 1-8 0zM8 6H4v1a3 3 0 0 0 4 3M16 6h4v1a3 3 0 0 1-4 3M12 13v4M8 20h8",flame:"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z",user:"M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8M5 20c0-4 3-6 7-6s7 2 7 6",chart:"M4 20V4M4 20h16M8 15l4-4 3 3 5-6",folder:"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",x:"M6 6l12 12M18 6L6 18",ring:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18",globe:"M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"};
+function ic(r){(r||document).querySelectorAll('i[data-i]').forEach(e=>{if(e.firstChild)return;const f=e.dataset.f?' f':'';e.style.display='contents';e.innerHTML=`<svg class="i${f}" viewBox="0 0 24 24"><path d="${P[e.dataset.i]}"/></svg>`})}
+const COL=['#D6FF00','#3DA5FF','#FF8A1F','#B57BFF','#30D158','#FFD60A'];
+function av(n,s){const h=[...n].reduce((a,c)=>a+c.charCodeAt(0),0);const z=s||36;return `<div class="av" style="background:${COL[h%6]};width:${z}px;height:${z}px;font-size:${z*.36}px">${n.split(' ').map(x=>x[0]).slice(0,2).join('')}</div>`}
+function seg(el){el.querySelectorAll('span').forEach(s=>s.onclick=()=>{el.querySelectorAll('span').forEach(x=>x.classList.remove('on'));s.classList.add('on');el.dispatchEvent(new CustomEvent('pick',{detail:s.dataset.k}))})}
+function tg(e,n){e.classList.toggle('on');const c=e.querySelector('b');if(c&&n!==undefined)c.textContent=+c.textContent+(e.classList.contains('on')?1:-1)}
+function toast(id,t){const e=document.getElementById(id);e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
+function sh(id,o){document.getElementById(id).classList.toggle('open',o)}
+function hl(id){const e=document.getElementById(id);e.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});e.classList.remove('flash');void e.offsetWidth;e.classList.add('flash')}
+function tabbar(a){return ['home:Início','dumbbell:Treino','fork:Dieta','people:Grupos','bubble:Comunidade'].map((x,i)=>{const[k,l]=x.split(':');return `<div class="${i==a?'on':''}"><i data-i="${k}"></i>${l}</div>`}).join('')}
+document.querySelectorAll('[data-tab]').forEach(e=>e.innerHTML=tabbar(+e.dataset.tab));
+document.querySelectorAll('.seg').forEach(seg);
+const W=[['3','Treinos','de 4 no plano'],['162','Minutos',''],['21,4 t','Volume',''],['1.385','kcal','']];
+const M=[['11','Treinos',''],['590','Minutos',''],['78 t','Volume',''],['4.920','kcal','']];
+function rs(k){document.getElementById('sm').innerHTML=(k?M:W).map(x=>'<div><b>'+x[0]+'</b><span class=cap>'+x[1]+'</span></div>').join('')}rs(0);
+document.getElementById('hs').addEventListener('pick',e=>rs(+e.detail));
+document.getElementById('vis').addEventListener('pick',e=>{const g=e.detail.startsWith('Vis');document.getElementById('vt').textContent=e.detail;['gl','gl2'].forEach(i=>document.getElementById(i).style.display=g?'flex':'none')});ic();;ic()</script>

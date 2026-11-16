@@ -86,6 +86,34 @@ Datas: fuso `America/Sao_Paulo`.
 - **RN24 (apelido):** para aparecer em grupos a pessoa escolhe um apelido (3 a 20 caracteres, sem e-mail). É o único dado pessoal visível a outros usuários.
 - **RN25 (movimento):** animações com mola no padrão Apple (interrompíveis, sem quique por padrão; quique leve só em conquista), durações curtas, haptics nos momentos de confirmação e respeito a Reduzir Movimento em tudo.
 
+### Regras acrescentadas em 2026-11-16 (pedido do dono)
+
+- **RN22 revogada (2026-11-16):** sem gamificação. Saem XP, níveis, conquistas e a sequência semanal (card do Início, selo da foto e tela de resultado). As tabelas/funções de XP saem por migration; os dados de treino continuam.
+- **RN26 (aba Treino):** mostra só as pastas dos treinos do plano (grade) e o acesso ao histórico. Saem o card do treino do dia com o botão "Trocar" e a lista "Exercícios do dia". Os exercícios aparecem ao tocar na pasta (tela de detalhe, de onde se inicia o treino).
+- **RN27 (histórico de treinos):** lista das sessões concluídas, da mais nova para a mais antiga, agrupada por mês. Cada sessão: nome, data, duração, séries feitas, volume (carga × repetições) e kcal estimadas (RN20). Detalhe da sessão: cada exercício com as séries (carga e repetições). Resumo no topo com semana e mês: treinos, minutos, volume e kcal. Evolução por exercício: maior carga por sessão em gráfico de linha.
+- **RN28 (aderência semanal real):** semana de segunda a domingo (`America/Sao_Paulo`). Treinos = dias com sessão concluída ÷ dias de treino do plano. Exercícios = exercícios concluídos nas sessões da semana ÷ soma dos exercícios de todos os dias de treino do plano na semana. Dieta = refeições registradas ÷ (refeições do plano × 7). Tudo vem do banco, nunca de número fixo; teste cobre um plano de 5 dias com 7 exercícios por dia (35 na semana).
+- **RN23 revista (grupos, referência GymRats):**
+  - grupo = desafio: nome, descrição (até 280), **banner** (foto enviada ou uma de 8 capas da marca), data de início e de fim (opcional = contínuo), código de convite de 6 caracteres e link para compartilhar. Até 50 membros e 10 grupos por pessoa;
+  - **pontuação só por check-in:** 1 ponto por dia com check-in válido, no máximo 1 por dia por pessoa;
+  - **check-in válido:** automático quando a pessoa conclui um treino no app naquele dia (pode desligar por grupo), ou **manual** (tipo de atividade de uma lista: musculação, corrida, caminhada, bike, natação, esporte, outro; duração; descrição opcional; **foto opcional**). Check-in manual só para hoje ou ontem;
+  - **feed do grupo:** check-ins com foto, curtidas e comentários (até 280), em ordem cronológica;
+  - **ranking** do período (pontos, desempate por quem chegou primeiro), pódio dos 3 primeiros; aba de membros;
+  - o criador edita o grupo, remove membros e encerra; sair do grupo apaga os check-ins da pessoa nele;
+  - membros veem dos outros só o perfil público (RN24), check-ins e posição. **Nunca** peso, medidas, dieta nem e-mail.
+- **RN29 (fotos de evolução):** a pessoa escolhe a frequência (semanal ou mensal) e registra fotos (frente, lado, costas; pelo menos 1) com data e peso opcional. **Privada por padrão.** Em cada registro ela escolhe: "só eu" ou os grupos (dos dela) que podem ver. Pode mudar ou apagar depois. Comparação lado a lado de duas datas. O peso só aparece para outros se ela marcar. Lembrete no app no dia combinado (sem push nesta versão).
+- **RN24 revista (perfil público):** apelido (3 a 20), **@usuario** único (3 a 15, letras minúsculas, números e `_`), foto de avatar opcional e bio até 160. É o que outros usuários veem em grupos e na Comunidade.
+- **RN30 (Comunidade, estilo Twitter):**
+  - post de 1 a 280 caracteres com até 1 foto; apagar o próprio post (sem editar);
+  - curtir, **responder** (a resposta é um post ligado ao pai, em sequência), **repostar** e **repostar com comentário**;
+  - seguir e deixar de seguir; contadores de seguidores, seguindo e posts no perfil público;
+  - feed com duas abas: **Seguindo** (cronológico, de quem sigo e meus) e **Para você** (posts das últimas 72 h de todos, ordenados por curtidas + respostas + reposts, com penalidade por idade);
+  - **moderação (exigência da App Store):** denunciar post ou usuário (motivo de uma lista), **bloquear** (some dos dois lados: feed, respostas, perfil, grupos não), filtro de palavras ofensivas no envio; post com 3 denúncias de pessoas diferentes fica oculto até o dono do app revisar; termos de uso aceitos antes do primeiro post;
+  - limites: 30 posts e 300 curtidas por dia por pessoa;
+  - sem mensagem direta, sem perfil privado e sem notificações push nesta versão (contador de novidades dentro do app).
+- **RN31 (fotos no servidor):** fotos de check-in, de post, de avatar, de banner e de evolução vão para o Supabase Storage em buckets privados, lidas por URL assinada, redimensionadas no app para até 1080 px e JPEG ~0,7 antes do envio, até 5 MB. As políticas do Storage seguem a mesma regra de quem pode ver o registro. Excluir a conta apaga todas as fotos da pessoa. Foto de evolução é dado sensível (LGPD).
+- **RN32 (navegação):** abas **Início, Treino, Dieta, Grupos, Comunidade**. O Perfil abre pelo avatar no canto superior direito das telas das abas.
+- **RN33 (visual mais suave):** títulos em peso semibold (nada de heavy/black), corpo regular, tamanhos uma escala abaixo do atual, ícones finos (peso light/regular), contornos de 1 px, menos texto em maiúsculas, mais respiro. Detalhes em `VISUAL.md`.
+
 ## 7. Telas e navegação (levantado do código)
 
 | Tela | Onde | O que mostra |
@@ -111,7 +139,7 @@ Visual: skill `visual-design` + `docs/VISUAL.md`.
 
 - **Guardados:** perfil (idade, sexo, peso, altura, objetivo, frequência, restrições), planos, sessões de treino, registros de dieta e água.
 - **Pessoais/saúde:** peso, medidas e restrições de saúde são **dado sensível (LGPD)**. Exigem o consentimento explícito (seção 4) e a exclusão completa.
-- **Arquivos e fotos:** nenhum nesta versão.
+- **Arquivos e fotos:** no Supabase Storage, buckets privados (RN31).
 - **Dados iniciais:** `base_exercicios` (ExerciseDB, já importada) e `base_alimentos` (TACO 4ª ed. e os alimentos cadastrados pelos usuários, RN17), ambas já no banco. A `base_conhecimento` é curada pelo Claude com fontes. Só dados fictícios no repositório e no seed.
 
 ## 10. Integrações
