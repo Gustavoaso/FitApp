@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Popula as bases do Supabase LOCAL para a avaliação dos planos (etapa 13):
 # troca as bases do seed pelo free-exercise-db completo e faz a ingestão da
-# etapa 7 e os embeddings das bases (etapa 17), no Ollama local. Nunca no remoto. Só dados públicos/fictícios.
+# etapa 7. Os embeddings vêm do scripts/reprocessar-embeddings.sh. Nunca no remoto. Só dados públicos/fictícios.
 # O truncate apaga o plano da conta A do seed: `npx supabase db reset` o recria.
 #
 # COMO RODAR: npx supabase start && bash scripts/preparar-bases-locais.sh
@@ -29,8 +29,8 @@ awk '/^update public.base_exercicios/,0' supabase/migrations/20261026000100_cura
 psql_local -c "update base_alimentos set is_curado = true"
 
 SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY="$chave" node scripts/ingestao-conhecimento.ts > /dev/null
-# Embeddings das bases para o RAG híbrido (etapa 17); o seed vem sem eles.
-SUPABASE_URL=http://127.0.0.1:54321 SUPABASE_SERVICE_ROLE_KEY="$chave" node scripts/ingestao-embeddings-locais.ts
+# Os embeddings (gte-small, etapa 28) vêm da function reprocessar-embeddings:
+# `REPROCESSAR_SEGREDO=... bash scripts/reprocessar-embeddings.sh` com `npx supabase functions serve` no ar.
 psql_local -Atc "select 'exercícios curados: ' || count(*) filter (where is_curado) from base_exercicios
   union all select 'alimentos curados: ' || count(*) filter (where is_curado) from base_alimentos
   union all select 'trechos de conhecimento: ' || count(*) from base_conhecimento"

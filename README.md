@@ -11,7 +11,7 @@ Aplicativo fitness mobile de alta performance para o público brasileiro, gerand
 | **Mobile** | React Native (0.88) + Expo SDK 58 (Expo Router 58) |
 | **Estilização** | Liquid Glass Design (Apple iOS HIG / SF Symbols / Expo Blur) |
 | **Backend & Banco** | Supabase (PostgreSQL + Auth + Edge Functions) |
-| **IA / LLM** | Ollama local (etapa 9; geração indisponível até lá) |
+| **IA / LLM** | Groq (`llama-3.3-70b-versatile`) via Edge Function `gerar-plano`; embeddings `gte-small` do Supabase |
 | **Linguagem** | TypeScript 5.7 (Modo estrito) |
 
 ---

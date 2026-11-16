@@ -75,16 +75,6 @@ export interface EscolhaLLM {
   refeicoes: Partial<Record<NomeRefeicao, Record<SlotAlimento, string>>>;
 }
 
-/** Só o que pode ir para o prompt (RN12): nada que identifique a pessoa. */
-export interface ContextoPrompt {
-  objetivo: ObjetivoTreino;
-  nivel: NivelExperiencia;
-  diasPorSemana: number;
-  equipamentos: EquipamentosDisponiveis;
-  restricoes: RestricaoAlimentar[];
-  diretrizes: string[];
-}
-
 export interface DadosSaude {
   idade: number;
   sexo: SexoBiologico;

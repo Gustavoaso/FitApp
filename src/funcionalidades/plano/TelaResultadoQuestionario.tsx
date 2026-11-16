@@ -90,7 +90,7 @@ function useReduzirTransparencia() {
   return reduzir;
 }
 
-// PREMISSA (textos): fases mostradas enquanto o Ollama trabalha. O serviço não
+// PREMISSA (textos): fases mostradas enquanto a geração trabalha. O serviço não
 // avisa o progresso real; o texto avança pelo tempo, até a última fase.
 export const FASES_GERACAO = [
   'Montando seu treino…',

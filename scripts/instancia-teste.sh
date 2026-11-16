@@ -4,14 +4,14 @@
 # Nunca aponta para o banco remoto nem lê o .env (EXPO_NO_DOTENV).
 #
 # USO: bash scripts/instancia-teste.sh subir | derrubar
-#   COM_EDGE=1 sobe também o edge-runtime (excluir-conta); pede mais memória.
+#   COM_EDGE=1 sobe também o edge-runtime (excluir-conta, gerar-plano); pede mais memória.
+#   Geração de plano local: `npx supabase functions serve --env-file <arquivo com GROQ_API_KEY>`.
 # Contas: conta-a@exemplo.com (com plano) e conta-b@exemplo.com (nova), senha senha-teste-123.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 ARQUIVO_PID="${TMPDIR:-/tmp}/fitapp-instancia-teste.pid"
 LOG_EXPO="${TMPDIR:-/tmp}/fitapp-instancia-teste-expo.log"
-OLLAMA_URL=http://localhost:11434
 # Mac de 8 GB: só banco, API, Auth e Kong.
 EXCLUIR=studio,imgproxy,vector,logflare,realtime,storage-api,edge-runtime,supavisor,postgres-meta,mailpit
 
@@ -52,12 +52,8 @@ subir() {
     sleep 2
   done
 
-  # A geração de plano consulta a base de conhecimento (RAG); sem Ollama, segue sem ela.
-  if curl -sf "$OLLAMA_URL/api/tags" > /dev/null; then
-    SUPABASE_URL="$url" SUPABASE_SERVICE_ROLE_KEY="$servico" node scripts/ingestao-conhecimento.ts > /dev/null
-  else
-    echo "Aviso: Ollama fora do ar em $OLLAMA_URL; base de conhecimento vazia." >&2
-  fi
+  # Base de conhecimento (RAG) sem vetor; scripts/reprocessar-embeddings.sh preenche com a function no ar.
+  SUPABASE_URL="$url" SUPABASE_SERVICE_ROLE_KEY="$servico" node scripts/ingestao-conhecimento.ts > /dev/null
 
   local porta
   porta=$(porta_livre)
@@ -65,7 +61,7 @@ subir() {
   # set -m: o Expo fica num grupo de processos próprio e sobrevive ao fim deste shell.
   set -m
   EXPO_NO_DOTENV=1 CI=1 \
-    EXPO_PUBLIC_SUPABASE_URL="$url" EXPO_PUBLIC_SUPABASE_ANON_KEY="$anon" EXPO_PUBLIC_OLLAMA_URL="$OLLAMA_URL" \
+    EXPO_PUBLIC_SUPABASE_URL="$url" EXPO_PUBLIC_SUPABASE_ANON_KEY="$anon" \
     nohup npx expo start --clear --port "$porta" > "$LOG_EXPO" 2>&1 &
   set +m
   printf 'expo %s\nporta %s\nsupabase %s\n' "$!" "$porta" "$iniciou_supabase" > "$ARQUIVO_PID"

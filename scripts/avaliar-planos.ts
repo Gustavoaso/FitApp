@@ -1,12 +1,15 @@
 // Avaliação da qualidade dos planos (etapa 13): gera o plano de perfis fictícios
-// fixos com o motor e o serviço reais (Ollama local + Supabase local, sem gravar
+// fixos com o motor e o serviço reais (Edge Function gerar-plano + Supabase local, sem gravar
 // nada), confere cada plano de novo com as regras do validador e salva o
 // relatório em docs/avaliacoes/. Fora do `npm test` de propósito: é lento e usa rede local.
 //
 // COMO RODAR (perfis em sequência; o Mac de 8 GB não aguenta em paralelo):
 //   npx supabase start && bash scripts/preparar-bases-locais.sh
-//   SUPABASE_SERVICE_ROLE_KEY=<SERVICE_ROLE_KEY do `npx supabase status`> \
+//   npx supabase functions serve --env-file <arquivo com GROQ_API_KEY e REPROCESSAR_SEGREDO>
+//   REPROCESSAR_SEGREDO=<o mesmo> bash scripts/reprocessar-embeddings.sh
+//   SUPABASE_ANON_KEY=<ANON_KEY do `npx supabase status`> \
 //     node --import ./scripts/avaliacao/carregador.mjs scripts/avaliar-planos.ts
+// Cada perfil conta como uma consulta à Groq (plano gratuito tem limite por minuto).
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { supabase } from '@/compartilhado/supabase';
@@ -21,12 +24,10 @@ import {
 } from '@/funcionalidades/plano/mapear-plano';
 import { conferirTolerancia } from '@/funcionalidades/plano/motor/gramas';
 import { EQUIPAMENTOS_PERMITIDOS } from '@/funcionalidades/plano/motor/validador';
-import {
-  MODELO_EMBEDDING,
-  MODELO_GERACAO,
-  OLLAMA_URL,
-  TIMEOUT_MS,
-} from '@/funcionalidades/plano/ollama-cliente';
+import { MODELO_GERACAO } from '@/funcionalidades/plano/gerar-plano-servico';
+
+// O app não tem mais limite próprio: o invoke espera a function (timeout de 45 s por chamada à Groq).
+const TIMEOUT_MS = 90_000;
 
 interface Perfil {
   rotulo: string;
@@ -199,42 +200,13 @@ const CARGA_JOELHO = [
   'squat',
 ];
 
-// O app desiste em TIMEOUT_MS (180 s desde a etapa 13b; meta de 60 s). Aqui o limite é maior para medir a qualidade
-// mesmo quando a geração é lenta; o que passa de TIMEOUT_MS vira problema no relatório.
-const LIMITE_AVALIACAO_MS = 300_000;
 const META_SEGUNDOS = 60;
-const fetchOriginal = globalThis.fetch;
-globalThis.fetch = (url, init) =>
-  fetchOriginal(
-    url,
-    String(url).startsWith(OLLAMA_URL)
-      ? { ...init, signal: AbortSignal.timeout(LIMITE_AVALIACAO_MS) }
-      : init,
-  );
 
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 function falhar(mensagem: string): never {
   console.error(`Erro: ${mensagem}`);
   process.exit(1);
-}
-
-async function conferirOllama() {
-  if (!['localhost', '127.0.0.1'].includes(new URL(OLLAMA_URL).hostname)) {
-    falhar(`o Ollama precisa ser local; EXPO_PUBLIC_OLLAMA_URL aponta para ${OLLAMA_URL}.`);
-  }
-  let resposta: Response;
-  try {
-    resposta = await fetch(`${OLLAMA_URL}/api/tags`);
-  } catch {
-    falhar(`o Ollama não respondeu em ${OLLAMA_URL}. Ligue com \`ollama serve\` e rode de novo.`);
-  }
-  const corpo = (await resposta.json()) as { models?: { name: string }[] };
-  const nomes = (corpo.models ?? []).map((m) => m.name.split(':')[0]);
-  for (const modelo of [MODELO_GERACAO, MODELO_EMBEDDING]) {
-    if (!nomes.includes(modelo))
-      falhar(`modelo ${modelo} ausente. Baixe com \`ollama pull ${modelo}\`.`);
-  }
 }
 
 async function conferirBases() {
@@ -379,7 +351,7 @@ async function avaliar({ rotulo, dados }: Perfil): Promise<Resultado> {
     const segundos = Math.round((Date.now() - inicio) / 1000);
     const { problemas, alertas } = await checar(dados, plano);
     if (segundos * 1000 > TIMEOUT_MS)
-      problemas.push(`Levou ${segundos} s: no app estouraria o limite de ${TIMEOUT_MS / 1000} s.`);
+      problemas.push(`Levou ${segundos} s: passou da meta de ${TIMEOUT_MS / 1000} s.`);
     else if (segundos > META_SEGUNDOS)
       alertas.push(`Levou ${segundos} s: acima da meta de ${META_SEGUNDOS} s.`);
     const exercicios = plano.treino.dias.reduce((t, d) => t + d.exercicios.length, 0);
@@ -414,9 +386,9 @@ function relatorio(resultados: Resultado[], data: string): string {
   const linhas = [
     `# Avaliação dos planos: ${data}`,
     '',
-    `Modelo ${MODELO_GERACAO} (embeddings ${MODELO_EMBEDDING}), Ollama e Supabase locais, ${resultados.length} perfis fictícios em sequência.`,
+    `Modelo ${MODELO_GERACAO} (Groq, via Edge Function gerar-plano; embeddings gte-small) e Supabase local, ${resultados.length} perfis fictícios em sequência.`,
     `**${aprovados} de ${resultados.length} aprovados.** Reprovado = o plano saiu, mas a reconferência achou problema; falhou = o serviço não entregou plano.`,
-    `Tempo médio (planos entregues): ${media} s. Limite do app ${TIMEOUT_MS / 1000} s; meta ${META_SEGUNDOS} s.`,
+    `Tempo médio (planos entregues): ${media} s. Limite ${TIMEOUT_MS / 1000} s; meta ${META_SEGUNDOS} s.`,
     '',
     '| Perfil | Situação | Tempo | Plano |',
     '|---|---|---|---|',
@@ -437,7 +409,6 @@ function relatorio(resultados: Resultado[], data: string): string {
 }
 
 async function principal() {
-  await conferirOllama();
   await conferirBases();
   const resultados: Resultado[] = [];
   for (const p of PERFIS) {

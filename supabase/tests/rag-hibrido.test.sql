@@ -8,24 +8,24 @@ select plan(13);
 -- Vetor com `peso` na posição p (a consulta é o eixo 1).
 create function pg_temp.eixo(p int, peso real default 1) returns extensions.vector
 language sql as $$
-  select (array_fill(0::real, array[p - 1]) || array[peso] || array_fill(0::real, array[1024 - p]))::extensions.vector
+  select (array_fill(0::real, array[p - 1]) || array[peso] || array_fill(0::real, array[384 - p]))::extensions.vector
 $$;
 
 -- Isola das bases do seed (a transação é desfeita no fim).
 truncate public.base_exercicios, public.base_alimentos cascade;
 
-insert into public.base_exercicios (id, nome, grupo_primario, equipamento, nivel, is_curado, embedding) values
+insert into public.base_exercicios (id, nome, grupo_primario, equipamento, nivel, is_curado, embedding_384) values
   ('00000000-0000-0000-0000-0000000000e1', 'Supino perto', 'peito', 'barra', 'iniciante', true,
    pg_temp.eixo(1)),
   ('00000000-0000-0000-0000-0000000000e2', 'Flexão longe', 'peito', 'peso-do-corpo', 'iniciante', true,
-   (array[0.2::real, 1::real] || array_fill(0::real, array[1022]))::extensions.vector),
+   (array[0.2::real, 1::real] || array_fill(0::real, array[382]))::extensions.vector),
   ('00000000-0000-0000-0000-0000000000e3', 'Crucifixo sem vetor', 'peito', 'halteres', 'iniciante', true, null),
   ('00000000-0000-0000-0000-0000000000e4', 'Supino não curado', 'peito', 'barra', 'iniciante', false,
    pg_temp.eixo(1)),
   ('00000000-0000-0000-0000-0000000000e5', 'Remada', 'dorsais', 'barra', 'iniciante', true,
    pg_temp.eixo(2));
 
-insert into public.base_alimentos (id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g, is_curado, e_basico, embedding) values
+insert into public.base_alimentos (id, nome, categoria, calorias_100g, proteinas_100g, carboidratos_100g, gorduras_100g, is_curado, e_basico, embedding_384) values
   (9001, 'Frango fictício', 'carnes', 160, 32, 0, 3, false, true, pg_temp.eixo(1)),
   (9002, 'Ovo fictício', 'ovos', 150, 13, 1, 10, true, true, pg_temp.eixo(3)),
   (9003, 'Arroz fictício', 'cereais', 130, 2.5, 28, 0.2, true, true, pg_temp.eixo(1)),

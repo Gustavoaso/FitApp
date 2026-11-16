@@ -2,15 +2,9 @@ import { calcularTudo } from '@/compartilhado/utilidades/calculos';
 import type { GrupoMuscular } from '@/compartilhado/tipos';
 import { montarDivisaoSemanal, montarSlotsDia, prescrever } from './divisao-semanal';
 import { calcularGramas, conferirTolerancia, GRAMAS_MAX, GRAMAS_MIN } from './gramas';
-import { montarPrompt, montarSchemaEscolha, REFEICOES } from './schema-prompt';
+import { REFEICOES } from './schema-prompt';
 import { MENSAGEM_PROFISSIONAL, verificarTravasSaude } from './travas-saude';
-import type {
-  AlimentoCandidato,
-  ContextoPrompt,
-  EscolhaLLM,
-  ExercicioCandidato,
-  SlotDia,
-} from './tipos';
+import type { AlimentoCandidato, EscolhaLLM, ExercicioCandidato, SlotDia } from './tipos';
 import { montarPlano, validarEscolha } from './validador';
 
 // Dados fictícios. Três exercícios por grupo, o primeiro composto.
@@ -179,50 +173,6 @@ describe('volume (RN07)', () => {
   it('recusa nível ou objetivo inválido', () => {
     expect(() => prescrever('forca', 'mestre' as never)).toThrow();
     expect(() => prescrever(undefined as never, 'iniciante')).toThrow();
-  });
-});
-
-describe('schema restrito (RN07)', () => {
-  it('cada grupo só aceita IDs do próprio grupo, na quantidade certa', () => {
-    const schema = montarSchemaEscolha(slotsPara(3), EXERCICIOS, ALIMENTOS);
-    const texto = JSON.stringify(schema);
-    expect(texto).toContain('"enum":["peito-1","peito-2","peito-3"]');
-    expect(texto).toContain('"enum":["frango","tofu"]');
-    expect(texto).not.toContain('"enum":[]');
-  });
-
-  it('recusa grupo ou slot sem candidatos', () => {
-    expect(() => montarSchemaEscolha(slotsPara(3), [], ALIMENTOS)).toThrow();
-    expect(() => montarSchemaEscolha(slotsPara(3), EXERCICIOS, [])).toThrow();
-  });
-});
-
-describe('prompt (RN12)', () => {
-  it('não leva nome, e-mail nem ID mesmo recebendo o perfil inteiro', () => {
-    const perfil = {
-      id: 'b3f1c2d4-1111-4222-8333-944455556666',
-      nome: 'Fulana Fictícia',
-      email: 'fulana@exemplo.com',
-      objetivo: 'hipertrofia',
-      nivel: 'iniciante',
-      diasPorSemana: 3,
-      equipamentos: 'home_gym',
-      restricoes: ['vegano'],
-      diretrizes: ['Proteína de 1,6 a 2,2 g/kg (Morton 2018).'],
-    } as const;
-    const contexto: ContextoPrompt = {
-      ...perfil,
-      restricoes: [...perfil.restricoes],
-      diretrizes: [...perfil.diretrizes],
-    };
-    const prompt = montarPrompt(contexto, EXERCICIOS, ALIMENTOS, ['erro anterior']);
-    expect(prompt).not.toContain(perfil.id);
-    expect(prompt).not.toContain(perfil.nome);
-    expect(prompt).not.toContain(perfil.email);
-    expect(prompt).not.toMatch(/@/);
-    expect(prompt).toContain('hipertrofia');
-    expect(prompt).toContain('Morton 2018');
-    expect(prompt).toContain('erro anterior');
   });
 });
 

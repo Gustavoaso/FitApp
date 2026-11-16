@@ -2,14 +2,17 @@
 // SERVIÇO: geração ponta a ponta (RN06, RN10, RN11, RN13, RN14)
 // ============================================================
 // 1. Travas de saúde e metas (código).
-// 2. RAG híbrido (RN14): um embedding da consulta ordena exercícios,
-//    alimentos e diretrizes; filtros SQL tiram o que não pode entrar.
-// 3. LLM escolhe IDs; validação; 1 retry com os erros. Se as gramas não
-//    fecham, o código troca alimentos entre os candidatos (etapa 20).
+// 2. RAG híbrido (RN14): a Edge Function gerar-plano faz o embedding da
+//    consulta (gte-small) e busca candidatos; filtros SQL tiram o que não
+//    pode entrar.
+// 3. A mesma function chama a Groq (RN06), que escolhe IDs; o app valida;
+//    1 retry com os erros. Se as gramas não fecham, o código troca
+//    alimentos entre os candidatos (etapa 20).
 // 4. RPC salvar_plano_gerado grava tudo numa transação e
 //    recusa a 6ª geração do dia. Falha antes daqui não grava nada.
 // ============================================================
 
+import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
 import { supabase } from '@/compartilhado/supabase';
 import type { DadosQuestionario, PlanoIAGerado } from '@/compartilhado/tipos';
 import { calcularTudo } from '@/compartilhado/utilidades';
@@ -34,17 +37,26 @@ import { nomearRefeicoes } from './motor/dieta-rotina';
 import { montarPorQue } from './motor/por-que';
 import { montarAquecimento, montarProgressao, prescreverPorPapel } from './motor/prescricao';
 import { selecionarExercicios } from './selecionar-exercicios';
-import { montarPrompt, montarSchemaEscolha, refeicoesDoDia } from './motor/schema-prompt';
+import { refeicoesDoDia, SLOTS } from './motor/schema-prompt';
 import { MENSAGEM_PROFISSIONAL, verificarTravasSaude } from './motor/travas-saude';
 import type { AlimentoCandidato, ExercicioCandidato, NomeRefeicao } from './motor/tipos';
 import { montarPlano, validarEscolha } from './motor/validador';
-import { ErroOllama, gerarComSchema, gerarEmbedding, MODELO_GERACAO } from './ollama-cliente';
 
 // PREMISSA (textos): mensagens da tela de geração.
 export const MENSAGEM_FALHA =
   'Não consegui montar um plano válido com as suas respostas. Toque em "Tentar de novo"; se continuar, volte ao questionário e mude os dias de treino ou as restrições.';
 export const MENSAGEM_LIMITE = 'Você já gerou 5 planos hoje. Tente de novo amanhã.';
 export const MENSAGEM_SALVAR = 'Não consegui salvar o seu plano. Tente de novo.';
+export const MENSAGEM_SEM_REDE =
+  'Sem conexão com a internet. Confira o Wi-Fi ou os dados móveis e tente de novo.';
+export const MENSAGEM_SERVICO_OCUPADO =
+  'O gerador de planos está com muita procura agora. Espere um minuto e tente de novo.';
+export const MENSAGEM_SERVICO_FORA =
+  'O gerador de planos está fora do ar. Tente de novo em alguns minutos.';
+export const MENSAGEM_SESSAO = 'Sua sessão expirou. Entre de novo para gerar o plano.';
+
+// Modelo da Groq (RN06), gravado junto de cada plano gerado.
+export const MODELO_GERACAO = 'llama-3.3-70b-versatile';
 
 /** Erro com texto pronto para a tela. */
 export class ErroGeracao extends Error {
@@ -55,8 +67,6 @@ export class ErroGeracao extends Error {
 const POR_GRUPO = 4;
 const POR_SLOT = 5;
 const TENTATIVAS = 2;
-// Prefixo de consulta recomendado para o mxbai-embed-large.
-const PREFIXO_CONSULTA = 'Represent this sentence for searching relevant passages: ';
 
 function limitarPor<T, K>(itens: T[], chave: (item: T) => K, maximo: number): T[] {
   const contagem = new Map<K, number>();
@@ -67,39 +77,65 @@ function limitarPor<T, K>(itens: T[], chave: (item: T) => K, maximo: number): T[
   });
 }
 
-// PREMISSA: margem de candidatos vindos do banco por grupo/slot, para a
-// seleção ainda ampliar nível e grupo secundário e filtrar restrição física.
-const POR_GRUPO_BANCO = 30;
-const POR_SLOT_BANCO = POR_SLOT * 4;
-
-async function buscarExercicios(
-  entrada: EntradaMotor,
-  embedding: string,
-): Promise<LinhaExercicio[]> {
-  // Todos os níveis e já ordenados pelo vetor: a seleção amplia o nível quando um grupo fica vazio.
-  const { data, error } = await supabase.rpc('buscar_exercicios_rag', {
-    query_embedding: embedding,
-    filtro_equipamento: equipamentosDaBase(entrada.equipamentos),
-    limite_por_grupo: POR_GRUPO_BANCO,
-  });
-  if (error) throw error;
-  return (data ?? []) as LinhaExercicio[];
+interface Trecho {
+  id: number;
+  titulo: string;
+  fonte: string;
+  conteudo: string;
 }
 
-async function buscarAlimentos(
+interface Candidatos {
+  exercicios: LinhaExercicio[];
+  alimentos: LinhaAlimento[];
+  trechos: Trecho[];
+}
+
+/** Erro do invoke da function → texto pronto para a tela. */
+async function erroDaFuncao(erro: unknown): Promise<ErroGeracao> {
+  if (erro instanceof FunctionsFetchError) return new ErroGeracao(MENSAGEM_SEM_REDE);
+  if (erro instanceof FunctionsHttpError) {
+    const status: unknown = erro.context?.status;
+    if (status === 401) return new ErroGeracao(MENSAGEM_SESSAO);
+    if (status === 429) return new ErroGeracao(MENSAGEM_LIMITE);
+    if (status === 503) return new ErroGeracao(MENSAGEM_SERVICO_OCUPADO);
+  }
+  console.warn('[geracao] gerar-plano:', erro);
+  return new ErroGeracao(MENSAGEM_SERVICO_FORA);
+}
+
+async function chamarFuncao<T>(corpo: object): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>('gerar-plano', { body: corpo });
+  if (error) throw await erroDaFuncao(error);
+  return data as T;
+}
+
+/** Embedding da consulta e as 3 buscas por vetor (RN14), todas dentro da function. */
+async function buscarCandidatos(entrada: EntradaMotor): Promise<Candidatos> {
+  const vegano = entrada.restricoes.includes('vegano');
+  const dados = await chamarFuncao<Partial<Candidatos>>({
+    acao: 'buscar',
+    objetivo: entrada.objetivo,
+    nivel: entrada.nivel,
+    restricoes: entrada.restricoes,
+    // Todos os níveis e já ordenados pelo vetor: a seleção amplia o nível quando um grupo fica vazio.
+    filtroEquipamento: equipamentosDaBase(entrada.equipamentos),
+    termosExcluidos: termosExcluidos(entrada.restricoes),
+    termosProteina: vegano ? PROTEINA_VEGETAL : null,
+  });
+  return {
+    exercicios: dados.exercicios ?? [],
+    alimentos: dados.alimentos ?? [],
+    trechos: dados.trechos ?? [],
+  };
+}
+
+async function candidatosDeAlimento(
+  linhas: LinhaAlimento[],
   entrada: EntradaMotor,
-  embedding: string,
 ): Promise<AlimentoCandidato[]> {
   const vegano = entrada.restricoes.includes('vegano');
-  const { data, error } = await supabase.rpc('buscar_alimentos_rag', {
-    query_embedding: embedding,
-    termos_excluidos: termosExcluidos(entrada.restricoes),
-    termos_proteina: vegano ? PROTEINA_VEGETAL : null,
-    limite_por_slot: POR_SLOT_BANCO,
-  });
-  if (error) throw error;
   // O código confere de novo (slot e restrições): o banco só pré-filtra.
-  const candidatos = ((data ?? []) as LinhaAlimento[])
+  const candidatos = linhas
     .map((linha) => mapearAlimento(linha, vegano))
     .filter(
       (a): a is AlimentoCandidato =>
@@ -132,52 +168,16 @@ async function comPorcoes(alimentos: AlimentoCandidato[]): Promise<AlimentoCandi
   }
 }
 
-interface Trecho {
-  titulo: string;
-  fonte: string;
-  conteudo: string;
-}
-
-/** Um só embedding por geração (o Ollama roda num Mac de 8 GB). */
-async function embeddingDaConsulta(entrada: EntradaMotor): Promise<string> {
-  const restricoes = entrada.restricoes.length > 0 ? `, ${entrada.restricoes.join(', ')}` : '';
-  const vetor = await gerarEmbedding(
-    `${PREFIXO_CONSULTA}treino e dieta para ${entrada.objetivo}, nível ${entrada.nivel}${restricoes}`,
-  );
-  return JSON.stringify(vetor);
-}
-
-async function buscarDiretrizes(entrada: EntradaMotor, embedding: string): Promise<Trecho[]> {
-  const { data, error } = await supabase.rpc('buscar_conhecimento_rag', {
-    query_embedding: embedding,
-    filtro_objetivo: entrada.objetivo,
-    filtro_nivel: entrada.nivel,
-    limite: 3,
-  });
-  if (error) throw error;
-  return (data ?? []) as Trecho[];
-}
-
-/** Troca os UUIDs por apelidos curtos (e1, e2...): bem menos tokens no prompt e na resposta. */
-function apelidar(exercicios: ExercicioCandidato[]) {
-  const original = new Map(exercicios.map((e, i) => [`e${i + 1}`, e.id]));
-  return { apelidados: exercicios.map((e, i) => ({ ...e, id: `e${i + 1}` })), original };
-}
-
 async function escolherComRetry(
   entrada: EntradaMotor,
   meta: ReturnType<typeof metaDe>,
-  diretrizes: string[],
-  embedding: string,
+  candidatos: Candidatos,
   refeicoes: NomeRefeicao[],
 ) {
   const divisao = montarDivisaoSemanal(entrada.diasPorSemana);
-  const [linhas, alimentos] = await Promise.all([
-    buscarExercicios(entrada, embedding),
-    buscarAlimentos(entrada, embedding),
-  ]);
+  const alimentos = await candidatosDeAlimento(candidatos.alimentos, entrada);
   const selecao = selecionarExercicios(
-    linhas,
+    candidatos.exercicios,
     entrada,
     divisao.map((d) => montarSlotsDia(d, entrada.nivel)),
     POR_GRUPO,
@@ -185,16 +185,12 @@ async function escolherComRetry(
   // Nome de cada dia pelo foco que sobrou depois da seleção (RN19).
   const nomes = nomearDias(selecao.slots.map((s) => s.porGrupo.map((p) => p.grupo)));
   const slots = selecao.slots.map((s, i) => ({ ...s, nome: nomes[i] }));
-  const { apelidados: exercicios, original } = apelidar(selecao.exercicios);
-  const schema = montarSchemaEscolha(slots, exercicios, alimentos, refeicoes);
-  const contexto = {
-    objetivo: entrada.objetivo,
-    nivel: entrada.nivel,
-    diasPorSemana: entrada.diasPorSemana,
-    equipamentos: entrada.equipamentos,
-    restricoes: entrada.restricoes,
-    diretrizes,
-  };
+  const exercicios = selecao.exercicios;
+  // Falta de candidato num slot de alimento ou na seleção inteira não tem o que escolher.
+  if (exercicios.length === 0 || SLOTS.some((s) => !alimentos.some((a) => a.slot === s))) {
+    console.warn('[geracao] base sem candidatos suficientes');
+    throw new ErroGeracao(MENSAGEM_FALHA);
+  }
   const restricoes = {
     equipamentos: entrada.equipamentos,
     restricoesAlimentares: entrada.restricoes,
@@ -203,10 +199,22 @@ async function escolherComRetry(
 
   let erros: string[] = [];
   for (let tentativa = 0; tentativa < TENTATIVAS; tentativa++) {
-    const bruta = await gerarComSchema(
-      montarPrompt(contexto, exercicios, alimentos, erros),
-      schema,
-    );
+    // A function só recebe IDs e enums: nomes e diretrizes ela lê do banco (não vira proxy da Groq).
+    const { escolha: bruta } = await chamarFuncao<{ escolha: unknown }>({
+      acao: 'escolher',
+      objetivo: entrada.objetivo,
+      nivel: entrada.nivel,
+      diasPorSemana: entrada.diasPorSemana,
+      equipamentos: entrada.equipamentos,
+      restricoes: entrada.restricoes,
+      refeicoes,
+      slots: slots.map((s) => ({ porGrupo: s.porGrupo })),
+      exercicios: exercicios.map((e) => ({ id: e.id, grupo: e.grupo })),
+      alimentos: alimentos.map((a) => ({ id: a.id, slot: a.slot })),
+      trechos: candidatos.trechos.map((t) => t.id),
+      // Mensagens do validador (sem dado pessoal), no máximo 5 de 200 caracteres.
+      erros: erros.slice(0, 5).map((e) => e.slice(0, 200)),
+    });
     const validacao = validarEscolha(bruta, slots, exercicios, alimentos, restricoes);
     if (!validacao.escolha) {
       erros = validacao.erros;
@@ -222,10 +230,6 @@ async function escolherComRetry(
       refeicoes,
     );
     if (montagem.plano) {
-      const dias = montagem.plano.dias.map((d) => ({
-        ...d,
-        exercicios: d.exercicios.map((e) => ({ ...e, id: original.get(e.id) ?? e.id })),
-      }));
       const aquecimentos = montagem.plano.dias.map((d, i) =>
         montarAquecimento(
           slots[i].porGrupo.map((p) => p.grupo),
@@ -235,7 +239,7 @@ async function escolherComRetry(
         ),
       );
       return {
-        plano: { ...montagem.plano, dias },
+        plano: montagem.plano,
         divisao,
         avisos: selecao.avisos,
         aquecimentos,
@@ -281,14 +285,13 @@ export async function montarPlanoGerado(dados: DadosQuestionario): Promise<Plano
   const travas = verificarTravasSaude({ ...entrada, caloriasAlvo: calculo.caloriasAlvo });
   if (travas.length > 0) throw new ErroGeracao(MENSAGEM_PROFISSIONAL);
 
-  const embedding = await embeddingDaConsulta(entrada);
-  const trechos = await buscarDiretrizes(entrada, embedding);
+  const candidatos = await buscarCandidatos(entrada);
+  const trechos = candidatos.trechos;
   const refeicoes = refeicoesDoDia(Number(dados.dieta?.refeicoes_por_dia));
   const { plano, divisao, avisos, aquecimentos, alimentos } = await escolherComRetry(
     entrada,
     metaDe(calculo),
-    trechos.map((t) => t.conteudo),
-    embedding,
+    candidatos,
     refeicoes,
   );
   const nomeDivisao = [...new Set(divisao.map((d) => d.nome))].join(' / ');
@@ -332,7 +335,7 @@ export async function gerarPlano(
     const gerado = await montarPlanoGerado(dados);
     return { plano: gerado, planoIaId: await salvar(dados, gerado) };
   } catch (erro) {
-    if (erro instanceof ErroGeracao || erro instanceof ErroOllama) throw erro;
+    if (erro instanceof ErroGeracao) throw erro;
     // Falha de banco ou base sem candidatos: detalhe no log, texto simples na tela.
     console.warn('[geracao]', erro);
     throw new ErroGeracao(MENSAGEM_FALHA);

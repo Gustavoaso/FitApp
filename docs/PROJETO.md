@@ -31,7 +31,7 @@ Regra padrão de RLS: cada usuário só os próprios registros. As tabelas `base
 
 ## 5. Fluxos e situações
 
-`cadastro → consentimento → questionário → geração (Ollama na rede local) → resultado → aceite → abas`
+`cadastro → consentimento → questionário → geração (Groq pela Edge Function) → resultado → aceite → abas`
 
 | De | Para | Quem | Condição | Tem volta? |
 |---|---|---|---|---|
@@ -104,7 +104,7 @@ Visual: skill `visual-design` + `docs/VISUAL.md`.
 
 ## 8. Textos
 
-- **Erros e sucesso:** premissas revisáveis, em português, curtas e sem jargão técnico. Erro de rede/Ollama: "Não consegui falar com o gerador de planos. Confira se o Mac está ligado e na mesma rede."
+- **Erros e sucesso:** premissas revisáveis, em português, curtas e sem jargão técnico. Erro na geração (etapa 28): sem rede ("Sem conexão com a internet..."), serviço ocupado, serviço fora do ar, sessão expirada e limite diário, cada um com o seu texto em `gerar-plano-servico.ts`.
 - **Notificações:** fora desta versão.
 
 ## 9. Dados
@@ -118,7 +118,7 @@ Visual: skill `visual-design` + `docs/VISUAL.md`.
 
 | Integração | Nesta versão |
 |---|---|
-| Ollama local (`llama3.2`, `mxbai-embed-large`) | real, pela rede local, a partir do app |
+| Groq (`llama-3.3-70b-versatile`) e `gte-small` do Supabase | pela Edge Function `gerar-plano` (chave só no secret; sem chave no ambiente de desenvolvimento, só testado com simulação) |
 | Supabase (Auth, Postgres, RPCs) | real (projeto `asuxqjbwgetdcldjoaqm`); testes no banco local |
 | Sign in with Apple | real (`expo-apple-authentication`) |
 | ExerciseDB / TACO via RapidAPI | só nos scripts de sincronização. **A chave sai do app** (secret da function `sincronizar-bases` ou `.env` do script) |

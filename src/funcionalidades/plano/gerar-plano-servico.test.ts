@@ -1,13 +1,25 @@
 import { supabase } from '@/compartilhado/supabase';
 import type { DadosQuestionario } from '@/compartilhado/tipos';
-import { ErroGeracao, gerarPlano, MENSAGEM_FALHA, MENSAGEM_LIMITE } from './gerar-plano-servico';
+import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js';
+import {
+  ErroGeracao,
+  gerarPlano,
+  MENSAGEM_FALHA,
+  MENSAGEM_LIMITE,
+  MENSAGEM_SEM_REDE,
+  MENSAGEM_SERVICO_FORA,
+  MENSAGEM_SERVICO_OCUPADO,
+  MENSAGEM_SESSAO,
+} from './gerar-plano-servico';
 import { MENSAGEM_PROFISSIONAL } from './motor/travas-saude';
-import { MENSAGEM_OLLAMA_FORA } from './ollama-cliente';
 
-jest.mock('@/compartilhado/supabase', () => ({ supabase: { rpc: jest.fn(), from: jest.fn() } }));
+jest.mock('@/compartilhado/supabase', () => ({
+  supabase: { rpc: jest.fn(), from: jest.fn(), functions: { invoke: jest.fn() } },
+}));
 
 const rpc = supabase.rpc as jest.Mock;
 const from = supabase.from as jest.Mock;
+const invoke = supabase.functions.invoke as jest.Mock;
 
 // Dados fictícios. Nomes de grupo como estão na base (traduzidos do free-exercise-db).
 const GRUPOS_BASE = [
@@ -90,72 +102,83 @@ const RESPOSTAS: DadosQuestionario = {
   dieta: { restricao_alimentar: ['Nenhuma'], refeicoes_por_dia: 4 },
 };
 
-type Schema = {
-  properties?: Record<string, Schema>;
-  prefixItems?: Schema[];
-  items?: Schema;
-  enum?: string[];
-  minItems?: number;
-};
+interface Corpo {
+  acao: 'buscar' | 'escolher';
+  [campo: string]: unknown;
+}
+interface DiaPedido {
+  porGrupo: { grupo: string; quantidade: number }[];
+}
+interface PedidoEscolher {
+  slots: DiaPedido[];
+  exercicios: { id: string; grupo: string }[];
+  alimentos: { id: string; slot: string }[];
+  refeicoes: string[];
+  erros: string[];
+}
 
-/** O que a LLM daria: os primeiros IDs de cada `enum` do schema pedido (os apelidos e1, e2...). */
-function escolherDoSchema(schema: Schema): unknown {
-  const props = (s: Schema) => Object.entries(s.properties ?? {});
-  const dias = (schema.properties?.dias.prefixItems ?? []).map((dia) => ({
+/** O que a LLM daria: os primeiros IDs de cada grupo e slot que o pedido oferece. */
+function escolherDoPedido(p: PedidoEscolher): unknown {
+  const dias = p.slots.map((dia) => ({
     exercicios: Object.fromEntries(
-      props(dia.properties?.exercicios ?? {}).map(([g, lista]) => [
-        g,
-        (lista.items?.enum ?? []).slice(0, lista.minItems),
-      ]),
+      dia.porGrupo
+        .filter((g) => g.quantidade > 0)
+        .map((g) => {
+          const ids = p.exercicios.filter((e) => e.grupo === g.grupo).map((e) => e.id);
+          return [g.grupo, ids.slice(0, Math.min(g.quantidade, ids.length))];
+        }),
     ),
   }));
   const refeicoes = Object.fromEntries(
-    props(schema.properties?.refeicoes ?? {}).map(([r, slots]) => [
+    p.refeicoes.map((r) => [
       r,
-      Object.fromEntries(props(slots).map(([k, v]) => [k, v.enum?.[0]])),
+      Object.fromEntries(
+        ['proteina', 'carboidrato', 'complemento'].map((s) => [
+          s,
+          p.alimentos.find((a) => a.slot === s)?.id,
+        ]),
+      ),
     ]),
   );
   return { dias, refeicoes };
 }
 const VALIDA = 'VALIDA';
 const ESCOLHA_INVALIDA = { dias: [], refeicoes: {} };
+const TRECHO_BANCO = { id: 3, ...TRECHO };
 
-/** Simula as RPCs: as de busca devolvem as linhas dadas; salvar_plano_gerado, o resultado dado. */
+/**
+ * Simula a Edge Function gerar-plano: `buscar` devolve as linhas dadas; cada `escolher`
+ * devolve a próxima resposta da fila (VALIDA = escolha montada a partir do pedido).
+ */
+function simularFuncao(respostas: unknown[] = [VALIDA], banco = {}) {
+  const { exercicios = EXERCICIOS as unknown[], alimentos = ALIMENTOS as unknown[] } = banco as {
+    exercicios?: unknown[];
+    alimentos?: unknown[];
+  };
+  const fila = [...respostas];
+  const corpos: Corpo[] = [];
+  invoke.mockReset().mockImplementation(async (nome: string, { body }: { body: Corpo }) => {
+    expect(nome).toBe('gerar-plano');
+    corpos.push(body);
+    if (body.acao === 'buscar') {
+      return { data: { exercicios, alimentos, trechos: [TRECHO_BANCO] }, error: null };
+    }
+    const proxima = fila.shift();
+    const escolha =
+      proxima === VALIDA ? escolherDoPedido(body as unknown as PedidoEscolher) : proxima;
+    return { data: { escolha }, error: null };
+  });
+  return {
+    buscas: () => corpos.filter((c) => c.acao === 'buscar'),
+    escolhas: () => corpos.filter((c) => c.acao === 'escolher'),
+  };
+}
+
+/** Simula o banco: só a RPC de gravar e as porções caseiras. */
 function simularBanco({
-  exercicios = EXERCICIOS as unknown[],
-  alimentos = ALIMENTOS as unknown[],
   salvar = { data: 'plano-ia-1', error: null } as { data: unknown; error: unknown },
 } = {}) {
-  rpc.mockReset().mockImplementation(async (nome: string) => {
-    if (nome === 'buscar_conhecimento_rag') return { data: [TRECHO], error: null };
-    if (nome === 'buscar_exercicios_rag') return { data: exercicios, error: null };
-    if (nome === 'buscar_alimentos_rag') return { data: alimentos, error: null };
-    return salvar;
-  });
-}
-
-/** Simula o Ollama: cada chamada a /api/generate devolve a próxima resposta da fila. */
-function simularOllama(respostas: unknown[]) {
-  const fila = [...respostas];
-  const fetchMock = jest.fn(async (url: string, init: { body: string }) => {
-    const proxima = fila.shift();
-    const corpo = url.endsWith('/api/embed')
-      ? (fila.unshift(proxima), { embeddings: [[0.1, 0.2, 0.3]] })
-      : {
-          response: JSON.stringify(
-            proxima === VALIDA ? escolherDoSchema(JSON.parse(init.body).format) : proxima,
-          ),
-        };
-    return { ok: true, status: 200, json: async () => corpo };
-  });
-  global.fetch = fetchMock as unknown as typeof fetch;
-  return fetchMock;
-}
-
-function chamadasGenerate(fetchMock: jest.Mock): { prompt: string; format: Schema }[] {
-  return fetchMock.mock.calls
-    .filter(([url]) => String(url).endsWith('/api/generate'))
-    .map(([, init]) => JSON.parse(init.body));
+  rpc.mockReset().mockImplementation(async () => salvar);
 }
 
 const salvou = () => rpc.mock.calls.some(([nome]) => nome === 'salvar_plano_gerado');
@@ -163,11 +186,12 @@ const salvou = () => rpc.mock.calls.some(([nome]) => nome === 'salvar_plano_gera
 beforeEach(() => {
   jest.spyOn(console, 'warn').mockImplementation(() => {});
   simularBanco();
+  from.mockReset();
 });
 
 afterEach(() => jest.restoreAllMocks());
 
-describe('gerarPlano com o Ollama simulado', () => {
+describe('gerarPlano com a Edge Function simulada', () => {
   it('RN19: nomes pelo foco, prescrição, aquecimento, progressão, refeições e por quê', async () => {
     // Porção caseira só do arroz (id 2): os outros alimentos ficam só em gramas.
     from.mockReturnValue({
@@ -178,7 +202,7 @@ describe('gerarPlano com o Ollama simulado', () => {
         }),
       }),
     });
-    simularOllama([VALIDA]);
+    simularFuncao();
     const { plano } = await gerarPlano({
       ...RESPOSTAS,
       dieta: { ...RESPOSTAS.dieta, refeicoes_por_dia: 5 },
@@ -202,15 +226,15 @@ describe('gerarPlano com o Ollama simulado', () => {
     from.mockImplementation(() => {
       throw new Error('fora do ar');
     });
-    simularOllama([VALIDA]);
+    simularFuncao();
     const { plano } = await gerarPlano(RESPOSTAS);
     expect(plano.dieta.refeicoes.flatMap((r) => r.alimentos).every((a) => !a.medidaCaseira)).toBe(
       true,
     );
   });
 
-  it('sucesso: gera, salva pela RPC e o prompt não leva o nome', async () => {
-    const fetchMock = simularOllama([VALIDA]);
+  it('sucesso: gera, salva pela RPC e nada do que vai à function leva o nome', async () => {
+    const funcao = simularFuncao();
     const { plano, planoIaId } = await gerarPlano(RESPOSTAS);
 
     expect(planoIaId).toBe('plano-ia-1');
@@ -218,89 +242,80 @@ describe('gerarPlano com o Ollama simulado', () => {
     expect(plano.dieta.refeicoes).toHaveLength(4);
     expect(plano.comentarios).toEqual(['Volume semanal (Schoenfeld 2017)']);
     expect(plano.fundamentos).toEqual([TRECHO]);
-    const [{ prompt }] = chamadasGenerate(fetchMock);
-    expect(prompt).not.toContain('Pessoa Teste');
-    expect(prompt).toContain('Diretriz fictícia de volume.');
+    expect(JSON.stringify([...funcao.buscas(), ...funcao.escolhas()])).not.toContain(
+      'Pessoa Teste',
+    );
+    // O pedido de escolha leva só IDs e enums; a function lê nomes e diretrizes do banco.
+    const [pedido] = funcao.escolhas();
+    expect(pedido.trechos).toEqual([3]);
+    expect(JSON.stringify(pedido)).not.toContain('Diretriz fictícia');
+    expect(JSON.stringify(pedido)).not.toContain('Exercício peito');
     const salvar = rpc.mock.calls.find(([nome]) => nome === 'salvar_plano_gerado');
     expect(salvar?.[1].p_dados.plano).toEqual(plano);
     expect(salvar?.[1].p_dados.respostas.perfil.nome).toBeUndefined();
   });
 
-  it('RAG híbrido: um só embedding e as RPCs com os filtros da pessoa', async () => {
-    const fetchMock = simularOllama([VALIDA]);
+  it('RAG híbrido: uma busca na function com os filtros da pessoa', async () => {
+    const funcao = simularFuncao([VALIDA], { alimentos: [ALIMENTOS[1], ALIMENTOS[2]] });
     const vegano = {
       ...RESPOSTAS,
       treino: { ...RESPOSTAS.treino, local_treino: 'Em casa' },
       dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] },
     };
-    simularBanco({ alimentos: [ALIMENTOS[1], ALIMENTOS[2]] });
     await gerarPlano(vegano).catch(() => undefined);
 
-    const embeds = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/embed'));
-    expect(embeds).toHaveLength(1);
-    expect(JSON.parse(embeds[0][1].body).input).toContain('vegano');
-    const argumentos = (nome: string) => rpc.mock.calls.find(([n]) => n === nome)?.[1];
-    const vetor = JSON.stringify([0.1, 0.2, 0.3]);
-    expect(argumentos('buscar_conhecimento_rag').query_embedding).toBe(vetor);
-    const ex = argumentos('buscar_exercicios_rag');
-    expect(ex.query_embedding).toBe(vetor);
-    expect(ex.filtro_equipamento).toEqual(expect.arrayContaining(['halteres', 'peso-do-corpo']));
-    expect(ex.filtro_equipamento).not.toContain('barra');
-    const al = argumentos('buscar_alimentos_rag');
-    expect(al.query_embedding).toBe(vetor);
+    expect(funcao.buscas()).toHaveLength(1);
+    const [busca] = funcao.buscas() as unknown as {
+      objetivo: string;
+      restricoes: string[];
+      filtroEquipamento: string[];
+      termosExcluidos: string[];
+      termosProteina: string[];
+    }[];
+    expect(busca.objetivo).toBe('hipertrofia');
+    expect(busca.restricoes).toContain('vegano');
+    expect(busca.filtroEquipamento).toEqual(expect.arrayContaining(['halteres', 'peso-do-corpo']));
+    expect(busca.filtroEquipamento).not.toContain('barra');
     // Vegano exclui também o que o vegetariano exclui.
-    expect(al.termos_excluidos).toEqual(expect.arrayContaining(['ovo', 'leite', 'frango']));
-    expect(al.termos_proteina).toEqual(expect.arrayContaining(['feijao', 'tofu']));
+    expect(busca.termosExcluidos).toEqual(expect.arrayContaining(['ovo', 'leite', 'frango']));
+    expect(busca.termosProteina).toEqual(expect.arrayContaining(['feijao', 'tofu']));
   });
 
   it('academia sem restrição: sem filtro de equipamento nem de termos', async () => {
-    simularOllama([VALIDA]);
+    const funcao = simularFuncao();
     await gerarPlano(RESPOSTAS);
-    const argumentos = (nome: string) => rpc.mock.calls.find(([n]) => n === nome)?.[1];
-    expect(argumentos('buscar_exercicios_rag').filtro_equipamento).toBeNull();
-    expect(argumentos('buscar_alimentos_rag').termos_excluidos).toEqual([]);
-    expect(argumentos('buscar_alimentos_rag').termos_proteina).toBeNull();
+    expect(funcao.buscas()[0]).toMatchObject({
+      filtroEquipamento: null,
+      termosExcluidos: [],
+      termosProteina: null,
+    });
   });
 
   it('o banco só pré-filtra: alimento que quebra a restrição é barrado pelo código', async () => {
-    simularOllama([VALIDA]);
-    const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
     const soja = { ...ALIMENTOS[0], id: 8, nome: 'Tofu firme', categoria: 'leguminosas' };
-    simularBanco({ alimentos: [ALIMENTOS[0], soja, ALIMENTOS[1], ALIMENTOS[2]] });
+    simularFuncao([VALIDA], { alimentos: [ALIMENTOS[0], soja, ALIMENTOS[1], ALIMENTOS[2]] });
+    const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
     const { plano } = await gerarPlano(vegano);
     const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
     expect(nomes).not.toContain('Frango grelhado');
     expect(nomes).toContain('Tofu firme');
   });
 
-  it('erro numa RPC de busca: mensagem genérica e nada gravado', async () => {
-    simularOllama([VALIDA]);
-    simularBanco();
-    const padrao = rpc.getMockImplementation();
-    rpc.mockImplementation(async (nome: string, args: unknown) =>
-      nome === 'buscar_exercicios_rag'
-        ? { data: null, error: { message: 'falhou' } }
-        : padrao?.(nome, args),
-    );
-    await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_FALHA);
-    expect(salvou()).toBe(false);
-  });
-
-  it('retry: a 1ª resposta é recusada e a 2ª, com os erros no prompt, é salva', async () => {
-    const fetchMock = simularOllama([ESCOLHA_INVALIDA, VALIDA]);
+  it('retry: a 1ª resposta é recusada e a 2ª, com os erros no pedido, é salva', async () => {
+    const funcao = simularFuncao([ESCOLHA_INVALIDA, VALIDA]);
     await gerarPlano(RESPOSTAS);
 
-    const chamadas = chamadasGenerate(fetchMock);
-    expect(chamadas).toHaveLength(2);
-    expect(chamadas[0].prompt).not.toContain('A resposta anterior foi recusada');
-    expect(chamadas[1].prompt).toContain('A resposta anterior foi recusada');
+    const pedidos = funcao.escolhas() as unknown as PedidoEscolher[];
+    expect(pedidos).toHaveLength(2);
+    expect(pedidos[0].erros).toEqual([]);
+    expect(pedidos[1].erros.length).toBeGreaterThan(0);
     expect(salvou()).toBe(true);
   });
 
   it('falha dupla: mostra a mensagem e não grava nada', async () => {
-    const fetchMock = simularOllama([ESCOLHA_INVALIDA, ESCOLHA_INVALIDA]);
+    const funcao = simularFuncao([ESCOLHA_INVALIDA, ESCOLHA_INVALIDA]);
     await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_FALHA);
-    expect(chamadasGenerate(fetchMock)).toHaveLength(2);
+    expect(funcao.escolhas()).toHaveLength(2);
     expect(salvou()).toBe(false);
   });
 
@@ -318,12 +333,13 @@ describe('gerarPlano com o Ollama simulado', () => {
       carboidratos_100g: 6,
       gorduras_100g: 8.4,
     };
-    const fetchMock = simularOllama([VALIDA]);
-    simularBanco({ alimentos: [magro, ALIMENTOS[0], ALIMENTOS[1], abacate, ALIMENTOS[2]] });
+    const funcao = simularFuncao([VALIDA], {
+      alimentos: [magro, ALIMENTOS[0], ALIMENTOS[1], abacate, ALIMENTOS[2]],
+    });
 
     const { plano } = await gerarPlano(RESPOSTAS);
 
-    expect(chamadasGenerate(fetchMock)).toHaveLength(1);
+    expect(funcao.escolhas()).toHaveLength(1);
     const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
     expect(nomes).toContain('Azeite');
     expect(salvou()).toBe(true);
@@ -335,36 +351,43 @@ describe('gerarPlano com o Ollama simulado', () => {
     expect(MENSAGEM_FALHA).not.toContain('DEBUG');
   });
 
-  it('Ollama fora do ar: mensagem da seção 8 e nada gravado', async () => {
-    global.fetch = jest.fn().mockRejectedValue(new TypeError('Network request failed'));
-    await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_OLLAMA_FORA);
+  it.each([
+    [
+      'sem rede',
+      new FunctionsFetchError(new TypeError('Network request failed')),
+      MENSAGEM_SEM_REDE,
+    ],
+    ['sessão expirada (401)', new FunctionsHttpError({ status: 401 }), MENSAGEM_SESSAO],
+    ['limite diário (429)', new FunctionsHttpError({ status: 429 }), MENSAGEM_LIMITE],
+    ['Groq ocupada (503)', new FunctionsHttpError({ status: 503 }), MENSAGEM_SERVICO_OCUPADO],
+    ['falha interna (500)', new FunctionsHttpError({ status: 500 }), MENSAGEM_SERVICO_FORA],
+  ])('function com erro, %s: mensagem pronta e nada gravado', async (_, erro, mensagem) => {
+    invoke.mockReset().mockResolvedValue({ data: null, error: erro });
+    const recebido = await gerarPlano(RESPOSTAS).catch((e: unknown) => e);
+    expect(recebido).toBeInstanceOf(ErroGeracao);
+    expect((recebido as Error).message).toBe(mensagem);
     expect(salvou()).toBe(false);
   });
 
-  it('Ollama responde com erro HTTP: mesma mensagem', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) });
-    await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_OLLAMA_FORA);
-  });
-
   it('6ª geração do dia: a recusa da RPC vira a mensagem do limite', async () => {
-    simularOllama([VALIDA]);
+    simularFuncao();
     simularBanco({ salvar: { data: null, error: { message: 'limite_diario' } } });
     await expect(gerarPlano(RESPOSTAS)).rejects.toThrow(MENSAGEM_LIMITE);
   });
 
-  it('trava de saúde: menor de 18 nem chama o Ollama', async () => {
-    const fetchMock = simularOllama([VALIDA]);
+  it('trava de saúde: menor de 18 nem chama a function', async () => {
+    simularFuncao();
     const menor = { ...RESPOSTAS, perfil: { ...RESPOSTAS.perfil, idade: 16 } };
     await expect(gerarPlano(menor)).rejects.toThrow(MENSAGEM_PROFISSIONAL);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(invoke).not.toHaveBeenCalled();
   });
 
   it('base sem candidatos: erro genérico, sem gravar', async () => {
-    simularOllama([VALIDA]);
-    simularBanco({ exercicios: [], alimentos: [] });
+    const funcao = simularFuncao([VALIDA], { exercicios: [], alimentos: [] });
     const erro = await gerarPlano(RESPOSTAS).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(ErroGeracao);
     expect((erro as Error).message).toBe(MENSAGEM_FALHA);
+    expect(funcao.escolhas()).toHaveLength(0);
     expect(salvou()).toBe(false);
   });
 
@@ -378,9 +401,7 @@ describe('gerarPlano com o Ollama simulado', () => {
       carboidratos_100g: 20,
       gorduras_100g: 1,
     };
-    const veganos = [tempeh, ALIMENTOS[1], ALIMENTOS[2]];
-    simularBanco({ alimentos: [ALIMENTOS[0], ...veganos] });
-    simularOllama([VALIDA]);
+    simularFuncao([VALIDA], { alimentos: [ALIMENTOS[0], tempeh, ALIMENTOS[1], ALIMENTOS[2]] });
     const vegano = { ...RESPOSTAS, dieta: { ...RESPOSTAS.dieta, restricao_alimentar: ['Vegano'] } };
     const { plano } = await gerarPlano(vegano);
     const nomes = plano.dieta.refeicoes.flatMap((r) => r.alimentos.map((a) => a.nome));
@@ -397,8 +418,7 @@ describe('gerarPlano com o Ollama simulado', () => {
         ? { ...e, equipamento: 'peso-do-corpo' }
         : e,
     );
-    simularBanco({ exercicios: comCorpo });
-    const fetchMock = simularOllama([VALIDA]);
+    const funcao = simularFuncao([VALIDA], { exercicios: comCorpo });
     const corpo = { ...RESPOSTAS, treino: { ...RESPOSTAS.treino, local_treino: 'Peso do corpo' } };
     const { plano } = await gerarPlano(corpo);
 
@@ -407,8 +427,8 @@ describe('gerarPlano com o Ollama simulado', () => {
     expect(grupos).not.toContain('biceps');
     expect(grupos).toContain('peito');
     expect(plano.avisos).toEqual(expect.arrayContaining([expect.stringContaining('bíceps')]));
-    // IDs reais no plano; o prompt só viu os apelidos.
+    // O plano guarda os IDs reais; o pedido à function também leva IDs reais.
     expect(plano.treino.dias[0].exercicios[0].exercicioId).toMatch(/^peito-/);
-    expect(chamadasGenerate(fetchMock)[0].prompt).not.toContain('peito-1');
+    expect(JSON.stringify(funcao.escolhas()[0])).toContain('peito-1');
   });
 });
