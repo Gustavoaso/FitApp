@@ -293,4 +293,4 @@ Plano aprovado em 2026-11-16 (etapas 30–38). Etapa 29 (visual) em espera por d
 
 ### Resultado do bloco 2026-11-16
 
-Etapas 30–37 concluídas (commits 1d95e3f, 46d9af1, dfb2394, 55bf868, a71b91a, 588e194, 06ce5c7, 3e9864f). Testador completo: REPROVADO só por formatação → corrigido em 9d234b3 (maestro conferiu: typecheck, format:check e 583 testes ok). Segurança (modo etapa, sem testes práticos): 2 Médias e 4 Baixas → todas corrigidas em 9d234b3. Testador-usuario não rodou (pedido de rapidez do dono). Migrations 20261119–20261125 e buckets ainda só no banco local: remoto pendente de aprovação do dono.
+Etapas 30–37 concluídas (commits 1d95e3f, 46d9af1, dfb2394, 55bf868, a71b91a, 588e194, 06ce5c7, 3e9864f). Testador completo: REPROVADO só por formatação → corrigido em 9d234b3 (maestro conferiu: typecheck, format:check e 583 testes ok). Segurança (modo etapa, sem testes práticos): 2 Médias e 4 Baixas → todas corrigidas em 9d234b3. Testador-usuario não rodou (pedido de rapidez do dono). Migrations 20261119–20261125, 5 buckets e a function excluir-conta aplicados no remoto em 2026-11-16 com aprovação do dono.
