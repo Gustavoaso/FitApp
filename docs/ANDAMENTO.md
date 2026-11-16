@@ -51,6 +51,7 @@ Fluxo: novo-projeto
 | 28. IA na nuvem: Groq + embedding gte-small (RN06, RN14) | Implementada, aguardando o testador | 1 | ver git log |
 | 30. Sem gamificação e aderência real (RN22 revogada, RN28) | Implementada, aguardando o testador | 1 | |
 | 31. Aba Treino em pastas e histórico (RN26, RN27) | Implementada, aguardando o testador | 1 | |
+| 32. Perfil público, Storage e navegação (RN24, RN31, RN32) | Implementada, aguardando o testador | 1 | |
 
 Situações: Pendente · Implementada, aguardando o testador · Reprovada (tentativa X) · Concluída (testador: APROVADO) · Bloqueada (<tipo>) · Feita fora do fluxo (<hash>)
 
@@ -282,3 +283,4 @@ Plano aprovado em 2026-11-16 (etapas 30–38). Etapa 29 (visual) em espera por d
 | Etapa | Situação | Tentativas | Commit |
 |---|---|---|---|
 - Etapa 31: o histórico local (AsyncStorage, um registro por dia) passa a guardar as séries da sessão (`series` com nome do exercício); sessões antigas aparecem sem séries/volume e sem detalhe. Alternativa: tabela de séries no servidor (fora do escopo). Evolução de carga = linha em `react-native-svg` dentro do detalhe. Sobraram avisos de lint (estados/modais de edição da TelaTreino que ficaram sem uso após remover o card do dia); limpeza fica em Pendências.
+- Etapa 32: perfil público estende `apelidos_usuario` (colunas `usuario`, `bio`, `avatar_caminho`), leitura ainda só do dono; edição exige apelido existente (criado em Grupos). Alternativa: tela de perfil também criar o apelido (duplicaria a validação entre funcionalidades). Buckets privados `avatares/checkins/posts/banners/evolucao`, pasta `<usuario_id>/`: só o dono lê, exceto `avatares` (qualquer logado); etapas 33/35/36 ampliam a leitura. `excluir-conta` apaga as fotos pela API do Storage (delete direto no SQL é bloqueado). Perfil virou rota `/perfil` fora das abas (avatar no header via `opcoesPilhaAba`); aba Comunidade vazia. `expo-image-manipulator` instalado com `npm install --force` (ERESOLVE do react-dom). TelaTreino: removidos estados/modais mortos da etapa 31.

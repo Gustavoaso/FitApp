@@ -34,6 +34,7 @@ import {
   Raio,
   Tipografia,
 } from '@/compartilhado/tema';
+import { CartaoPerfilPublico } from './CartaoPerfilPublico';
 import { useTema } from '@/compartilhado/useTema';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { repositorioPlano } from '@/compartilhado/servicos/repositorio';
@@ -213,6 +214,7 @@ export default function TelaPerfil() {
           <Text style={estilos.nome}>{nome}</Text>
           <Text style={estilos.email}>{email}</Text>
         </View>
+        <CartaoPerfilPublico />
 
         {/* ── Dados físicos ─────────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Dados Físicos</Text>

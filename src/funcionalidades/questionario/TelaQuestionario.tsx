@@ -163,7 +163,7 @@ export default function TelaQuestionario() {
   };
 
   const sair = () => {
-    if (origem === 'perfil') router.dismissTo('/(tabs)/perfil');
+    if (origem === 'perfil') router.dismissTo('/perfil');
     else if (router.canGoBack()) router.back();
     else router.replace('/');
   };

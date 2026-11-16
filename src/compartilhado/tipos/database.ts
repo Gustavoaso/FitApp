@@ -88,15 +88,24 @@ export type Database = {
       apelidos_usuario: {
         Row: {
           apelido: string;
+          avatar_caminho: string | null;
+          bio: string | null;
+          usuario: string | null;
           usuario_id: string;
         };
         ComputedFields: never;
         Insert: {
           apelido: string;
+          avatar_caminho?: string | null;
+          bio?: string | null;
+          usuario?: string | null;
           usuario_id?: string;
         };
         Update: {
           apelido?: string;
+          avatar_caminho?: string | null;
+          bio?: string | null;
+          usuario?: string | null;
           usuario_id?: string;
         };
         Relationships: [];
@@ -110,6 +119,7 @@ export type Database = {
           criado_por: string | null;
           e_basico: boolean;
           embedding: string | null;
+          embedding_384: string | null;
           fibras_100g: number | null;
           fonte: string;
           gorduras_100g: number;
@@ -131,6 +141,7 @@ export type Database = {
           criado_por?: string | null;
           e_basico?: boolean;
           embedding?: string | null;
+          embedding_384?: string | null;
           fibras_100g?: number | null;
           fonte?: string;
           gorduras_100g: number;
@@ -151,6 +162,7 @@ export type Database = {
           criado_por?: string | null;
           e_basico?: boolean;
           embedding?: string | null;
+          embedding_384?: string | null;
           fibras_100g?: number | null;
           fonte?: string;
           gorduras_100g?: number;
@@ -169,6 +181,7 @@ export type Database = {
         Row: {
           conteudo: string;
           embedding: string | null;
+          embedding_384: string | null;
           fonte: string;
           id: number;
           niveis: string[];
@@ -181,6 +194,7 @@ export type Database = {
         Insert: {
           conteudo: string;
           embedding?: string | null;
+          embedding_384?: string | null;
           fonte: string;
           id?: number;
           niveis?: string[];
@@ -192,6 +206,7 @@ export type Database = {
         Update: {
           conteudo?: string;
           embedding?: string | null;
+          embedding_384?: string | null;
           fonte?: string;
           id?: number;
           niveis?: string[];
@@ -205,6 +220,7 @@ export type Database = {
       base_exercicios: {
         Row: {
           embedding: string | null;
+          embedding_384: string | null;
           equipamento: string;
           gif_url: string | null;
           grupo_primario: string;
@@ -221,6 +237,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           embedding?: string | null;
+          embedding_384?: string | null;
           equipamento: string;
           gif_url?: string | null;
           grupo_primario: string;
@@ -236,6 +253,7 @@ export type Database = {
         };
         Update: {
           embedding?: string | null;
+          embedding_384?: string | null;
           equipamento?: string;
           gif_url?: string | null;
           grupo_primario?: string;
@@ -1118,7 +1136,7 @@ export type Database = {
       e_dono_plano_dieta: { Args: { plano: string }; Returns: boolean };
       e_dono_plano_treino: { Args: { plano: string }; Returns: boolean };
       encerrar_grupo: { Args: { p_grupo: string }; Returns: undefined };
-      entrar_grupo: { Args: { p_codigo: string }; Returns: string | null };
+      entrar_grupo: { Args: { p_codigo: string }; Returns: string };
       feed_grupo: {
         Args: { p_grupo: string; p_limite?: number };
         Returns: {
@@ -1134,6 +1152,7 @@ export type Database = {
           pontos: number;
         }[];
       };
+      geracoes_hoje: { Args: Record<PropertyKey, never>; Returns: number };
       grupo_contar_ativos: { Args: { p_usuario: string }; Returns: number };
       grupo_exigir_criador: { Args: { p_grupo: string }; Returns: undefined };
       grupo_exigir_membro: { Args: { p_grupo: string }; Returns: string };

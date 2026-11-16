@@ -23,9 +23,14 @@ export default function LayoutTabs() {
         <NativeTabs.Trigger.Label>Grupos</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: 'person.3', selected: 'person.3.fill' }} />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="perfil">
-        <NativeTabs.Trigger.Label>Perfil</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: 'person', selected: 'person.fill' }} />
+      <NativeTabs.Trigger name="comunidade">
+        <NativeTabs.Trigger.Label>Comunidade</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          sf={{
+            default: 'bubble.left.and.bubble.right',
+            selected: 'bubble.left.and.bubble.right.fill',
+          }}
+        />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

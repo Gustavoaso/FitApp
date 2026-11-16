@@ -24,13 +24,12 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro, BotaoPrimario, TiraSemana } from '@/compartilhado/ui';
+import { CardVidro, TiraSemana } from '@/compartilhado/ui';
 import type { MarcaDia } from '@/compartilhado/ui';
 import {
   obterHistoricoTreinoCompleto,
   type RegistroTreinoDiario,
 } from '@/compartilhado/servicos/historico-servico';
-import { formatarKcalEstimada } from '@/compartilhado/utilidades/gasto-calorico';
 import { gerarSemana } from '@/compartilhado/utilidades/semana';
 import { CardResumoPlano } from './CardResumoPlano';
 import { GradeTreinos } from './GradeTreinos';
@@ -49,7 +48,6 @@ import { supabase } from '@/compartilhado/supabase';
 import {
   obterPlanoTreinoCustomizado,
   salvarPlanoTreinoCustomizado,
-  adicionarExercicioAoDia,
   atualizarExercicio,
   removerExercicio,
   definirTreinoEspecialParaData,
@@ -61,7 +59,6 @@ import {
   ExercicioCustomizado,
 } from '@/compartilhado/servicos/plano-gestao-servico';
 import {
-  obterSeriesUltimaExecucao,
   EstatisticasAderencia,
   recalcularMetaSemanalAuto,
   calcularAderenciaSemanal,
@@ -73,7 +70,6 @@ export default function TelaTreino() {
   const router = useRouter();
   const [abaModo, setAbaModo] = useState<'registrado' | 'planejado'>('registrado');
   const [estatisticas, setEstatisticas] = useState<EstatisticasAderencia | null>(null);
-  const [modalReformularSemanaVisivel, setModalReformularSemanaVisivel] = useState(false);
 
   const [diaSelecionado, setDiaSelecionado] = useState(
     () => new Date().toISOString().split('T')[0],
@@ -85,11 +81,6 @@ export default function TelaTreino() {
   const [mapeamentoSemanal, setMapeamentoSemanal] = useState<Record<string, string>>({});
   const [idTreinoEspecial, setIdTreinoEspecial] = useState<string | null>(null);
 
-  // Rodada 3 — Ajuste 1: Mapa do histórico de cada série por exercício (ex: { 'ex-1': { 1: {carga: 60, reps: 10} } })
-  const [historicoSeriesMapa, setHistoricoSeriesMapa] = useState<
-    Record<string, Record<number, { cargaKg: number; repeticoes: number }>>
-  >({});
-
   // Modais
   const [menuTreinoVisivel, setMenuTreinoVisivel] = useState(false);
   const [modalCriarNovoTreinoVisivel, setModalCriarNovoTreinoVisivel] = useState(false);
@@ -97,9 +88,7 @@ export default function TelaTreino() {
   const [modalDefinirSemanaVisivel, setModalDefinirSemanaVisivel] = useState(false);
 
   // Modais de exercícios
-  const [modalAdicionarVisivel, setModalAdicionarVisivel] = useState(false);
   const [modalEditarVisivel, setModalEditarVisivel] = useState(false);
-  const [modalTrocarTreinoVisivel, setModalTrocarTreinoVisivel] = useState(false);
 
   const [exercicioEmEdicao, setExercicioEmEdicao] = useState<ExercicioCustomizado | null>(null);
 
@@ -149,14 +138,6 @@ export default function TelaTreino() {
     buscarExerciciosBase();
   }, [nomeExTemp, grupoMuscularFiltro]);
 
-  // Form de edição/adição avulsa
-  const [novoNome, setNovoNome] = useState('');
-  const [novoGrupo, setNovoGrupo] = useState('Peito');
-  const [novasSeries, setNovasSeries] = useState('4');
-  const [novasReps, setNovasReps] = useState('10');
-  const [novaCarga, setNovaCarga] = useState('60');
-  const [novoDescanso, setNovoDescanso] = useState('60');
-
   const carregarPlanos = async () => {
     const dados = await obterPlanoTreinoCustomizado();
     setPlanos(dados);
@@ -166,17 +147,6 @@ export default function TelaTreino() {
 
     const especial = await obterTreinoEspecialParaData(diaSelecionado);
     setIdTreinoEspecial(especial);
-
-    const seriesMapa: Record<string, Record<number, { cargaKg: number; repeticoes: number }>> = {};
-    for (const dia of dados) {
-      for (const ex of dia.exercicios) {
-        const hs = await obterSeriesUltimaExecucao(ex.id);
-        if (hs) {
-          seriesMapa[ex.id] = hs;
-        }
-      }
-    }
-    setHistoricoSeriesMapa(seriesMapa);
 
     const stats = await calcularAderenciaSemanal();
     setEstatisticas(stats);
@@ -198,7 +168,6 @@ export default function TelaTreino() {
 
   const semanaAtual = useMemo(() => gerarSemana(diaSelecionado), [diaSelecionado]);
   const abrevDia = semanaAtual.find((d) => d.data === diaSelecionado)?.abrev ?? 'seg';
-  const registroDoDia = historicoTreinos[diaSelecionado];
 
   // Ponto por dia: verde = treino concluído; lima = hoje ou futuro com treino no cronograma.
   const marcasSemana = useMemo(() => {
@@ -224,8 +193,6 @@ export default function TelaTreino() {
   const diaAtual = idTreinoEspecial
     ? planos.find((p) => p.id === idTreinoEspecial) || treinoDefaultSemanal
     : treinoDefaultSemanal;
-
-  const temTreino = diaAtual && diaAtual.exercicios && diaAtual.exercicios.length > 0;
 
   // Rodada 3 — Ajuste 1: Adiciona exercício temporário ao novo treino em fluxo único
   const adicionarExercicioTempAoNovoTreino = () => {
@@ -285,21 +252,6 @@ export default function TelaTreino() {
     setEstatisticas(stats);
   };
 
-  const lidarComSalvarNovoExercicio = async () => {
-    if (!diaAtual) return;
-    const atualizado = await adicionarExercicioAoDia(diaAtual.id, {
-      nome: novoNome || 'Novo Exercício',
-      grupoMuscular: novoGrupo,
-      series: parseInt(novasSeries, 10) || 4,
-      repeticoes: parseInt(novasReps, 10) || 10,
-      cargaKg: parseFloat(novaCarga) || 20,
-      tempoDescansoSegundos: parseInt(novoDescanso, 10) || 60,
-    });
-    setPlanos(atualizado);
-    setModalAdicionarVisivel(false);
-    setNovoNome('');
-  };
-
   const lidarComSalvarEdicaoExercicio = async () => {
     if (!diaAtual || !exercicioEmEdicao) return;
     const atualizado = await atualizarExercicio(diaAtual.id, exercicioEmEdicao);
@@ -319,7 +271,6 @@ export default function TelaTreino() {
   const lidarComTrocarTreinoData = async (idTreino: string) => {
     await definirTreinoEspecialParaData(diaSelecionado, idTreino);
     setIdTreinoEspecial(idTreino);
-    setModalTrocarTreinoVisivel(false);
   };
 
   return (
