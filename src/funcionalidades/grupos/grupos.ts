@@ -51,14 +51,7 @@ export interface Checkin {
   ehVoce: boolean;
 }
 
-/** Apelido de 3 a 20 caracteres, sem arroba (e-mail). Devolve o texto limpo ou o motivo. */
-export function validarApelido(valor: unknown): { apelido: string } | { erro: string } {
-  if (typeof valor !== 'string') return { erro: 'Escolha um apelido.' };
-  const apelido = valor.trim();
-  if (apelido.length < 3 || apelido.length > 20) return { erro: 'Use de 3 a 20 caracteres.' };
-  if (apelido.includes('@')) return { erro: 'O apelido não pode ser um e-mail.' };
-  return { apelido };
-}
+export { validarApelido } from '@/compartilhado/perfil-regras';
 
 /** Código de convite: 6 letras ou números, em maiúsculas. null se inválido. */
 export function normalizarCodigo(valor: unknown): string | null {

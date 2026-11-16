@@ -4,6 +4,7 @@ import { Image, Pressable, StyleSheet, Text, TextInput } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { CardVidro, BotaoPrimario } from '@/compartilhado/ui';
+import { FormPerfilBasico } from '@/compartilhado/ui/FormPerfilBasico';
 import { Espacamento, Tipografia } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { urlDaFoto } from '@/compartilhado/servicos/foto-servico';
@@ -22,16 +23,23 @@ export function CartaoPerfilPublico() {
   const [usuario, setUsuario] = useState('');
   const [bio, setBio] = useState('');
   const [aviso, setAviso] = useState<string | null>(null);
+  const [semPerfil, setSemPerfil] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
+  const carregar = useCallback(
+    () =>
       carregarPerfilPublico().then(async (p) => {
         setPerfil(p);
+        setSemPerfil(!p);
         setUsuario(p?.usuario ?? '');
         setBio(p?.bio ?? '');
         setAvatarUrl(await urlDaFoto('avatares', p?.avatarCaminho));
-      });
-    }, []),
+      }),
+    [],
+  );
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
+    }, [carregar]),
   );
 
   const escolherAvatar = async () => {
@@ -58,6 +66,15 @@ export function CartaoPerfilPublico() {
     setAviso((await salvarPerfilPublico(u.usuario, b.bio)) ?? 'Perfil salvo.');
   };
 
+  if (semPerfil)
+    return (
+      <CardVidro>
+        <Text style={[estilos.texto, { color: cores.texto }]}>
+          Crie seu perfil: escolha um apelido e um @usuario.
+        </Text>
+        <FormPerfilBasico aoSalvar={carregar} />
+      </CardVidro>
+    );
   if (!perfil) return null;
   return (
     <CardVidro>

@@ -14,9 +14,21 @@ type Props = {
   aoAbrirPerfil: (autorId: string) => void;
   aoCurtir: (post: Post) => void;
   aoApagar: (post: Post) => void;
+  aoAbrirPost: (post: Post) => void;
+  aoRepostar: (post: Post) => void;
+  aoMais: (post: Post) => void;
 };
 
-export function CartaoPost({ post, meu, aoAbrirPerfil, aoCurtir, aoApagar }: Props) {
+export function CartaoPost({
+  post,
+  meu,
+  aoAbrirPerfil,
+  aoCurtir,
+  aoApagar,
+  aoAbrirPost,
+  aoRepostar,
+  aoMais,
+}: Props) {
   const { cores } = useTema();
   const e = useMemo(() => criarEstilos(cores), [cores]);
   return (
@@ -38,7 +50,16 @@ export function CartaoPost({ post, meu, aoAbrirPerfil, aoCurtir, aoApagar }: Pro
           <Text style={e.nome}>{post.apelido}</Text>
           {post.usuario ? `  @${post.usuario}` : ''} · {tempoRelativo(post.criadoEm)}
         </Text>
-        <Text style={e.texto}>{post.texto}</Text>
+        {post.texto ? <Text style={e.texto}>{post.texto}</Text> : null}
+        {post.original ? (
+          <View style={e.citado} accessibilityLabel="Post repostado">
+            <Text style={e.cabecalho} numberOfLines={1}>
+              <Text style={e.nome}>{post.original.apelido}</Text>
+              {post.original.usuario ? `  @${post.original.usuario}` : ''}
+            </Text>
+            <Text style={e.texto}>{post.original.texto}</Text>
+          </View>
+        ) : null}
         {post.fotoCaminho ? (
           <FotoStorage
             bucket="posts"
@@ -48,6 +69,30 @@ export function CartaoPost({ post, meu, aoAbrirPerfil, aoCurtir, aoApagar }: Pro
           />
         ) : null}
         <View style={e.acoes}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Responder"
+            hitSlop={12}
+            onPress={() => aoAbrirPost(post)}
+            style={e.acao}
+          >
+            <SymbolView name="bubble.left" size={18} tintColor={cores.textoSecundario} />
+            <Text style={e.contador}>{post.respostas}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Repostar"
+            hitSlop={12}
+            onPress={() => aoRepostar(post)}
+            style={e.acao}
+          >
+            <SymbolView
+              name="arrow.2.squarepath"
+              size={18}
+              tintColor={post.repostei ? cores.destaqueTexto : cores.textoSecundario}
+            />
+            <Text style={e.contador}>{post.reposts}</Text>
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={post.curtiu ? 'Descurtir' : 'Curtir'}
@@ -71,7 +116,16 @@ export function CartaoPost({ post, meu, aoAbrirPerfil, aoCurtir, aoApagar }: Pro
             >
               <SymbolView name="trash" size={18} tintColor={cores.textoSecundario} />
             </Pressable>
-          ) : null}
+          ) : (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Mais opções"
+              hitSlop={12}
+              onPress={() => aoMais(post)}
+            >
+              <SymbolView name="ellipsis" size={18} tintColor={cores.textoSecundario} />
+            </Pressable>
+          )}
         </View>
       </View>
     </View>
@@ -96,10 +150,17 @@ const criarEstilos = (c: CoresTema) =>
     },
     nome: { fontFamily: FamiliaFonte.semibold, fontSize: Tipografia.subtitulo, color: c.texto },
     texto: { fontFamily: FamiliaFonte.regular, fontSize: Tipografia.corpo, color: c.texto },
+    citado: {
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: c.separador,
+      borderRadius: 12,
+      padding: Espacamento.md,
+      gap: Espacamento.xs,
+    },
     foto: { height: 220, borderRadius: 16, marginTop: Espacamento.sm },
     acoes: {
       flexDirection: 'row',
-      gap: Espacamento.xxl,
+      gap: Espacamento.xl,
       marginTop: Espacamento.sm,
       alignItems: 'center',
     },

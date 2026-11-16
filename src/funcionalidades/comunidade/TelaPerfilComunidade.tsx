@@ -1,6 +1,6 @@
 // Perfil público de outra pessoa (RN24/RN30): avatar, @usuario, bio, contadores, seguir e posts.
 import { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { BotaoPrimario, EstadoErro } from '@/compartilhado/ui';
@@ -9,6 +9,7 @@ import { useAuth } from '@/compartilhado/AuthContexto';
 import { Espacamento, FamiliaFonte, Tipografia, type CoresTema } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { ListaPosts } from './ListaPosts';
+import { confirmarBloqueio, escolherMotivo } from './moderacao';
 import {
   alternarSeguir,
   carregarPerfilComunidade,
@@ -73,14 +74,34 @@ export default function TelaPerfilComunidade() {
         ))}
       </View>
       {usuario?.id !== id ? (
-        <BotaoPrimario texto={perfil.euSigo ? 'Seguindo' : 'Seguir'} aoPresionar={seguir} />
+        <>
+          <BotaoPrimario texto={perfil.euSigo ? 'Seguindo' : 'Seguir'} aoPresionar={seguir} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Mais opções"
+            style={e.mais}
+            onPress={() =>
+              Alert.alert('Mais opções', undefined, [
+                { text: 'Denunciar usuário', onPress: () => escolherMotivo({ usuarioId: id }) },
+                {
+                  text: 'Bloquear usuário',
+                  style: 'destructive',
+                  onPress: () => confirmarBloqueio(id, perfil.apelido, () => router.back()),
+                },
+                { text: 'Cancelar', style: 'cancel' },
+              ])
+            }
+          >
+            <Text style={e.usuario}>Denunciar ou bloquear</Text>
+          </Pressable>
+        </>
       ) : null}
     </View>
   );
   return (
     <ListaPosts
       aba="usuario"
-      autor={id}
+      alvo={id}
       cabecalho={cabecalho}
       textoVazio="Ainda sem posts."
       aoAbrirPerfil={(a) => a !== id && router.push(`/comunidade/usuario/${a}`)}
@@ -95,6 +116,7 @@ const criarEstilos = (c: CoresTema) =>
     nome: { fontFamily: FamiliaFonte.semibold, fontSize: Tipografia.titulo2, color: c.texto },
     usuario: { fontSize: Tipografia.subtitulo, color: c.textoSecundario },
     bio: { fontSize: Tipografia.corpo, color: c.texto, textAlign: 'center' },
+    mais: { minHeight: 44, justifyContent: 'center' },
     numeros: { flexDirection: 'row', gap: Espacamento.xxl },
     numero: { alignItems: 'center' },
     valor: {

@@ -1,10 +1,11 @@
 // Sheet de novo post: termos de uso no primeiro post, depois texto (até 280) e 1 foto.
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { BotaoPrimario } from '@/compartilhado/ui';
+import { FormPerfilBasico } from '@/compartilhado/ui/FormPerfilBasico';
 import { Espacamento, FamiliaFonte, Tipografia, type CoresTema } from '@/compartilhado/tema';
 import { useTema } from '@/compartilhado/useTema';
 import { LIMITE_POST, validarTextoPost } from './comunidade';
@@ -18,6 +19,8 @@ export default function TelaNovoPost() {
   const { cores } = useTema();
   const e = useMemo(() => criarEstilos(cores), [cores]);
   const router = useRouter();
+  // `pai` = respondendo; `repost` = repostando com comentário.
+  const { pai, repost } = useLocalSearchParams<{ pai?: string; repost?: string }>();
   const [estado, setEstado] = useState<Prontidao | null>(null);
   const [texto, setTexto] = useState('');
   const [foto, setFoto] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export default function TelaNovoPost() {
     const v = validarTextoPost(texto);
     if ('erro' in v) return setErro(v.erro);
     setOcupado(true);
-    const falha = await publicar(v.texto, foto);
+    const falha = await publicar(v.texto, foto, { paiId: pai, repostDe: repost });
     setOcupado(false);
     if (falha) return setErro(falha);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -49,10 +52,8 @@ export default function TelaNovoPost() {
     return (
       <View style={e.tela}>
         <Text style={e.titulo}>Defina seu perfil</Text>
-        <Text style={e.texto}>
-          Para postar, escolha um apelido (aba Grupos) e um @usuario (Perfil).
-        </Text>
-        <BotaoPrimario texto="Abrir perfil" aoPresionar={() => router.replace('/perfil')} />
+        <Text style={e.texto}>Para postar, escolha um apelido e um @usuario.</Text>
+        <FormPerfilBasico aoSalvar={() => verificarProntidao().then(setEstado)} />
       </View>
     );
   if (estado === 'sem-termos')
@@ -73,7 +74,13 @@ export default function TelaNovoPost() {
     <View style={e.tela}>
       <TextInput
         accessibilityLabel="Texto do post"
-        placeholder="O que está acontecendo?"
+        placeholder={
+          pai
+            ? 'Escreva sua resposta'
+            : repost
+              ? 'Adicione um comentário'
+              : 'O que está acontecendo?'
+        }
         placeholderTextColor={cores.textoSecundario}
         multiline
         maxLength={LIMITE_POST}
@@ -97,7 +104,7 @@ export default function TelaNovoPost() {
       </View>
       {erro ? <Text style={e.erro}>{erro}</Text> : null}
       <BotaoPrimario
-        texto={ocupado ? 'Publicando…' : 'Publicar'}
+        texto={ocupado ? 'Publicando…' : pai ? 'Responder' : 'Publicar'}
         aoPresionar={enviar}
         desabilitado={ocupado}
       />

@@ -272,6 +272,61 @@ export type Database = {
         };
         Relationships: [];
       };
+      bloqueios: {
+        Row: {
+          bloqueado_id: string;
+          bloqueador_id: string;
+          criado_em: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          bloqueado_id: string;
+          bloqueador_id?: string;
+          criado_em?: string;
+        };
+        Update: {
+          bloqueado_id?: string;
+          bloqueador_id?: string;
+          criado_em?: string;
+        };
+        Relationships: [];
+      };
+      denuncias: {
+        Row: {
+          criado_em: string;
+          denunciante_id: string;
+          id: string;
+          motivo: string;
+          post_id: string | null;
+          usuario_denunciado_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          denunciante_id?: string;
+          id?: string;
+          motivo: string;
+          post_id?: string | null;
+          usuario_denunciado_id?: string | null;
+        };
+        Update: {
+          criado_em?: string;
+          denunciante_id?: string;
+          id?: string;
+          motivo?: string;
+          post_id?: string | null;
+          usuario_denunciado_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'denuncias_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       dias_treino: {
         Row: {
           dia_semana: number;
@@ -732,6 +787,19 @@ export type Database = {
         };
         Relationships: [];
       };
+      palavras_proibidas: {
+        Row: {
+          palavra: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          palavra: string;
+        };
+        Update: {
+          palavra?: string;
+        };
+        Relationships: [];
+      };
       perfis: {
         Row: {
           altura_cm: number;
@@ -1006,6 +1074,7 @@ export type Database = {
           criado_em: string;
           foto_caminho: string | null;
           id: string;
+          oculto: boolean;
           pai_id: string | null;
           repost_de: string | null;
           texto: string;
@@ -1016,6 +1085,7 @@ export type Database = {
           criado_em?: string;
           foto_caminho?: string | null;
           id?: string;
+          oculto?: boolean;
           pai_id?: string | null;
           repost_de?: string | null;
           texto: string;
@@ -1025,6 +1095,7 @@ export type Database = {
           criado_em?: string;
           foto_caminho?: string | null;
           id?: string;
+          oculto?: boolean;
           pai_id?: string | null;
           repost_de?: string | null;
           texto?: string;
@@ -1339,12 +1410,35 @@ export type Database = {
         };
         Relationships: [];
       };
+      uso_diario: {
+        Row: {
+          dia: string;
+          n: number;
+          tipo: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          dia: string;
+          n?: number;
+          tipo: string;
+          usuario_id: string;
+        };
+        Update: {
+          dia?: string;
+          n?: number;
+          tipo?: string;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
       alternar_curtida_checkin: { Args: { p_checkin: string }; Returns: boolean };
+      bloqueio_entre: { Args: { a: string; b: string }; Returns: boolean };
       buscar_alimentos_rag: {
         Args: {
           limite_por_slot?: number;
@@ -1404,6 +1498,10 @@ export type Database = {
           id: string;
           texto: string;
         }[];
+      };
+      consumir_limite: {
+        Args: { p_max: number; p_tipo: string; p_usuario: string };
+        Returns: undefined;
       };
       criar_grupo: {
         Args: {
@@ -1467,7 +1565,13 @@ export type Database = {
         }[];
       };
       feed_posts: {
-        Args: { p_aba: string; p_antes?: string; p_autor?: string; p_limite?: number };
+        Args: {
+          p_aba: string;
+          p_antes?: string;
+          p_autor?: string;
+          p_limite?: number;
+          p_pai?: string;
+        };
         Returns: {
           apelido: string;
           autor_id: string;
@@ -1477,6 +1581,12 @@ export type Database = {
           curtiu: boolean;
           foto_caminho: string;
           id: string;
+          original_apelido: string;
+          original_foto: string;
+          original_texto: string;
+          original_usuario: string;
+          repost_de: string;
+          repostei: boolean;
           reposts: number;
           respostas: number;
           texto: string;
@@ -1519,6 +1629,7 @@ export type Database = {
       };
       pode_ler_foto_de_grupo: { Args: { p_bucket: string; p_caminho: string }; Returns: boolean };
       pode_ler_foto_evolucao: { Args: { p_caminho: string }; Returns: boolean };
+      post_visivel: { Args: { p_id: string }; Returns: boolean };
       ranking_grupo: {
         Args: { p_grupo: string };
         Returns: {

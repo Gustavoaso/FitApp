@@ -1,12 +1,15 @@
 // Lista de posts com os estados de tela (carregando, vazio, erro) e curtir/apagar otimistas.
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { Alert, FlatList, RefreshControl } from 'react-native';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { EstadoErro, EstadoVazio, Skeleton } from '@/compartilhado/ui';
 import { useAuth } from '@/compartilhado/AuthContexto';
 import { CartaoPost } from './CartaoPost';
+import { confirmarBloqueio, escolherMotivo } from './moderacao';
 import {
   alternarCurtida,
+  alternarRepost,
   apagarPost,
   listarPosts,
   type Aba,
@@ -14,8 +17,9 @@ import {
 } from './comunidade-servico';
 
 type Props = {
-  aba: Aba | 'usuario';
-  autor?: string;
+  aba: Aba | 'usuario' | 'respostas';
+  /** Autor (aba "usuario") ou post pai (aba "respostas"). */
+  alvo?: string;
   aoAbrirPerfil: (autorId: string) => void;
   cabecalho?: ReactElement;
   textoVazio: string;
@@ -23,19 +27,20 @@ type Props = {
   versao?: number;
 };
 
-export function ListaPosts({ aba, autor, aoAbrirPerfil, cabecalho, textoVazio, versao }: Props) {
+export function ListaPosts({ aba, alvo, aoAbrirPerfil, cabecalho, textoVazio, versao }: Props) {
   const { usuario } = useAuth();
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[] | null>(null);
   const [falhou, setFalhou] = useState(false);
   const [atualizando, setAtualizando] = useState(false);
 
   const carregar = useCallback(
     () =>
-      listarPosts(aba, autor).then((r) => {
+      listarPosts(aba, alvo).then((r) => {
         setFalhou(r === null);
         if (r) setPosts(r);
       }),
-    [aba, autor],
+    [aba, alvo],
   );
 
   useEffect(() => {
@@ -54,6 +59,38 @@ export function ListaPosts({ aba, autor, aoAbrirPerfil, cabecalho, textoVazio, v
     mudar(!p.curtiu);
     if (!(await alternarCurtida(p.id, p.curtiu))) mudar(p.curtiu);
   };
+
+  const abrirPost = (p: Post) => router.push(`/comunidade/post/${p.repostDe ?? p.id}`);
+
+  // Repostar um repost leva ao original.
+  const repostar = (p: Post) => {
+    const alvoId = p.repostDe ?? p.id;
+    Alert.alert('Repostar', undefined, [
+      {
+        text: p.repostei ? 'Desfazer repost' : 'Repostar',
+        onPress: async () => {
+          if (await alternarRepost(alvoId, p.repostei)) await carregar();
+        },
+      },
+      {
+        text: 'Repostar com comentário',
+        onPress: () => router.push(`/comunidade/novo?repost=${alvoId}`),
+      },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  };
+
+  const mais = (p: Post) =>
+    Alert.alert('Mais opções', undefined, [
+      { text: 'Denunciar post', onPress: () => escolherMotivo({ postId: p.id }) },
+      { text: 'Denunciar usuário', onPress: () => escolherMotivo({ usuarioId: p.autorId }) },
+      {
+        text: 'Bloquear usuário',
+        style: 'destructive',
+        onPress: () => confirmarBloqueio(p.autorId, p.apelido, carregar),
+      },
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
 
   const apagar = (p: Post) =>
     Alert.alert('Apagar post?', 'Não dá para desfazer.', [
@@ -96,6 +133,9 @@ export function ListaPosts({ aba, autor, aoAbrirPerfil, cabecalho, textoVazio, v
           aoAbrirPerfil={aoAbrirPerfil}
           aoCurtir={curtir}
           aoApagar={apagar}
+          aoAbrirPost={abrirPost}
+          aoRepostar={repostar}
+          aoMais={mais}
         />
       )}
     />

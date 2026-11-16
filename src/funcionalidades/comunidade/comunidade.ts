@@ -20,3 +20,12 @@ export function tempoRelativo(iso: string, agora: Date = new Date()): string {
   if (min < 10080) return `${Math.floor(min / 1440)} d`;
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
+
+/** Motivos de denúncia (mesma lista do banco). */
+export const MOTIVOS_DENUNCIA = [
+  { id: 'spam', rotulo: 'Spam' },
+  { id: 'ofensivo', rotulo: 'Ofensivo' },
+  { id: 'assedio', rotulo: 'Assédio' },
+  { id: 'improprio', rotulo: 'Conteúdo impróprio' },
+  { id: 'outro', rotulo: 'Outro' },
+] as const;

@@ -8,6 +8,7 @@ export default function LayoutAbaComunidade() {
   return (
     <Stack screenOptions={opcoesPilhaAba(cores)}>
       <Stack.Screen name="index" options={{ title: 'Comunidade' }} />
+      <Stack.Screen name="post/[id]" options={{ title: 'Post', headerLargeTitle: false }} />
       <Stack.Screen name="usuario/[id]" options={{ title: 'Perfil', headerLargeTitle: false }} />
       <Stack.Screen
         name="novo"
