@@ -17,6 +17,8 @@ import { BotaoPrimario, CardVidro, ChipOpcao, EstadoErro, Skeleton } from '@/com
 import { BannerGrupo } from './BannerGrupo';
 import { CardCheckin } from './CardCheckin';
 import { SheetCheckinManual } from './SheetCheckinManual';
+import { EvolucaoDoGrupo } from './EvolucaoDoGrupo';
+import { SheetEditarGrupo } from './SheetEditarGrupo';
 import {
   Espacamento,
   FamiliaFonte,
@@ -76,8 +78,9 @@ export default function TelaGrupo() {
   const [feed, setFeed] = useState<Checkin[]>([]);
   const [falhou, setFalhou] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [aba, setAba] = useState<'ranking' | 'feed' | 'membros'>('ranking');
+  const [aba, setAba] = useState<'ranking' | 'feed' | 'evolucao' | 'membros'>('ranking');
   const [manual, setManual] = useState(false);
+  const [editando, setEditando] = useState(false);
 
   const carregar = useCallback(async () => {
     const [lista, r, f] = await Promise.all([listarGrupos(), buscarRanking(id), buscarFeed(id)]);
@@ -132,10 +135,18 @@ export default function TelaGrupo() {
       </BannerGrupo>
       {grupo.descricao ? <Text style={estilos.rotulo}>{grupo.descricao}</Text> : null}
       <View style={estilos.abas}>
-        {(['ranking', 'feed', 'membros'] as const).map((a) => (
+        {(['ranking', 'feed', 'evolucao', 'membros'] as const).map((a) => (
           <ChipOpcao
             key={a}
-            rotulo={a === 'ranking' ? 'Ranking' : a === 'feed' ? 'Feed' : 'Membros'}
+            rotulo={
+              a === 'ranking'
+                ? 'Ranking'
+                : a === 'feed'
+                  ? 'Feed'
+                  : a === 'evolucao'
+                    ? 'Evolução'
+                    : 'Membros'
+            }
             selecionado={aba === a}
             aoPressionar={() => setAba(a)}
           />
@@ -226,6 +237,8 @@ export default function TelaGrupo() {
         </CardVidro>
       ) : null}
 
+      {aba === 'evolucao' ? <EvolucaoDoGrupo grupoId={grupo.id} /> : null}
+
       {aba === 'feed' ? (
         <>
           {!grupo.encerrado ? (
@@ -257,6 +270,13 @@ export default function TelaGrupo() {
           </View>
           {grupo.ehCriador ? (
             <BotaoPrimario
+              texto="Editar grupo"
+              variante="outline"
+              aoPresionar={() => setEditando(true)}
+            />
+          ) : null}
+          {grupo.ehCriador ? (
+            <BotaoPrimario
               texto="Encerrar grupo"
               variante="outline"
               aoPresionar={() =>
@@ -283,6 +303,18 @@ export default function TelaGrupo() {
             />
           )}
         </CardVidro>
+      ) : null}
+      {grupo.ehCriador ? (
+        <SheetEditarGrupo
+          key={`${grupo.nome}|${grupo.descricao}|${grupo.banner}|${grupo.fim}`}
+          grupo={grupo}
+          visivel={editando}
+          aoFechar={() => setEditando(false)}
+          aoSalvar={() => {
+            setEditando(false);
+            carregar();
+          }}
+        />
       ) : null}
       <SheetCheckinManual
         grupoId={grupo.id}

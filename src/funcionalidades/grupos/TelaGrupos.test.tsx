@@ -92,6 +92,12 @@ it('cria o grupo e navega para ele', async () => {
   await fireEvent.press(await screen.findByRole('button', { name: 'Criar grupo' }));
   await fireEvent.changeText(screen.getByLabelText('Nome do grupo'), 'Galera');
   await fireEvent.press(screen.getByRole('button', { name: 'Criar' }));
-  await waitFor(() => expect(mock.criarGrupo).toHaveBeenCalledWith('Galera', null));
+  await waitFor(() =>
+    expect(mock.criarGrupo).toHaveBeenCalledWith('Galera', null, {
+      descricao: null,
+      banner: null,
+      inicio: null,
+    }),
+  );
   expect(mockPush).toHaveBeenCalledWith('/grupos/g9');
 });

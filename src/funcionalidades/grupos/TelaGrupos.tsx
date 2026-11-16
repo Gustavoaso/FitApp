@@ -22,7 +22,15 @@ import {
 import { useTema } from '@/compartilhado/useTema';
 import { Entrada } from '@/compartilhado/movimento';
 import { BannerGrupo } from './BannerGrupo';
-import { normalizarCodigo, validarApelido, validarNomeGrupo, type Grupo } from './grupos';
+import { SeletorBanner } from './SeletorBanner';
+import {
+  dataBrParaISO,
+  normalizarCodigo,
+  validarApelido,
+  validarDescricao,
+  validarNomeGrupo,
+  type Grupo,
+} from './grupos';
 import {
   buscarApelido,
   criarGrupo,
@@ -44,6 +52,9 @@ export default function TelaGrupos() {
   const [textoApelido, setTextoApelido] = useState('');
   const [nome, setNome] = useState('');
   const [semanas, setSemanas] = useState('');
+  const [descricao, setDescricao] = useState('');
+  const [inicio, setInicio] = useState('');
+  const [banner, setBanner] = useState<string | null>(null);
   const [codigo, setCodigo] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
@@ -79,14 +90,22 @@ export default function TelaGrupos() {
     if (n !== null && (!Number.isInteger(n) || n < 1 || n > 52)) {
       return setErro('A duração vai de 1 a 52 semanas (ou deixe em branco).');
     }
+    const d = validarDescricao(descricao);
+    if ('erro' in d) return setErro(d.erro);
+    const i = dataBrParaISO(inicio);
+    if (i === 'invalida')
+      return setErro('Use a data de início como DD/MM/AAAA, ou deixe em branco.');
     setOcupado(true);
-    const r = await criarGrupo(v.nome, n);
+    const r = await criarGrupo(v.nome, n, { descricao: d.descricao, banner, inicio: i });
     setOcupado(false);
     if (!r.ok || !r.valor) return setErro(r.ok ? 'Não deu certo. Tente de novo.' : r.erro);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setPainel(null);
     setNome('');
     setSemanas('');
+    setDescricao('');
+    setInicio('');
+    setBanner(null);
     setErro(null);
     router.push(`/grupos/${r.valor.id}`);
   }
@@ -177,13 +196,33 @@ export default function TelaGrupos() {
                 placeholderTextColor={cores.textoSecundario}
                 maxLength={40}
               />
+              <TextInput
+                accessibilityLabel="Descrição"
+                style={estilos.campo}
+                value={descricao}
+                onChangeText={setDescricao}
+                placeholder="Descrição (opcional)"
+                placeholderTextColor={cores.textoSecundario}
+                maxLength={280}
+              />
+              <TextInput
+                accessibilityLabel="Data de início"
+                style={estilos.campo}
+                value={inicio}
+                onChangeText={setInicio}
+                placeholder="Início: DD/MM/AAAA (vazio = hoje)"
+                placeholderTextColor={cores.textoSecundario}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+              <SeletorBanner valor={banner} aoMudar={setBanner} />
               <Text style={estilos.texto}>Pontuação: 1 ponto por dia com check-in.</Text>
               <TextInput
                 accessibilityLabel="Duração em semanas"
                 style={estilos.campo}
                 value={semanas}
                 onChangeText={setSemanas}
-                placeholder="Duração em semanas (opcional)"
+                placeholder="Duração em semanas (opcional; define o fim)"
                 placeholderTextColor={cores.textoSecundario}
                 keyboardType="number-pad"
                 maxLength={2}

@@ -23,7 +23,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { BlurView } from 'expo-blur';
-import { CardVidro } from '@/compartilhado/ui';
+import { BotaoPrimario, CardVidro } from '@/compartilhado/ui';
 import { VisualizadorJSONModal } from './VisualizadorJSONModal';
 import {
   CoresTema,
@@ -215,6 +215,11 @@ export default function TelaPerfil() {
           <Text style={estilos.email}>{email}</Text>
         </View>
         <CartaoPerfilPublico />
+        <BotaoPrimario
+          texto="Fotos de evolução"
+          variante="outline"
+          aoPresionar={() => router.push('/evolucao')}
+        />
 
         {/* ── Dados físicos ─────────────────────────────────── */}
         <Text style={estilos.secaoTitulo}>Dados Físicos</Text>

@@ -72,9 +72,16 @@ export async function listarGrupos(): Promise<Resultado<Grupo[]>> {
 export async function criarGrupo(
   nome: string,
   semanas: number | null,
+  extras: { descricao?: string | null; banner?: string | null; inicio?: string | null } = {},
 ): Promise<Resultado<{ id: string; codigo: string } | null>> {
   const r = await chamar(() =>
-    supabase.rpc('criar_grupo', { p_nome: nome, p_semanas: semanas ?? undefined }),
+    supabase.rpc('criar_grupo', {
+      p_nome: nome,
+      p_semanas: semanas ?? undefined,
+      p_descricao: extras.descricao ?? undefined,
+      p_banner: extras.banner ?? undefined,
+      p_inicio: extras.inicio ?? undefined,
+    }),
   );
   if (!r.ok) return r;
   const v = r.valor as { id?: string; codigo?: string } | null;
@@ -82,6 +89,21 @@ export async function criarGrupo(
     ? { ok: true, valor: { id: v.id, codigo: v.codigo } }
     : { ok: false, erro: mensagemDeErro(null) };
 }
+
+// Só o criador (o banco confere). fim null = contínuo.
+export const editarGrupo = (
+  grupo: string,
+  d: { nome: string; descricao: string | null; banner: string | null; fim: string | null },
+) =>
+  chamar(() =>
+    supabase.rpc('editar_grupo', {
+      p_grupo: grupo,
+      p_nome: d.nome,
+      p_descricao: d.descricao ?? undefined,
+      p_banner: d.banner ?? undefined,
+      p_fim: d.fim ?? undefined,
+    }),
+  );
 
 // O banco devolve null (sem erro) para código errado, para registrar a tentativa.
 export async function entrarNoGrupo(codigo: string): Promise<Resultado<string | null>> {
@@ -178,6 +200,34 @@ export async function listarComentarios(checkin: string): Promise<Resultado<Come
       apelido: c.apelido,
       texto: c.texto,
       ehVoce: c.eh_voce,
+    })),
+  };
+}
+
+export interface RegistroEvolucao {
+  id: string;
+  apelido: string;
+  ehVoce: boolean;
+  data: string;
+  pesoKg: number | null;
+  fotos: (string | null)[]; // frente, lado, costas
+}
+
+/** Fotos de evolução que os membros compartilharam com este grupo (o banco já filtra). */
+export async function buscarEvolucaoGrupo(grupo: string): Promise<Resultado<RegistroEvolucao[]>> {
+  const r = await chamar<Retorno<'evolucao_grupo'>>(() =>
+    supabase.rpc('evolucao_grupo', { p_grupo: grupo }),
+  );
+  if (!r.ok) return r;
+  return {
+    ok: true,
+    valor: (r.valor ?? []).map((e) => ({
+      id: e.registro_id,
+      apelido: e.apelido,
+      ehVoce: e.eh_voce,
+      data: e.data,
+      pesoKg: e.peso_kg,
+      fotos: [e.foto_frente, e.foto_lado, e.foto_costas],
     })),
   };
 }

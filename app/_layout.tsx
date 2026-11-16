@@ -59,6 +59,17 @@ export default function RootLayout() {
             headerTintColor: cores.destaque,
           }}
         />
+        <Stack.Screen
+          name="evolucao"
+          options={{
+            headerShown: true,
+            title: 'Evolução',
+            headerShadowVisible: false,
+            headerStyle: { backgroundColor: cores.fundo },
+            headerTitleStyle: { color: cores.texto },
+            headerTintColor: cores.destaque,
+          }}
+        />
         <Stack.Screen name="consentimento" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/index" options={{ headerShown: false }} />
         <Stack.Screen name="questionario/resultado" options={{ headerShown: false }} />

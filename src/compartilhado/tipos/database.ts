@@ -299,6 +299,90 @@ export type Database = {
           },
         ];
       };
+      evolucao_compartilhamentos: {
+        Row: {
+          grupo_id: string;
+          registro_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          grupo_id: string;
+          registro_id: string;
+        };
+        Update: {
+          grupo_id?: string;
+          registro_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'evolucao_compartilhamentos_grupo_id_fkey';
+            columns: ['grupo_id'];
+            isOneToOne: false;
+            referencedRelation: 'grupos';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'evolucao_compartilhamentos_registro_id_fkey';
+            columns: ['registro_id'];
+            isOneToOne: false;
+            referencedRelation: 'evolucao_registros';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      evolucao_preferencias: {
+        Row: {
+          frequencia: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          frequencia?: string;
+          usuario_id?: string;
+        };
+        Update: {
+          frequencia?: string;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
+      evolucao_registros: {
+        Row: {
+          criado_em: string;
+          data: string;
+          foto_costas: string | null;
+          foto_frente: string | null;
+          foto_lado: string | null;
+          id: string;
+          mostrar_peso: boolean;
+          peso_kg: number | null;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          data?: string;
+          foto_costas?: string | null;
+          foto_frente?: string | null;
+          foto_lado?: string | null;
+          id?: string;
+          mostrar_peso?: boolean;
+          peso_kg?: number | null;
+          usuario_id?: string;
+        };
+        Update: {
+          criado_em?: string;
+          data?: string;
+          foto_costas?: string | null;
+          foto_frente?: string | null;
+          foto_lado?: string | null;
+          id?: string;
+          mostrar_peso?: boolean;
+          peso_kg?: number | null;
+          usuario_id?: string;
+        };
+        Relationships: [];
+      };
       exercicios_plano: {
         Row: {
           dia_treino_id: string;
@@ -1257,6 +1341,19 @@ export type Database = {
       };
       encerrar_grupo: { Args: { p_grupo: string }; Returns: undefined };
       entrar_grupo: { Args: { p_codigo: string }; Returns: string };
+      evolucao_grupo: {
+        Args: { p_grupo: string };
+        Returns: {
+          apelido: string;
+          data: string;
+          eh_voce: boolean;
+          foto_costas: string;
+          foto_frente: string;
+          foto_lado: string;
+          peso_kg: number;
+          registro_id: string;
+        }[];
+      };
       feed_grupo: {
         Args: { p_grupo: string; p_limite?: number };
         Returns: {
@@ -1299,6 +1396,7 @@ export type Database = {
         }[];
       };
       pode_ler_foto_de_grupo: { Args: { p_bucket: string; p_caminho: string }; Returns: boolean };
+      pode_ler_foto_evolucao: { Args: { p_caminho: string }; Returns: boolean };
       ranking_grupo: {
         Args: { p_grupo: string };
         Returns: {

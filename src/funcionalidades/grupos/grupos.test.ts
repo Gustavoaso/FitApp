@@ -8,6 +8,9 @@ import {
   corDaCapa,
   dataManual,
   validarMinutos,
+  dataBrParaISO,
+  dataISOParaBr,
+  validarDescricao,
   type LinhaRanking,
 } from './grupos';
 
@@ -88,5 +91,26 @@ describe('capa, data manual e minutos', () => {
     expect(validarMinutos('')).toBeNull();
     expect(validarMinutos(null)).toBeNull();
     expect(validarMinutos(undefined)).toBeNull();
+  });
+});
+
+describe('datas e descrição do grupo', () => {
+  it('dataBrParaISO converte, aceita vazio e recusa data inexistente', () => {
+    expect(dataBrParaISO('05/12/2026')).toBe('2026-12-05');
+    expect(dataBrParaISO('  ')).toBeNull();
+    expect(dataBrParaISO(undefined)).toBeNull();
+    expect(dataBrParaISO('31/02/2026')).toBe('invalida');
+    expect(dataBrParaISO('5/12/2026')).toBe('invalida');
+    expect(dataBrParaISO(20261205)).toBeNull();
+  });
+  it('dataISOParaBr', () => {
+    expect(dataISOParaBr('2026-12-05')).toBe('05/12/2026');
+    expect(dataISOParaBr(null)).toBe('');
+  });
+  it('validarDescricao: vazio vira null, 281 caracteres recusa', () => {
+    expect(validarDescricao('  ')).toEqual({ descricao: null });
+    expect(validarDescricao('oi')).toEqual({ descricao: 'oi' });
+    expect(validarDescricao('a'.repeat(281))).toHaveProperty('erro');
+    expect(validarDescricao('a'.repeat(280))).toHaveProperty('descricao');
   });
 });

@@ -140,3 +140,31 @@ export function validarMinutos(valor: unknown): number | null {
   const n = typeof valor === 'string' ? Number(valor.trim()) : valor;
   return typeof n === 'number' && Number.isInteger(n) && n >= 1 && n <= 600 ? n : null;
 }
+
+export const CAPAS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `capa:${n}`);
+
+/** DD/MM/AAAA -> AAAA-MM-DD. '' = sem data (null); data que não existe = 'invalida'. */
+export function dataBrParaISO(texto: unknown): string | null | 'invalida' {
+  if (typeof texto !== 'string' || texto.trim() === '') return null;
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(texto.trim());
+  if (!m) return 'invalida';
+  const [, d, mes, a] = m;
+  const data = new Date(Number(a), Number(mes) - 1, Number(d));
+  const existe =
+    data.getFullYear() === Number(a) &&
+    data.getMonth() === Number(mes) - 1 &&
+    data.getDate() === Number(d);
+  return existe ? `${a}-${mes}-${d}` : 'invalida';
+}
+
+export function dataISOParaBr(iso: string | null): string {
+  return iso ? iso.split('-').reverse().join('/') : '';
+}
+
+/** Descrição opcional de até 280 caracteres. */
+export function validarDescricao(texto: string): { descricao: string | null } | { erro: string } {
+  const t = texto.trim();
+  return t.length > 280
+    ? { erro: 'A descrição vai até 280 caracteres.' }
+    : { descricao: t === '' ? null : t };
+}
