@@ -43,9 +43,7 @@
       "Bash(git grep *)",
       "Bash(lsof -i *)",
       "Bash(npx supabase db query --linked *)",
-      "Bash(node --version)"
-    ],
-    "deny": [
+      "Bash(node --version)",
       "Bash(git push *)",
       "Bash(git pull *)",
       "Bash(git fetch *)",

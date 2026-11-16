@@ -1,0 +1,44 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width"><title>Geração do plano: minimalista</title><style>
+*{box-sizing:border-box;margin:0}
+body{background:#1c1c20;font-family:Sora,-apple-system,system-ui,sans-serif;color:#eee;padding:32px}
+h1{font-size:20px;margin-bottom:4px}p.s{color:#9a9aa2;font-size:13px;margin-bottom:20px;max-width:800px;line-height:1.5}
+.row{display:flex;gap:32px;flex-wrap:wrap}.cap{font-size:12px;color:#a8a8b0;margin-top:10px;max-width:393px;line-height:1.45}.cap b{color:#D6FF00}
+.ph{width:409px;height:868px;border-radius:55px;position:relative;overflow:hidden;border:8px solid #2b2b30;background:var(--bg);color:var(--tx)}
+.dark{--bg:#0B0B0D;--tx:#fff;--sec:#A8A8B0;--hud:#D6FF00;--ltx:#D6FF00;--ln:#2A2A2E;--card2:#1E1E22}
+.light{--bg:#F2F2F4;--tx:#0B0B0D;--sec:#55555C;--hud:#5C6600;--ltx:#5C6600;--ln:#D9D9DE;--card2:#EDEDF0}
+.di{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:110px;height:32px;border-radius:20px;background:#000;z-index:9}
+.sb{display:flex;justify-content:space-between;padding:18px 32px 0;font:600 15px -apple-system,sans-serif;height:54px}
+.hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--tx);opacity:.9;z-index:9}
+.scr{position:absolute;top:54px;bottom:0;left:0;right:0;padding:0 24px;display:flex;flex-direction:column;align-items:center}
+.core{position:relative;width:200px;height:200px;margin-top:150px;color:var(--hud)}
+.core svg{position:absolute;inset:0}
+.arc{transform-origin:100px 100px;animation:sp 2.2s linear infinite}
+.dot{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px;border-radius:50%;background:var(--hud);animation:pu 2.2s ease-in-out infinite}
+.pct{position:absolute;inset:0;display:none}
+h3{font-size:22px;font-weight:700;margin-top:36px;letter-spacing:-.3px}
+.now{margin-top:10px;font:13px ui-monospace,Menlo,monospace;color:var(--sec);display:flex;gap:8px;align-items:center}.now b{font-weight:600;color:var(--ltx);font-variant-numeric:tabular-nums}
+.seg{width:200px;display:flex;gap:4px;margin-top:22px}.seg i{flex:1;height:2px;background:var(--ln)}.seg i.d{background:var(--hud)}.seg i.n{background:var(--hud);opacity:.4;animation:bl 1.2s infinite}
+.ft{margin-top:auto;align-self:stretch;padding:0 0 26px;text-align:center}.gh{height:48px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;color:var(--sec)}
+@keyframes sp{to{transform:rotate(360deg)}}@keyframes pu{50%{transform:scale(.6);opacity:.6}}@keyframes bl{50%{opacity:.15}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+<h1>Geração do plano: versão minimalista</h1>
+<p class=s>Um anel fino com arco de varredura e um ponto pulsando. Sem grade, sem anéis extras, sem moldura de HUD. Só a etapa atual em fonte monoespaçada e 5 traços de progresso. Reduzir Movimento: tudo estático, a etapa em texto segue informando.</p>
+<div class=row>
+<div><div class="ph dark"><div class=di></div><div class=sb><span>9:41</span><span>5G 87%</span></div><div class=scr>
+<div class=core><svg viewBox="0 0 200 200" fill=none stroke=currentColor>
+<circle cx=100 cy=100 r=96 stroke-width=1 opacity=.25 /><g class=arc><path d="M100 4a96 96 0 0 1 96 96" stroke-width=2 stroke-linecap=round /></g><circle cx=100 cy=100 r=56 stroke-width=1 opacity=.15 /></svg><div class=dot></div></div>
+<h3>Montando seu plano</h3>
+<div class=now><b>3/5</b>Calculando dieta e porções</div>
+<div class=seg><i class=d></i><i class=d></i><i class=n></i><i></i><i></i></div>
+<div class=ft><div class=gh>Cancelar</div></div>
+</div><div class=hi></div></div><div class=cap><b>14. Gerando o plano (dark)</b><br>Etapa e contagem em texto, além do movimento. Cancelar volta ao resumo.</div></div>
+<div><div class="ph light"><div class=di></div><div class=sb><span>9:41</span><span>5G 87%</span></div><div class=scr>
+<div class=core><svg viewBox="0 0 200 200" fill=none stroke=currentColor>
+<circle cx=100 cy=100 r=96 stroke-width=1 opacity=.25 /><g class=arc><path d="M100 4a96 96 0 0 1 96 96" stroke-width=2 stroke-linecap=round /></g><circle cx=100 cy=100 r=56 stroke-width=1 opacity=.15 /></svg><div class=dot></div></div>
+<h3>Montando seu plano</h3>
+<div class=now><b>3/5</b>Calculando dieta e porções</div>
+<div class=seg><i class=d></i><i class=d></i><i class=n></i><i></i><i></i></div>
+<div class=ft><div class=gh>Cancelar</div></div>
+</div><div class=hi></div></div><div class=cap><b>14. Gerando o plano (light)</b><br>Etapa e contagem em texto, além do movimento. Cancelar volta ao resumo.</div></div>
+</div>

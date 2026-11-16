@@ -1,0 +1,86 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width"><title>Geração do plano: HUD de IA</title><style>
+*{box-sizing:border-box;margin:0}
+body{background:#1c1c20;font-family:Sora,-apple-system,system-ui,sans-serif;color:#eee;padding:32px}
+h1{font-size:20px;margin-bottom:4px}p.s{color:#9a9aa2;font-size:13px;margin-bottom:20px;max-width:800px;line-height:1.5}
+.row{display:flex;gap:32px;flex-wrap:wrap}.cap{font-size:12px;color:#a8a8b0;margin-top:10px;max-width:393px;line-height:1.45}.cap b{color:#D6FF00}
+.ph{width:409px;height:868px;border-radius:55px;position:relative;overflow:hidden;border:8px solid #2b2b30;background:var(--bg);color:var(--tx)}
+.dark{--bg:#050709;--tx:#fff;--sec:#8FA0A8;--lt:#D6FF00;--ltx:#D6FF00;--hud:#D6FF00;--hud2:rgba(214,255,0,.18);--card:rgba(214,255,0,.05);--ln:rgba(214,255,0,.22)}
+.light{--bg:#F2F2F4;--tx:#0B0B0D;--sec:#55555C;--lt:#D6FF00;--ltx:#5C6600;--hud:#5C6600;--hud2:rgba(92,102,0,.2);--card:rgba(92,102,0,.06);--ln:rgba(92,102,0,.3)}
+.di{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:110px;height:32px;border-radius:20px;background:#000;z-index:9}
+.sb{display:flex;justify-content:space-between;padding:18px 32px 0;font:600 15px -apple-system,sans-serif;height:54px;position:relative;z-index:2}
+.hi{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:var(--tx);opacity:.9;z-index:9}
+.grid{position:absolute;inset:0;background:linear-gradient(var(--hud2) 1px,transparent 1px) 0 0/32px 32px,linear-gradient(90deg,var(--hud2) 1px,transparent 1px) 0 0/32px 32px;opacity:.45;-webkit-mask:radial-gradient(circle at 50% 38%,#000 0,transparent 70%);mask:radial-gradient(circle at 50% 38%,#000 0,transparent 70%)}
+.scr{position:absolute;top:54px;bottom:0;left:0;right:0;padding:0 20px;display:flex;flex-direction:column;align-items:center}
+.tag{margin-top:18px;font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.2em;color:var(--ltx);display:flex;gap:8px;align-items:center}
+.tag i{width:7px;height:7px;border-radius:4px;background:var(--hud);animation:bl 1.2s infinite}
+.core{position:relative;width:280px;height:280px;margin-top:34px;color:var(--hud)}
+.core svg{position:absolute;inset:0;overflow:visible}
+.r1{animation:sp 18s linear infinite;transform-origin:140px 140px}.r2{animation:sp 11s linear infinite reverse;transform-origin:140px 140px}.r3{animation:sp 6s linear infinite;transform-origin:140px 140px}
+.arc{animation:sp 2.4s linear infinite;transform-origin:140px 140px}
+.nuc{position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px;border-radius:50%;background:radial-gradient(circle,var(--hud) 0,rgba(214,255,0,.25) 45%,transparent 70%);animation:pu 2.2s ease-in-out infinite;display:grid;place-items:center;color:#050709}
+.light .nuc{background:radial-gradient(circle,rgba(92,102,0,.8) 0,rgba(92,102,0,.18) 50%,transparent 70%);color:#fff}
+.scan{position:absolute;left:-6px;right:-6px;height:2px;background:linear-gradient(90deg,transparent,var(--hud),transparent);box-shadow:0 0 14px var(--hud);animation:sc 3s ease-in-out infinite}
+.pct{margin-top:10px;font:700 44px ui-monospace,Menlo,monospace;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.pct small{font-size:18px;color:var(--ltx)}
+h3{font-size:22px;font-weight:700;margin-top:4px;letter-spacing:-.3px}.sub{font-size:14px;color:var(--sec);margin-top:6px}
+.log{align-self:stretch;margin-top:22px;border:1px solid var(--ln);background:var(--card);border-radius:16px;padding:12px 14px;font:12.5px/1.9 ui-monospace,Menlo,monospace;position:relative}
+.log:before,.log:after{content:"";position:absolute;width:12px;height:12px;border:2px solid var(--hud)}.log:before{top:-1px;left:-1px;border-right:0;border-bottom:0;border-radius:16px 0 0 0}.log:after{bottom:-1px;right:-1px;border-left:0;border-top:0;border-radius:0 0 16px 0}
+.log div{display:flex;gap:8px;color:var(--sec)}.log .ok{color:var(--tx)}.log .ok b{color:var(--ltx);width:14px}.log .now{color:var(--tx)}.log .now b{color:var(--ltx);animation:bl 1s infinite;width:14px}
+.seg{align-self:stretch;display:flex;gap:6px;margin-top:16px}.seg i{flex:1;height:4px;border-radius:2px;background:var(--ln)}.seg i.d{background:var(--hud)}.seg i.n{background:linear-gradient(90deg,var(--hud),var(--ln),var(--hud));background-size:200%;animation:sh 1.2s linear infinite}
+.ft{margin-top:auto;align-self:stretch;padding:0 0 26px}.gh{height:48px;border-radius:24px;background:var(--card);border:1px solid var(--ln);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600}
+@keyframes sp{to{transform:rotate(360deg)}}@keyframes pu{50%{transform:scale(1.12);opacity:.8}}@keyframes sc{0%,100%{top:8%}50%{top:90%}}@keyframes bl{50%{opacity:.25}}@keyframes sh{to{background-position:-200%}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.scan{display:none}}
+</style>
+<h1>Geração do plano: HUD de IA (estilo Jarvis)</h1>
+<p class=s>Substitui a tela 14 do questionário V1. Núcleo lima pulsando, anéis com marcas girando em velocidades diferentes, arco de varredura, linha de scan, percentual em fonte monoespaçada e log com as etapas reais. Respeita Reduzir Movimento (tudo estático; o log e o percentual continuam informando).</p>
+<div class=row>
+<div><div class="ph dark"><div class=di></div><div class=grid></div><div class=sb><span>9:41</span><span>5G 87%</span></div><div class=scr>
+<div class=tag><i></i>IA ATIVA · ANALISANDO</div>
+<div class=core>
+<svg viewBox="0 0 280 280" fill=none stroke=currentColor>
+<g class=r1><circle cx=140 cy=140 r=136 stroke-width=1 opacity=.5 stroke-dasharray="2 6"/><circle cx=140 cy=140 r=126 stroke-width=6 opacity=.9 stroke-dasharray="1 9.9"/></g>
+<g class=r2><circle cx=140 cy=140 r=108 stroke-width=2 stroke-dasharray="60 20 10 20" opacity=.7/></g>
+<g class=r3><circle cx=140 cy=140 r=88 stroke-width=1.5 stroke-dasharray="3 5" opacity=.8/></g>
+<g class=arc><path d="M140 6a134 134 0 0 1 116 67" stroke-width=4 stroke-linecap=round /></g>
+<circle cx=140 cy=140 r=62 stroke-width=1 opacity=.6/>
+</svg>
+<div class=scan></div>
+<div class=nuc><svg width=34 height=34 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M12 3v3M12 18v3M3 12h3M18 12h3M7 7l2 2M15 15l2 2M17 7l-2 2M9 15l-2 2"/><circle cx=12 cy=12 r=2.5 /></svg></div>
+</div>
+<div class=pct>68<small>%</small></div>
+<h3>Montando seu plano</h3><div class=sub>A IA cruza suas respostas com a base de exercícios e alimentos.</div>
+<div class=log>
+<div class=ok><b>&#10003;</b>Perfil e objetivo lidos</div>
+<div class=ok><b>&#10003;</b>Rotina e equipamentos mapeados</div>
+<div class=ok><b>&#10003;</b>Treino da semana montado</div>
+<div class=now><b>&gt;</b>Calculando dieta e porções_</div>
+<div><b style="width:14px"></b>Validando o plano</div>
+</div>
+<div class=seg><i class=d></i><i class=d></i><i class=d></i><i class=n></i><i></i></div>
+<div class=ft><div class=gh>Cancelar</div></div>
+</div><div class=hi></div></div><div class=cap><b>14. Gerando o plano (dark)</b><br>Estado sempre em texto (check, seta, percentual), além da cor e do movimento. Cancelar volta ao resumo.</div></div>
+<div><div class="ph light"><div class=di></div><div class=grid></div><div class=sb><span>9:41</span><span>5G 87%</span></div><div class=scr>
+<div class=tag><i></i>IA ATIVA · ANALISANDO</div>
+<div class=core>
+<svg viewBox="0 0 280 280" fill=none stroke=currentColor>
+<g class=r1><circle cx=140 cy=140 r=136 stroke-width=1 opacity=.5 stroke-dasharray="2 6"/><circle cx=140 cy=140 r=126 stroke-width=6 opacity=.9 stroke-dasharray="1 9.9"/></g>
+<g class=r2><circle cx=140 cy=140 r=108 stroke-width=2 stroke-dasharray="60 20 10 20" opacity=.7/></g>
+<g class=r3><circle cx=140 cy=140 r=88 stroke-width=1.5 stroke-dasharray="3 5" opacity=.8/></g>
+<g class=arc><path d="M140 6a134 134 0 0 1 116 67" stroke-width=4 stroke-linecap=round /></g>
+<circle cx=140 cy=140 r=62 stroke-width=1 opacity=.6/>
+</svg>
+<div class=scan></div>
+<div class=nuc><svg width=34 height=34 viewBox="0 0 24 24" fill=none stroke=currentColor stroke-width=2 stroke-linecap=round stroke-linejoin=round><path d="M12 3v3M12 18v3M3 12h3M18 12h3M7 7l2 2M15 15l2 2M17 7l-2 2M9 15l-2 2"/><circle cx=12 cy=12 r=2.5 /></svg></div>
+</div>
+<div class=pct>68<small>%</small></div>
+<h3>Montando seu plano</h3><div class=sub>A IA cruza suas respostas com a base de exercícios e alimentos.</div>
+<div class=log>
+<div class=ok><b>&#10003;</b>Perfil e objetivo lidos</div>
+<div class=ok><b>&#10003;</b>Rotina e equipamentos mapeados</div>
+<div class=ok><b>&#10003;</b>Treino da semana montado</div>
+<div class=now><b>&gt;</b>Calculando dieta e porções_</div>
+<div><b style="width:14px"></b>Validando o plano</div>
+</div>
+<div class=seg><i class=d></i><i class=d></i><i class=d></i><i class=n></i><i></i></div>
+<div class=ft><div class=gh>Cancelar</div></div>
+</div><div class=hi></div></div><div class=cap><b>14. Gerando o plano (light)</b><br>Estado sempre em texto (check, seta, percentual), além da cor e do movimento. Cancelar volta ao resumo.</div></div>
+</div>
