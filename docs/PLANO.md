@@ -364,3 +364,14 @@ Ordem fixa, uma etapa por vez, um commit por etapa. Regras novas: RN19 a RN25 do
 ## Etapa 27: testes finais do bloco e envio das migrations
 
 - Testador (modo completo) e segurança (modo etapa, base = commit anterior à etapa 20, testes práticos no banco local). Correções dos CORRIGIR. Depois o maestro aplica as migrations aditivas no banco remoto (`supabase db push`) e registra no `ANDAMENTO.md`.
+
+## Etapa 28: IA na nuvem (Groq + embedding do Supabase) (decisão do dono em 2026-11-15)
+
+- **Escopo:**
+  - Edge Function `gerar-plano` (Deno): exige JWT de usuário; recebe só o que o motor precisa (sem nome/e-mail/ID); faz o embedding da consulta com `Supabase.ai.Session('gte-small')`; chama a Groq (`llama-3.3-70b-versatile`, saída JSON com schema; se o modelo não aceitar `json_schema`, usar `json_object` + a validação que já existe) com `GROQ_API_KEY` do ambiente; aplica RN13; devolve a escolha de IDs. Contas, gramas e validação continuam no código (RN07).
+  - Migration aditiva: colunas de embedding 384 (`gte-small`) em `base_exercicios`, `base_alimentos`, `base_conhecimento` e RPCs `buscar_*_rag` passando a usar essas colunas (manter as antigas até a troca ser confirmada no remoto).
+  - Script de reprocessamento dos embeddings (roda contra o banco local; no remoto, só o dono executa) — pode ser uma Edge Function `reprocessar-embeddings` protegida por segredo, já que o `gte-small` roda no edge-runtime.
+  - App: `gerar-plano-servico.ts` chama `supabase.functions.invoke('gerar-plano')` em vez do Ollama; remove `EXPO_PUBLIC_OLLAMA_URL` e o cliente Ollama do app; mensagens de erro claras (sem rede, limite diário, serviço fora).
+  - Scripts de avaliação passam a poder usar a function local.
+- **Pronto quando:** `deno test supabase/functions/` cobre a function (Groq e embedding simulados, sem JWT = 401, prompt sem dados pessoais); jest, typecheck, lint, format:check, expo export e `supabase test db` passam; teste ponta a ponta no banco local com `COM_EDGE=1` se houver chave Groq disponível no ambiente (senão, registrar como pendente).
+- **Dependências permitidas:** nenhuma no app; na function, só `jsr:@supabase/supabase-js` e fetch nativo.
