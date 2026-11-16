@@ -28,12 +28,7 @@ import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
 import Animated from 'react-native-reanimated';
 import { useQuique } from '@/compartilhado/movimento';
-import {
-  CardVidro,
-  BotaoPrimario,
-  AnelProgresso,
-  EstadoVazio,
-} from '@/compartilhado/ui';
+import { CardVidro, BotaoPrimario, AnelProgresso, EstadoVazio } from '@/compartilhado/ui';
 import {
   CoresTema,
   Espacamento,
@@ -203,7 +198,12 @@ export default function TelaTreinoAoVivo() {
     setSeriesFeitas((n) => n + 1);
     const executadas = [
       ...seriesExecutadas,
-      { cargaKg: cargaFinal, repeticoes, composto: ehComposto(exAtual.nome), exercicio: exAtual.nome },
+      {
+        cargaKg: cargaFinal,
+        repeticoes,
+        composto: ehComposto(exAtual.nome),
+        exercicio: exAtual.nome,
+      },
     ];
     setSeriesExecutadas(executadas);
 

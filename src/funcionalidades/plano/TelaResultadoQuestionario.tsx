@@ -16,12 +16,7 @@ import { BlurView } from 'expo-blur';
 import Svg, { Circle } from 'react-native-svg';
 import { useReducedMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  BotaoPrimario,
-  EstadoErro,
-  OrbeGeracao,
-  BarraProgresso,
-} from '@/compartilhado/ui';
+import { BotaoPrimario, EstadoErro, OrbeGeracao, BarraProgresso } from '@/compartilhado/ui';
 import {
   CoresMacros,
   CoresTema,
@@ -517,7 +512,6 @@ export default function TelaResultadoQuestionario() {
           {conteudoBarra}
         </BlurView>
       )}
-
     </View>
   );
 }

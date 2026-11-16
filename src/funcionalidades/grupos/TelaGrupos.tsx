@@ -2,16 +2,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { SymbolView } from 'expo-symbols';
 import * as Haptics from 'expo-haptics';
-import {
-  BotaoPrimario,
-  CardVidro,
-  ChipOpcao,
-  EstadoErro,
-  EstadoVazio,
-  Skeleton,
-} from '@/compartilhado/ui';
+import { BotaoPrimario, CardVidro, EstadoErro, EstadoVazio, Skeleton } from '@/compartilhado/ui';
 import {
   Espacamento,
   FamiliaFonte,

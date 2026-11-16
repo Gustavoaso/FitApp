@@ -92,7 +92,6 @@ export default function TelaInicio() {
     porcentagemAderenciaGeral: 0,
   });
 
-
   // Modal registrar peso
   const [modalPesoVisivel, setModalPesoVisivel] = useState(false);
   const [novoPesoStr, setNovoPesoStr] = useState('85.0');
@@ -232,7 +231,6 @@ export default function TelaInicio() {
             <Text style={estilos.saudacao}>{saudacao}</Text>
             <Text style={estilos.dataAtual}>{diasemana}</Text>
           </View>
-
         </View>
 
         {/* ── Card Principal: Calorias (Rodada 5 — Ajuste 3: Somente visualização) ── */}
@@ -318,7 +316,6 @@ export default function TelaInicio() {
             ))}
           </View>
         </View>
-
 
         {/* ── Painel de Aderência Semanal (Rodada 5 — Ajuste 3: Somente visualização) ── */}
         <View>

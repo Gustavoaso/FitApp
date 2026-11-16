@@ -6,6 +6,7 @@
 // ============================================================
 
 import { createClient } from 'npm:@supabase/supabase-js@2.112.2';
+import { apagarPasta } from './apagar-pasta.ts';
 import { criarHandler } from './handler.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -24,15 +25,7 @@ Deno.serve(
 
     // RN31: apaga as fotos antes (o cascade do banco não remove os arquivos do Storage).
     for (const bucket of BUCKETS_FOTOS) {
-      const { data: arquivos, error: erroLista } = await admin.storage
-        .from(bucket)
-        .list(data.user.id, { limit: 1000 });
-      if (erroLista) throw erroLista;
-      if (!arquivos?.length) continue;
-      const { error: erroRemocao } = await admin.storage
-        .from(bucket)
-        .remove(arquivos.map((a) => `${data.user.id}/${a.name}`));
-      if (erroRemocao) throw erroRemocao;
+      await apagarPasta(admin.storage.from(bucket), data.user.id);
     }
 
     const { error: erroExclusao } = await admin.auth.admin.deleteUser(data.user.id);
