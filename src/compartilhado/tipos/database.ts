@@ -90,6 +90,7 @@ export type Database = {
           apelido: string;
           avatar_caminho: string | null;
           bio: string | null;
+          termos_comunidade_em: string | null;
           usuario: string | null;
           usuario_id: string;
         };
@@ -98,6 +99,7 @@ export type Database = {
           apelido: string;
           avatar_caminho?: string | null;
           bio?: string | null;
+          termos_comunidade_em?: string | null;
           usuario?: string | null;
           usuario_id?: string;
         };
@@ -105,6 +107,7 @@ export type Database = {
           apelido?: string;
           avatar_caminho?: string | null;
           bio?: string | null;
+          termos_comunidade_em?: string | null;
           usuario?: string | null;
           usuario_id?: string;
         };
@@ -973,6 +976,76 @@ export type Database = {
         };
         Relationships: [];
       };
+      post_curtidas: {
+        Row: {
+          post_id: string;
+          usuario_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          post_id: string;
+          usuario_id?: string;
+        };
+        Update: {
+          post_id?: string;
+          usuario_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'post_curtidas_post_id_fkey';
+            columns: ['post_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          autor_id: string;
+          criado_em: string;
+          foto_caminho: string | null;
+          id: string;
+          pai_id: string | null;
+          repost_de: string | null;
+          texto: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          autor_id?: string;
+          criado_em?: string;
+          foto_caminho?: string | null;
+          id?: string;
+          pai_id?: string | null;
+          repost_de?: string | null;
+          texto: string;
+        };
+        Update: {
+          autor_id?: string;
+          criado_em?: string;
+          foto_caminho?: string | null;
+          id?: string;
+          pai_id?: string | null;
+          repost_de?: string | null;
+          texto?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'posts_pai_id_fkey';
+            columns: ['pai_id'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'posts_repost_de_fkey';
+            columns: ['repost_de'];
+            isOneToOne: false;
+            referencedRelation: 'posts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       questionarios: {
         Row: {
           criado_em: string;
@@ -1167,6 +1240,25 @@ export type Database = {
           meta_ml?: number;
           total_ml?: number;
           usuario_id?: string;
+        };
+        Relationships: [];
+      };
+      seguidores: {
+        Row: {
+          criado_em: string;
+          seguido_id: string;
+          seguidor_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          criado_em?: string;
+          seguido_id: string;
+          seguidor_id?: string;
+        };
+        Update: {
+          criado_em?: string;
+          seguido_id?: string;
+          seguidor_id?: string;
         };
         Relationships: [];
       };
@@ -1374,6 +1466,23 @@ export type Database = {
           nome_treino: string;
         }[];
       };
+      feed_posts: {
+        Args: { p_aba: string; p_antes?: string; p_autor?: string; p_limite?: number };
+        Returns: {
+          apelido: string;
+          autor_id: string;
+          avatar_caminho: string;
+          criado_em: string;
+          curtidas: number;
+          curtiu: boolean;
+          foto_caminho: string;
+          id: string;
+          reposts: number;
+          respostas: number;
+          texto: string;
+          usuario: string;
+        }[];
+      };
       geracoes_hoje: { Args: Record<PropertyKey, never>; Returns: number };
       grupo_contar_ativos: { Args: { p_usuario: string }; Returns: number };
       grupo_exigir_criador: { Args: { p_grupo: string }; Returns: undefined };
@@ -1393,6 +1502,19 @@ export type Database = {
           inicio: string;
           membros: number;
           nome: string;
+        }[];
+      };
+      perfil_comunidade: {
+        Args: { p_usuario: string };
+        Returns: {
+          apelido: string;
+          avatar_caminho: string;
+          bio: string;
+          eu_sigo: boolean;
+          posts: number;
+          seguidores: number;
+          seguindo: number;
+          usuario: string;
         }[];
       };
       pode_ler_foto_de_grupo: { Args: { p_bucket: string; p_caminho: string }; Returns: boolean };
