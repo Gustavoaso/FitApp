@@ -494,118 +494,17 @@ export default function TelaTreino() {
               }
             />
 
-            {/* ── Card do Foco do Dia ── */}
-            <CardVidro semBorda estilo={estilos.cardDiaHeader}>
-              <View style={estilos.rowDiaHeader}>
-                <View style={estilos.iconeFocoContainer}>
-                  <SymbolView
-                    name={temTreino ? 'dumbbell.fill' : 'dumbbell'}
-                    size={18}
-                    tintColor={temTreino ? cores.destaque : cores.textoSecundario}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={estilos.diaFoco}>{diaAtual ? diaAtual.foco : 'Recuperação'}</Text>
-                  <Text style={estilos.diaDetalhes}>
-                    {temTreino
-                      ? `${diaAtual.exercicios.length} exercícios programados`
-                      : 'Descanso ativo'}
-                  </Text>
-                  {registroDoDia?.concluido && registroDoDia.kcalEstimadas != null ? (
-                    <Text style={estilos.diaDetalhes}>
-                      {`Feito em ${registroDoDia.duracaoMinutos} min · ${formatarKcalEstimada(registroDoDia.kcalEstimadas)}`}
-                    </Text>
-                  ) : null}
-                </View>
-
-                {/* Botão de Trocar Treino */}
-                <TouchableOpacity
-                  style={estilos.btnTrocarTreino}
-                  onPress={() => setModalTrocarTreinoVisivel(true)}
-                >
-                  <SymbolView
-                    name="arrow.triangle.2.circlepath"
-                    size={14}
-                    tintColor={cores.destaque}
-                    weight="regular"
-                  />
-                  <Text style={estilos.txtTrocarTreino}>Trocar</Text>
-                </TouchableOpacity>
-              </View>
+            <CardVidro semBorda>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() => router.push('/(tabs)/treino/historico')}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+              >
+                <SymbolView name="clock.arrow.circlepath" size={20} tintColor={cores.destaque} />
+                <Text style={[estilos.diaFoco, { flex: 1 }]}>Histórico</Text>
+                <SymbolView name="chevron.right" size={14} tintColor={cores.textoSecundario} />
+              </TouchableOpacity>
             </CardVidro>
-
-            {/* ── Lista de Exercícios ── */}
-            {temTreino ? (
-              <>
-                <Text style={estilos.secaoTitulo}>Exercícios do Dia</Text>
-
-                {diaAtual.exercicios.map((ex, i) => {
-                  const seriesHistorico = historicoSeriesMapa[ex.id] || {};
-                  const numSeriesArray = Array.from({ length: ex.series }, (_, idx) => idx + 1);
-
-                  return (
-                    <CardVidro key={ex.id} semBorda estilo={estilos.cardExercicioSemBorda}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          setExercicioEmEdicao(ex);
-                          setModalEditarVisivel(true);
-                        }}
-                        activeOpacity={0.7}
-                        style={estilos.rowExercicioTopo}
-                      >
-                        <View style={estilos.ordemContainer}>
-                          <Text style={estilos.ordemTexto}>{String(i + 1).padStart(2, '0')}</Text>
-                        </View>
-
-                        <View style={estilos.colExercicio}>
-                          <Text style={estilos.exNome}>{ex.nome}</Text>
-                          <Text style={estilos.exSub}>
-                            {ex.series} séries · {String(ex.repeticoes || '—')} reps ·{' '}
-                            {ex.tempoDescansoSegundos || 60}s descanso
-                          </Text>
-                        </View>
-
-                        <View style={estilos.badgeGrupo}>
-                          <Text style={estilos.textoBadgeGrupo}>{ex.grupoMuscular}</Text>
-                        </View>
-                      </TouchableOpacity>
-
-                      <View style={estilos.containerLinhasSeries}>
-                        {numSeriesArray.map((nSerie) => {
-                          const reg = seriesHistorico[nSerie];
-                          const cargaExibir = reg ? reg.cargaKg : ex.cargaKg;
-                          const repsExibir = reg ? reg.repeticoes : ex.repeticoes;
-
-                          return (
-                            <View key={nSerie} style={estilos.linhaSerieItem}>
-                              <Text style={estilos.txtNumeroSerie}>Série {nSerie}</Text>
-                              <View style={estilos.linhaDivisoraPontilhada} />
-                              <Text style={estilos.txtValoresSerie}>
-                                {descreverSerie(cargaExibir, repsExibir)}
-                              </Text>
-                            </View>
-                          );
-                        })}
-                      </View>
-                    </CardVidro>
-                  );
-                })}
-
-                <BotaoPrimario
-                  texto="Iniciar Treino ao Vivo"
-                  // O treino mostrado (dia escolhido ou troca), não sempre o de hoje.
-                  aoPresionar={() =>
-                    router.push({ pathname: '/treino-ao-vivo', params: { treinoId: diaAtual.id } })
-                  }
-                  estilo={estilos.botaoIniciar}
-                />
-              </>
-            ) : (
-              <View style={estilos.containerVazio}>
-                <Text style={estilos.textoVazioTitulo}>Dia de Descanso</Text>
-                <Text style={estilos.textoVazioSub}>Recuperação ativa muscular</Text>
-              </View>
-            )}
           </>
         )}
       </ScrollView>

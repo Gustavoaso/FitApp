@@ -7,6 +7,7 @@
 
 // Chaves separadas por usuário (mesma interface do AsyncStorage).
 import { armazenamentoUsuario as AsyncStorage } from './armazenamento-usuario';
+import type { SerieExecutada } from '../utilidades/gasto-calorico';
 
 export interface RegistroRefeicaoDiaria {
   idRefeicao: string;
@@ -33,6 +34,8 @@ export interface RegistroTreinoDiario {
   concluido: boolean;
   /** Estimativa da RN20; ausente quando não havia peso registrado. */
   kcalEstimadas?: number | null;
+  /** Séries feitas (RN27); ausente em sessões antigas. */
+  series?: SerieExecutada[];
 }
 
 const CHAVE_HISTORICO_DIETA = '@fitapp_historico_dieta_v1';

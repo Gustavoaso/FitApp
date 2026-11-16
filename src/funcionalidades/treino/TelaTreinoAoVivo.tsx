@@ -203,7 +203,7 @@ export default function TelaTreinoAoVivo() {
     setSeriesFeitas((n) => n + 1);
     const executadas = [
       ...seriesExecutadas,
-      { cargaKg: cargaFinal, repeticoes, composto: ehComposto(exAtual.nome) },
+      { cargaKg: cargaFinal, repeticoes, composto: ehComposto(exAtual.nome), exercicio: exAtual.nome },
     ];
     setSeriesExecutadas(executadas);
 
@@ -242,6 +242,7 @@ export default function TelaTreinoAoVivo() {
           exerciciosConcluidos: exerciciosFeitos + 1,
           totalExercicios: listaExercicios.length,
           concluido: true,
+          series: executadas,
         });
         // Servidor: grava a sessão (aderência RN28 e grupos leem dela).
         await gravarSessaoTreino({

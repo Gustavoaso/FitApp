@@ -13,6 +13,14 @@ export default function LayoutAbaTreino() {
         name="[treinoId]"
         options={{ title: 'Treino', headerLargeTitle: false, headerBackTitle: 'Treino' }}
       />
+      <Stack.Screen
+        name="historico"
+        options={{ title: 'Histórico', headerLargeTitle: false, headerBackTitle: 'Treino' }}
+      />
+      <Stack.Screen
+        name="sessao"
+        options={{ title: 'Sessão', headerLargeTitle: false, headerBackTitle: 'Histórico' }}
+      />
     </Stack>
   );
 }

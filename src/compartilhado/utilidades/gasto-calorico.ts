@@ -5,6 +5,8 @@ export interface SerieExecutada {
   cargaKg: number;
   repeticoes: number;
   composto: boolean;
+  /** Nome do exercício, para o detalhe do histórico (RN27). */
+  exercicio?: string;
 }
 
 export interface EntradaGastoTreino {
