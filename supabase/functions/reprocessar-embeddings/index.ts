@@ -18,7 +18,7 @@ declare const Supabase: {
 
 const REPROCESSAR_SEGREDO = Deno.env.get('REPROCESSAR_SEGREDO') ?? '';
 // Poucas linhas por chamada: cada embedding gasta CPU e a function tem limite de CPU por requisição.
-const LOTE = 5;
+const LOTE = 1;
 
 const admin = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',
